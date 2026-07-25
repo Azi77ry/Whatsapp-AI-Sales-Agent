@@ -27,9 +27,9 @@ router.get("/conversations", wrap(async (req, res) => {
   const skip = (page - 1) * limit;
 
   const [total, conversations] = await Promise.all([
-    prisma.conversation.count({ where: { merchantId: mId, contactType: "customer" } }),
+    prisma.conversation.count({ where: { merchantId: mId } }),
     prisma.conversation.findMany({
-      where: { merchantId: mId, contactType: "customer" },
+      where: { merchantId: mId },
       orderBy: { updatedAt: "desc" },
       skip,
       take: limit,
@@ -292,15 +292,7 @@ router.put("/orders/:id", wrap(async (req, res) => {
 }));
 
 // ---- 4. CONVERSATIONS (Scoped to req.merchantId) ----
-
-router.get("/conversations", wrap(async (req, res) => {
-  const conversations = await prisma.conversation.findMany({
-    where: { merchantId: req.merchantId },
-    orderBy: { updatedAt: "desc" },
-    include: { _count: { select: { messages: true, orders: true } } },
-  });
-  res.json(conversations);
-}));
+// (Orodha ya mazungumzo ipo juu, hapa tumebakiza routes nyingine za mazungumzo)
 
 router.put("/conversations/:id/contact-type", wrap(async (req, res) => {
   const { id } = req.params;
