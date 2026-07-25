@@ -191,6 +191,14 @@ const openTermsModal = document.getElementById("openTermsModal");
 const closeTermsBtn = document.getElementById("closeTermsBtn");
 const acceptTermsBtn = document.getElementById("acceptTermsBtn");
 const regTermsCheckbox = document.getElementById("regTerms");
+let hasReadTerms = false;
+
+regTermsCheckbox.addEventListener("click", (e) => {
+  if (!hasReadTerms) {
+    e.preventDefault();
+    alert("Tafadhali fungua Vigezo na Masharti, usome mpaka mwisho, kisha ubofye 'Nimesoma & Ninakubali'.");
+  }
+});
 
 openTermsModal.addEventListener("click", (e) => {
   e.preventDefault();
@@ -202,8 +210,7 @@ closeTermsBtn.addEventListener("click", () => {
 });
 
 acceptTermsBtn.addEventListener("click", () => {
-  regTermsCheckbox.disabled = false;
-  document.getElementById("regTermsLabel").style.cursor = "pointer";
+  hasReadTerms = true;
   regTermsCheckbox.checked = true;
   termsModal.classList.add("hidden");
 });
