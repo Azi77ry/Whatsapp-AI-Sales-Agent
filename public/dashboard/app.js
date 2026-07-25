@@ -486,14 +486,22 @@ async function loadChatThread(convId, name, phone) {
         try {
           const newType = isPersonal ? "customer" : "personal";
           toggleBtn.innerHTML = "Inabadilisha...";
+          
           await apiFetch(`/conversations/${convId}/contact-type`, {
             method: "PUT",
             body: JSON.stringify({ contactType: newType })
           });
-          loadChatThread(convId, name, phone);
+          
+          // Badilisha state inline bila kureload meseji
+          data.conversation.contactType = newType;
+          isPersonal = newType === "personal";
+          
+          toggleBtn.innerHTML = isPersonal ? "👤 Rafiki (AI Imezimwa)" : "🛒 Mteja (AI Inajibu)";
+          toggleBtn.style.background = isPersonal ? "var(--danger)" : "var(--primary)";
+          
         } catch (e) {
           alert("Imeshindwa kubadilisha: " + e.message);
-          loadChatThread(convId, name, phone);
+          toggleBtn.innerHTML = isPersonal ? "👤 Rafiki (AI Imezimwa)" : "🛒 Mteja (AI Inajibu)";
         }
       };
     }
