@@ -55,10 +55,9 @@
 
       <!-- Register Panel -->
       <div id="registerPanel" class="hidden">
-        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;">Jisajili Kama
-          Mfanyabiashara</h3>
-        <p class="login-sub">Sajili duka lako uanze kuuza na AI</p>
-        <input type="text" id="regBusinessName" placeholder="Jina la Biashara / Duka"
+        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;">Tengeneza Akaunti Mpya</h3>
+        <p class="login-sub">Anza kutumia Msaidizi wa AI kwenye WhatsApp yako</p>
+        <input type="text" id="regBusinessName" placeholder="Jina Lako au la Biashara/Duka"
           style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;" />
         <input type="email" id="regEmail" placeholder="Barua pepe (Email)"
           style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;" />
@@ -68,9 +67,9 @@
           style="width:100%; padding:12px; margin-bottom:12px; border:1px solid var(--line); border-radius:6px;" />
 
         <div style="margin-bottom: 15px; display: flex; align-items: start; gap: 8px;">
-          <input type="checkbox" id="regTerms" style="margin-top: 3px;" />
-          <label for="regTerms" style="font-size: 13px; color: var(--text-muted); line-height: 1.4; cursor: pointer;">
-            Nimesoma na ninakubali <a href="#" id="openTermsModal" style="color:var(--indigo); font-weight:600;">Vigezo
+          <input type="checkbox" id="regTerms" style="margin-top: 3px;" disabled title="Lazima usome vigezo na masharti kwanza" />
+          <label for="regTerms" style="font-size: 13px; color: var(--text-muted); line-height: 1.4; cursor: not-allowed;" id="regTermsLabel">
+            Nimesoma na ninakubali <a href="#" id="openTermsModal" style="color:var(--indigo); font-weight:600; cursor: pointer; pointer-events: auto;">Vigezo
               na Masharti ya Faragha</a>
           </label>
         </div>

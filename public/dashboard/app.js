@@ -202,6 +202,8 @@ closeTermsBtn.addEventListener("click", () => {
 });
 
 acceptTermsBtn.addEventListener("click", () => {
+  regTermsCheckbox.disabled = false;
+  document.getElementById("regTermsLabel").style.cursor = "pointer";
   regTermsCheckbox.checked = true;
   termsModal.classList.add("hidden");
 });
