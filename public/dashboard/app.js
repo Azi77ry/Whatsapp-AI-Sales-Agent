@@ -473,10 +473,14 @@ async function loadChatThread(convId, name, phone) {
     if (data.conversation) {
       let isPersonal = data.conversation.contactType === "personal";
       toggleBtn.innerHTML = isPersonal ? "👤 Rafiki (AI Imezimwa)" : "🛒 Mteja (AI Inajibu)";
-      toggleBtn.style.color = isPersonal ? "var(--text-muted)" : "var(--primary)";
-      toggleBtn.style.border = "1px solid var(--line)";
+      
+      // Mteja (AI Inajibu) = Kijani (Primary/Success)
+      // Rafiki (AI Imezimwa) = Nyekundu (Danger)
+      toggleBtn.style.color = isPersonal ? "white" : "white";
+      toggleBtn.style.border = "none";
       toggleBtn.style.borderRadius = "20px";
-      toggleBtn.style.background = isPersonal ? "var(--paper)" : "rgba(0,168,132,0.1)";
+      toggleBtn.style.background = isPersonal ? "var(--danger)" : "var(--primary)";
+      toggleBtn.style.fontWeight = "600";
       
       toggleBtn.onclick = async () => {
         try {
