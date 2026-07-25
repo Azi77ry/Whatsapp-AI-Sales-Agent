@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="sw">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Super Admin — AI Sales Agent Platform</title>
+  <meta name="description" content="Paneli ya msimamizi mkuu wa mfumo wa AI Sales Agent SaaS" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-icon">🛡️</div>
+      <h1>Super Admin</h1>
+      <p class="login-sub">Ingia na barua pepe ya msimamizi mkuu</p>
+      <input type="email" id="loginEmail" placeholder="Barua pepe (Email)" />
+      <input type="password" id="loginPassword" placeholder="Neno la siri (Password)" />
+      <button id="loginBtn" class="btn-primary">Ingia</button>
+      <p id="loginError" class="error-text"></p>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="app" class="app hidden">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">🛡️</span>
+        <span class="brand-text">Super<br />Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="overview">
+          <span class="nav-icon">📊</span>
+          <span>Muhtasari</span>
+        </button>
+        <button class="nav-item" data-view="merchants">
+          <span class="nav-icon">🏪</span>
+          <span>Wafanyabiashara</span>
+        </button>
+        <button class="nav-item" data-view="platform">
+          <span class="nav-icon">⚙️</span>
+          <span>Mipangilio</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="admin-info">
+          <div class="admin-avatar">🛡️</div>
+          <div>
+            <div class="admin-name" id="adminName">Super Admin</div>
+            <div class="admin-role">Msimamizi Mkuu</div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="nav-item logout-btn">
+          <span class="nav-icon">🚪</span>
+          <span>Toka</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <!-- ═══ OVERVIEW VIEW ═══ -->
+      <section id="view-overview" class="view active">
+        <header class="view-header">
+          <h2>Muhtasari wa Mfumo</h2>
+          <p class="view-sub">Takwimu za jumla za SaaS platform yako — muda halisi</p>
+        </header>
+
+        <div class="stat-grid" id="statsGrid">
+          <div class="stat-card glow-blue">
+            <div class="stat-icon">🏪</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statTotalMerchants">—</div>
+              <div class="stat-label">Maduka Yote</div>
+            </div>
+          </div>
+          <div class="stat-card glow-green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statActiveMerchants">—</div>
+              <div class="stat-label">Maduka Hai</div>
+            </div>
+          </div>
+          <div class="stat-card glow-red">
+            <div class="stat-icon">🚫</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statSuspendedMerchants">—</div>
+              <div class="stat-label">Yaliyosimamishwa</div>
+            </div>
+          </div>
+          <div class="stat-card glow-purple">
+            <div class="stat-icon">💬</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statTotalConversations">—</div>
+              <div class="stat-label">Mazungumzo Yote</div>
+            </div>
+          </div>
+          <div class="stat-card glow-amber">
+            <div class="stat-icon">📦</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statTotalOrders">—</div>
+              <div class="stat-label">Oda Zote</div>
+            </div>
+          </div>
+          <div class="stat-card glow-cyan">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statTotalAiUsage">—</div>
+              <div class="stat-label">AI Ujumbe</div>
+            </div>
+          </div>
+          <div class="stat-card glow-blue">
+            <div class="stat-icon">📨</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statTotalMessages">—</div>
+              <div class="stat-label">Jumla ya Meseji</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT MERCHANTS ON OVERVIEW -->
+        <div class="section-block">
+          <h3 class="section-title">🏪 Maduka ya Hivi Karibuni</h3>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Duka</th>
+                  <th>Email</th>
+                  <th>Hali</th>
+                  <th>Wateja</th>
+                  <th>Oda</th>
+                  <th>Tarehe ya Kujisajili</th>
+                </tr>
+              </thead>
+              <tbody id="recentMerchantsBody">
+                <tr><td colspan="6" class="loading-text">Inapakia...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ MERCHANTS VIEW ═══ -->
+      <section id="view-merchants" class="view">
+        <header class="view-header">
+          <div>
+            <h2>Wafanyabiashara</h2>
+            <p class="view-sub">Simamia maduka yote yanayotumia mfumo wako</p>
+          </div>
+        </header>
+
+        <!-- Search -->
+        <div class="search-bar">
+          <input type="text" id="merchantSearch" placeholder="🔍 Tafuta duka kwa jina, email, au simu..." />
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table" id="merchantsTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Duka</th>
+                <th>Email</th>
+                <th>Simu</th>
+                <th>Hali</th>
+                <th>Bidhaa</th>
+                <th>Wateja</th>
+                <th>Oda</th>
+                <th>AI Matumizi</th>
+                <th>Tarehe</th>
+                <th>Vitendo</th>
+              </tr>
+            </thead>
+            <tbody id="merchantsBody">
+              <tr><td colspan="11" class="loading-text">Inapakia...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ═══ PLATFORM SETTINGS VIEW ═══ -->
+      <section id="view-platform" class="view">
+        <header class="view-header">
+          <h2>Mipangilio ya Mfumo</h2>
+          <p class="view-sub">Dhibiti mipangilio ya AI na kikomo cha matumizi kwa maduka yote</p>
+        </header>
+
+        <!-- AI Provider Override -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-card-icon">🤖</span>
+            <div>
+              <h3>AI Provider Kiotomatiki</h3>
+              <p>Mfumo unatumia cascade: Gemini → Groq → DeepSeek → Fallback</p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <div class="setting-row">
+              <label>Jinsi ya kusimamia AI providers:</label>
+              <p class="setting-desc">Mfumo wa sasa unatumia waterfall — ukishindwa provider wa kwanza, unaenda wa pili, hadi wa tatu, kisha fallback. Hii ni kwa maduka YOTE kwenye mfumo.</p>
+            </div>
+            <div class="provider-status">
+              <div class="provider-item">
+                <span class="provider-dot green"></span>
+                <span>1. Google Gemini</span>
+                <span class="provider-tag">Primary</span>
+              </div>
+              <div class="provider-item">
+                <span class="provider-dot blue"></span>
+                <span>2. Groq (Llama)</span>
+                <span class="provider-tag">Backup 1</span>
+              </div>
+              <div class="provider-item">
+                <span class="provider-dot purple"></span>
+                <span>3. DeepSeek / Qwen</span>
+                <span class="provider-tag">Backup 2</span>
+              </div>
+              <div class="provider-item">
+                <span class="provider-dot amber"></span>
+                <span>4. Smart Fallback</span>
+                <span class="provider-tag">Offline AI</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Default AI Limits -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-card-icon">📊</span>
+            <div>
+              <h3>Kikomo cha AI kwa Maduka Mapya</h3>
+              <p>Idadi ya ujumbe wa AI ambayo duka jipya litapata kwa mwezi</p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <div class="setting-row inline">
+              <label>Kikomo cha default (ujumbe/mwezi):</label>
+              <input type="number" id="defaultAiLimit" value="500" class="setting-input" />
+              <button class="btn-primary btn-sm-inline" id="saveDefaultLimitBtn">💾 Hifadhi</button>
+            </div>
+            <p class="setting-desc">Hii itaathiri maduka MAPYA pekee. Kwa maduka yaliyopo, boresha kikomo kwenye sehemu ya Wafanyabiashara.</p>
+          </div>
+        </div>
+
+        <!-- System Info -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-card-icon">ℹ️</span>
+            <div>
+              <h3>Taarifa za Mfumo</h3>
+              <p>Hali ya sasa ya mfumo wako</p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Mfumo:</span>
+                <span class="info-value">WhatsApp AI Sales Agent v1.0</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Database:</span>
+                <span class="info-value">SQLite (Prisma ORM)</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Encryption:</span>
+                <span class="info-value">AES-256-CBC (Meseji)</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">WhatsApp:</span>
+                <span class="info-value">Baileys (Multi-Device)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- CONFIRM MODAL -->
+  <div id="confirmModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-icon" id="confirmIcon">⚠️</div>
+      <h3 id="confirmTitle">Una uhakika?</h3>
+      <p id="confirmMessage">Hatua hii haiwezi kurudishwa.</p>
+      <div class="modal-actions">
+        <button id="confirmCancel" class="btn-ghost">Ghairi</button>
+        <button id="confirmOk" class="btn-danger">Endelea</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI LIMIT MODAL -->
+  <div id="aiLimitModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-icon">🤖</div>
+      <h3>Badilisha Kikomo cha AI</h3>
+      <p id="aiLimitMerchantName">Duka</p>
+      <input type="number" id="aiLimitInput" class="modal-input" placeholder="mfano: 1000" />
+      <div class="modal-actions">
+        <button id="aiLimitCancel" class="btn-ghost">Ghairi</button>
+        <button id="aiLimitSave" class="btn-primary" style="width:auto;">💾 Hifadhi</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,51 @@
+# WhatsApp AI Sales Agent - Proposed Improvements & Feature Roadmap
+
+To level up this project from an MVP to a robust, enterprise-ready sales agent, here is a structured guide on how we can improve the codebase. These suggestions cover connection stability, user experience, AI capability expansion, marketing tools, and performance.
+
+---
+
+## 📋 Recommended Improvement Roadmap
+
+### 1. WhatsApp Connection & Session Management
+* **Web-Based QR Code Viewer**:
+  * *Current State*: The QR code prints solely in the terminal. If you deploy this to a headless cloud server (VPS, Heroku, Render), you cannot see it.
+  * *Improvement*: Generate the QR code as a base64 image or SSE stream, and render it directly on the dashboard's login screen when the WhatsApp connection is disconnected.
+* **Real-time WebSockets Dashboard updates**:
+  * *Improvement*: Add `socket.io` to Express. Instantly notify the dashboard when:
+    * A new WhatsApp message arrives (real-time chat screen update).
+    * A new order is logged (triggering sound and popup alerts for the admin).
+    * The WhatsApp connection status changes (*Connecting*, *QR Scan Needed*, *Connected*).
+
+### 2. Conversational & Multimodal Expansion
+* **Voice Notes Transcription (Audio Input)**:
+  * *Current State*: Messages without captions (audio, stickers) are ignored. Many Swahili customers prefer sending voice notes (*audio messages*) instead of typing.
+  * *Improvement*: Capture `.ogg`/`.mp3` audio files from Baileys, translate them to text using Whisper API (available on OpenAI/Groq compatible providers), and feed the transcribed query to the AI Agent.
+* **Image Receipt & Visual Product Search**:
+  * *Current State*: Images sent by clients without captions are ignored.
+  * *Improvement*:
+    * **Visual Search**: Let customers upload photos of jerseys or items. Send the image to a multimodal model (like Gemini 2.5 Flash) to match it to products in the database.
+    * **Receipt Processing**: Let customers upload screenshots of payment confirmation (e.g. M-Pesa, Tigo Pesa, Airtel Money). Let the AI verify the price paid and transaction ID, then mark the order status as `"confirmed"` automatically.
+
+### 3. Context & Token Optimizations
+* **Smart Context Compaction (Summarization)**:
+  * *Current State*: Grabs the last 20 messages. Very long conversations will exhaust token limits and degrade model response quality.
+  * *Improvement*: When conversation history hits a limit (e.g. 15 messages), have Gemini synthesize a short user profile summary (e.g., *"Mteja ni Juma. Anataka Jezi ya Barcelona size L, delivery Sinza. Bajeti yake ni TZS 35,000"*). Save this summary in the `Conversation` database record and clear out older messages, feeding the summary into the system instruction for subsequent turns.
+
+### 4. Marketing Automation & Business Advisor
+* **Automated Abandoned Cart Re-engagement**:
+  * *Current State*: The dashboard lists potential warm leads, but the admin must contact them manually.
+  * *Improvement*: Add a background runner (`node-cron`) that scans for customers who engaged in buying conversations but didn't complete an order within 12 to 24 hours. Let the AI write a soft, non-intrusive re-engagement nudge in Swahili (*"Habari Juma! Bado unahitaji ile Jezi? Stock imebaki chache..."*) and send it automatically.
+* **Visual Performance Analytics**:
+  * *Current State*: Dashboard stats are displayed as simple text counts.
+  * *Improvement*: Add **Chart.js** to the dashboard UI to display visual charts for:
+    * Daily/Weekly sales revenue.
+    * Order status distribution.
+    * Category and product sales rankings.
+    * Conversion rate progress.
+
+### 5. Architectural Scaling
+* **Configurable Database Options**:
+  * *Current State*: Tied strictly to SQLite.
+  * *Improvement*: Update Prisma schemas and DB connections to dynamically configure SQLite for local development and PostgreSQL or MySQL for production scales, adjusting connection strings inside `.env`.
+* **Prisma Query Performance Indexes**:
+  * *Improvement*: Add index annotations (`@@index`) on foreign keys (`conversationId` on `Message`/`Order`) and filter criteria (`customerPhone` on `Conversation`, `status` on `Order`) to maintain lightning-fast response times as the log size climbs to thousands of rows.

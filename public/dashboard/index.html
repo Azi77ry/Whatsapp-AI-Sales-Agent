@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="sw">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aziry Tech — AI Sales Agent</title>
+  <link rel="icon" type="image/png" href="images/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- LOGIN / REGISTER SCREEN (SaaS) -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <img src="images/logo-horizontal.png" alt="Aziry Tech Logo" class="login-logo" />
+
+      <!-- Login Panel -->
+      <div id="loginPanel">
+        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;">Ingia Kwenye Akaunti
+        </h3>
+        <p class="login-sub">Ingia kusimamia msaidizi wako wa WhatsApp</p>
+        <input type="email" id="loginEmail" placeholder="Barua pepe (Email)"
+          style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;"
+          autofocus />
+        <input type="password" id="loginPassword" placeholder="Neno la siri (Password)"
+          style="width:100%; padding:12px; margin-bottom:12px; border:1px solid var(--line); border-radius:6px;" />
+        <button id="submitLoginBtn" class="btn-primary"
+          style="width:100%; padding:12px; font-weight:600;">Ingia</button>
+        <p
+          style="margin-top:16px; font-size:13px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <span>Huna akaunti? <a href="#" id="toRegisterLink"
+              style="color:var(--indigo); font-weight:600; text-decoration:none;">Jisajili Hapa</a></span>
+          <a href="#" id="toForgotLink"
+            style="color:var(--text-muted); text-decoration:none; font-size:12px; font-weight:500;">Umesahau
+            password?</a>
+        </p>
+      </div>
+
+      <!-- Register Panel -->
+      <div id="registerPanel" class="hidden">
+        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;">Jisajili Kama
+          Mfanyabiashara</h3>
+        <p class="login-sub">Sajili duka lako uanze kuuza na AI</p>
+        <input type="text" id="regBusinessName" placeholder="Jina la Biashara / Duka"
+          style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;" />
+        <input type="email" id="regEmail" placeholder="Barua pepe (Email)"
+          style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;" />
+        <input type="text" id="regPhone" placeholder="Namba ya WhatsApp (mfano: 255712345678)"
+          style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;" />
+        <input type="password" id="regPassword" placeholder="Neno la siri (Password)"
+          style="width:100%; padding:12px; margin-bottom:12px; border:1px solid var(--line); border-radius:6px;" />
+
+        <div style="margin-bottom: 15px; display: flex; align-items: start; gap: 8px;">
+          <input type="checkbox" id="regTerms" style="margin-top: 3px;" />
+          <label for="regTerms" style="font-size: 13px; color: var(--text-muted); line-height: 1.4; cursor: pointer;">
+            Nimesoma na ninakubali <a href="#" id="openTermsModal" style="color:var(--indigo); font-weight:600;">Vigezo na Masharti ya Faragha</a>
+          </label>
+        </div>
+
+        <button id="submitRegisterBtn" class="btn-primary"
+          style="width:100%; padding:12px; font-weight:600; background:var(--success);">Jisajili Sasa</button>
+        <p style="margin-top:16px; font-size:13px;">Tayari una akaunti? <a href="#" id="toLoginLink"
+            style="color:var(--indigo); font-weight:600; text-decoration:none;">Ingia Hapa</a></p>
+      </div>
+
+      <!-- Terms and Conditions Modal -->
+      <div id="termsModal" class="modal-overlay hidden">
+        <div class="modal-content terms-modal">
+          <div class="modal-header">
+            <h3>Vigezo na Masharti ya Faragha</h3>
+            <button id="closeTermsBtn" class="close-btn">&times;</button>
+          </div>
+          <div class="modal-body terms-body">
+            <p><strong>Tarehe ya mwisho kusasishwa:</strong> Julai 2026</p>
+            <p>Karibu kwenye Aziry Tech WhatsApp AI Sales Agent (SaaS). Tunachukulia faragha ya data zako na za wateja wako kwa uzito mkubwa sana. Kwa kujisajili na kutumia huduma hii, wewe (Mfanyabiashara) unakubaliana na masharti yafuatayo:</p>
+
+            <h4>1. Umiliki wa Data za Wateja</h4>
+            <p>Wewe ndiye mmiliki halali wa namba za simu na mazungumzo ya wateja wako. Aziry Tech haitauza, haitasambaza, wala haitatumia data za wateja wako kwa manufaa ya kibiashara nje ya kukupa huduma hii ya AI.</p>
+
+            <h4>2. Haki ya Mteja Kuchagua (Consent)</h4>
+            <p>Tumeunda mfumo huu kwa kufuata misingi ya kimaadili ya AI (Ethical AI). Mteja wako anapotuma ujumbe kwa mara ya kwanza, AI itamuuliza kwanza ikiwa anaridhia kuhudumiwa na AI au anapendelea kuongea na wewe (mmiliki) moja kwa moja. Usijaribu kuzuia au kuharibu utaratibu huu, kwani unajenga uaminifu kwa wateja wako.</p>
+
+            <h4>3. Hifadhi na Ufutaji wa Taarifa</h4>
+            <ul>
+              <li>Mfumo huu una haki ya kufuta ujumbe (raw messages) uliozidi siku 14 kiotomatiki.</li>
+              <li>Kama mteja ataomba taarifa zake zifutwe, unawajibika kufanya hivyo.</li>
+            </ul>
+
+            <h4>4. Wajibu wa Mfanyabiashara (Wewe)</h4>
+            <ul>
+              <li>Hutatumia mfumo huu kutuma ujumbe wa matusi, vitisho, au utapeli.</li>
+              <li>Wewe unawajibika na huduma na bidhaa unazowauzia wateja wako. Aziry Tech inatoa mfumo wa mawasiliano tu.</li>
+              <li>Utaweka nenosiri lako (password) na QR code ya WhatsApp salama wakati wote.</li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button id="acceptTermsBtn" class="btn-primary" style="width: 100%;">Nimesoma & Ninakubali</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forgot Password Panel -->
+      <div id="forgotPanel" class="hidden">
+        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;">Rejesha Password</h3>
+        <p class="login-sub">Weka barua pepe au namba ya simu kupata OTP ya WhatsApp</p>
+        <input type="text" id="forgotEmailOrPhone" placeholder="Email au Namba ya Simu"
+          style="width:100%; padding:12px; margin-bottom:12px; border:1px solid var(--line); border-radius:6px;" />
+        <button id="submitForgotBtn" class="btn-primary" style="width:100%; padding:12px; font-weight:600;">Tuma Msimbo
+          (OTP)</button>
+        <p style="margin-top:16px; font-size:13px;"><a href="#" id="forgotToLoginLink"
+            style="color:var(--indigo); font-weight:600; text-decoration:none;">Rudi Kwenye Login</a></p>
+      </div>
+
+      <!-- Reset Password Panel -->
+      <div id="resetPanel" class="hidden">
+        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;">Weka Password Mpya
+        </h3>
+        <p class="login-sub" id="resetSubText">OTP imetumwa kwenda kwenye WhatsApp yako</p>
+        <input type="text" id="resetOtp" placeholder="Msimbo wa OTP (namba 6)"
+          style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px; font-family:monospace; font-size:16px; letter-spacing:4px; text-align:center;" />
+        <input type="password" id="resetNewPassword" placeholder="Neno jipya la siri (Password)"
+          style="width:100%; padding:12px; margin-bottom:12px; border:1px solid var(--line); border-radius:6px;" />
+        <button id="submitResetBtn" class="btn-primary"
+          style="width:100%; padding:12px; font-weight:600; background:var(--success);">Hifadhi Password Mpya</button>
+        <p style="margin-top:16px; font-size:13px;"><a href="#" id="resetToLoginLink"
+            style="color:var(--indigo); font-weight:600; text-decoration:none;">Ghairi / Rudi Login</a></p>
+      </div>
+
+      <p id="loginError" class="login-error" style="color:var(--danger); font-size:13px; margin-top:10px;"></p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="images/icon.png" alt="Aziry Tech" class="brand-icon" />
+        <span class="brand-name" id="merchantBrandName">Aziry Tech SaaS</span>
+      </div>
+      <nav class="nav" style="display:flex; flex-direction:column; height: calc(100% - 70px);">
+        <button class="nav-item active" data-view="overview">
+          <span class="nav-num">01</span> Muhtasari
+        </button>
+        <button class="nav-item" data-view="products">
+          <span class="nav-num">02</span> Bidhaa
+        </button>
+        <button class="nav-item" data-view="orders">
+          <span class="nav-num">03</span> Oda
+        </button>
+        <button class="nav-item" data-view="conversations">
+          <span class="nav-num">04</span> Mazungumzo
+        </button>
+        <button class="nav-item" data-view="insights">
+          <span class="nav-num">05</span> Ripoti za AI
+        </button>
+        <button class="nav-item" data-view="settings">
+          <span class="nav-num">06</span> Mipangilio
+        </button>
+        <button class="nav-item" id="logoutBtn" style="color:var(--danger); margin-top:auto; font-weight:600;">
+          🚪 Toka Nje
+        </button>
+      </nav>
+      <div class="sidebar-foot" style="margin-top: 8px;">WhatsApp AI SaaS Agent</div>
+    </aside>
+
+    <main class="main">
+
+      <!-- OVERVIEW -->
+      <section id="view-overview" class="view active">
+        <header class="view-header">
+          <h2>Muhtasari</h2>
+          <p class="view-sub">Hali ya duka lako kwa ujumla</p>
+        </header>
+        <!-- WhatsApp Connection Status -->
+        <div class="whatsapp-status-card" id="whatsappStatusCard">
+          <div class="ws-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="ws-icon">📱</span>
+              <span class="ws-title">Hali ya WhatsApp</span>
+            </div>
+            <span class="badge" id="whatsappStatusBadge">—</span>
+          </div>
+          <div class="ws-body" id="whatsappStatusBody">
+            <p id="whatsappStatusText">Inatafuta hali ya WhatsApp...</p>
+            <div id="whatsappQrContainer" class="qr-container hidden">
+              <p>Scan QR code hii na WhatsApp ya simu yako kuunganisha:</p>
+              <div id="qrcode" style="margin-top: 10px;"></div>
+            </div>
+            <button id="whatsappRestartBtn" class="ws-btn-retry hidden">Anzisha WhatsApp Upya</button>
+          </div>
+          <!-- Bot Toggle -->
+          <div class="ws-divider"></div>
+          <div class="ws-footer">
+            <div class="bot-toggle-row">
+              <div class="bot-toggle-info">
+                <span class="bot-toggle-icon" id="botToggleIcon">🤖</span>
+                <div>
+                  <div class="bot-toggle-label">AI Sales Agent</div>
+                  <div class="bot-toggle-sublabel" id="botToggleSublabel">Inajibu wateja kiotomatiki</div>
+                </div>
+              </div>
+              <button id="botToggleBtn" class="bot-toggle-btn bot-toggle-active">
+                <span class="bot-toggle-pill"></span>
+                <span class="bot-toggle-text" id="botToggleBtnText">Zima</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Bidhaa Zilizopo</div>
+            <div class="stat-value mono" id="statProducts">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Oda Zote</div>
+            <div class="stat-value mono" id="statOrders">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Oda Zinazosubiri</div>
+            <div class="stat-value mono accent" id="statPending">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Wateja Waliowasiliana</div>
+            <div class="stat-value mono" id="statConversations">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Walio-Nudged (Cart)</div>
+            <div class="stat-value mono accent" id="statReEngaged">—</div>
+          </div>
+          <div class="stat-card" style="border-left: 4px solid var(--mustard);">
+            <div class="stat-label">Maombi Maalum (Pending)</div>
+            <div class="stat-value mono accent" id="statSpecialRequests">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS -->
+      <section id="view-products" class="view">
+        <header class="view-header">
+          <h2>Bidhaa</h2>
+          <p class="view-sub">Ongeza, badilisha bei, na weka stock</p>
+          <button class="btn-primary" id="addProductBtn">+ Ongeza Bidhaa</button>
+        </header>
+        <div class="table-wrap">
+          <table id="productsTable">
+            <thead>
+              <tr>
+                <th>Jina</th>
+                <th>Category</th>
+                <th>Bei</th>
+                <th>Stock</th>
+                <th>Rangi</th>
+                <th>Size</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ORDERS -->
+      <section id="view-orders" class="view">
+        <header class="view-header">
+          <h2>Oda</h2>
+          <p class="view-sub">Oda zote zilizowekwa na wateja kupitia WhatsApp</p>
+        </header>
+        <div class="table-wrap">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Mteja</th>
+                <th>Bidhaa</th>
+                <th>Idadi</th>
+                <th>Delivery/Pickup</th>
+                <th>Status</th>
+                <th>Tarehe</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- SPECIAL REQUESTS (Kariakoo Broker) -->
+        <header class="view-header" style="margin-top: 36px;">
+          <h2 style="font-size:18px;">🔍 Maombi Maalum <span id="specialRequestsBadge" class="badge"
+              style="background:var(--mustard);color:white;margin-left:8px;"></span></h2>
+          <p class="view-sub">Bidhaa zilizoombwa na wateja ambazo hazipo kwenye stock — tafuta sokoni na muuzie mteja
+          </p>
+        </header>
+        <div class="table-wrap">
+          <table id="specialRequestsTable">
+            <thead>
+              <tr>
+                <th>#SR</th>
+                <th>Mteja</th>
+                <th>Bidhaa Iliyoombwa</th>
+                <th>Idadi</th>
+                <th>Bei (Kadiri / Halisi)</th>
+                <th>Delivery</th>
+                <th>Status</th>
+                <th>Hatua</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Special Request Update Panel -->
+        <div id="srUpdatePanel" class="hidden"
+          style="margin-top:20px; background:var(--paper-raised); border:1px solid var(--line); border-radius:8px; padding:24px;">
+          <h3 style="margin:0 0 16px; font-size:15px; color:var(--indigo);">✏️ Sasisha Ombi #SR-<span
+              id="srPanelId"></span></h3>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px;">Status</label>
+              <select id="srStatusSelect"
+                style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:4px; font-size:13px;">
+                <option value="new">🆕 Mpya</option>
+                <option value="sourcing">🔎 Inatafutwa</option>
+                <option value="found">✅ Imepatikana</option>
+                <option value="fulfilled">📦 Imetimizwa</option>
+                <option value="cancelled">❌ Imeghairiwa</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px;">Bei Halisi (TZS) —
+                itatumwa kwa mteja</label>
+              <input type="number" id="srQuotedPrice" placeholder="mfano: 1200000"
+                style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:4px; font-size:13px;" />
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px;">Maelezo ya Admin
+              (supplier, bei uliyoipata, n.k)</label>
+            <textarea id="srAdminNotes" rows="2"
+              placeholder="mfano: Nimeipata kwa Kariakoo TZS 1,100,000 — faida TZS 100,000"
+              style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:4px; font-size:13px; resize:vertical;"></textarea>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-primary" id="srSaveBtn">💾 Hifadhi &amp; Tuma Arifa kwa Mteja</button>
+            <button id="srCancelBtn"
+              style="padding:10px 16px; border:1px solid var(--line); border-radius:4px; background:none; cursor:pointer; font-size:13px;">Funga</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONVERSATIONS -->
+      <section id="view-conversations" class="view">
+        <div class="conv-layout">
+          <div class="conv-list-wrap">
+            <header class="view-header">
+              <h2>Mazungumzo</h2>
+              <p class="view-sub">Wateja waliowasiliana kupitia WhatsApp</p>
+            </header>
+            <div id="conversationsList" class="conv-list"></div>
+          </div>
+          <div class="conv-thread-wrap">
+            <div id="conversationThreadHeader" class="conv-thread-header hidden">
+              <span id="conversationThreadName"></span>
+              <button id="toggleContactTypeBtn" class="btn-ghost" style="padding:6px 12px; font-size:12px;"></button>
+            </div>
+            <div id="conversationThread" class="conv-thread">
+              <p class="conv-empty">Chagua mteja upande wa kushoto kuona mazungumzo.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI INSIGHTS -->
+      <section id="view-insights" class="view">
+        <header class="view-header">
+          <h2>Ripoti za AI</h2>
+          <p class="view-sub">Takwimu za biashara, wateja wanaoweza kununua, na ushauri wa AI</p>
+        </header>
+
+        <div class="stat-grid" id="insightsStatGrid" style="margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-label">Mapato (Delivered)</div>
+            <div class="stat-value mono" id="insStatRevenue">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Conversion Rate</div>
+            <div class="stat-value mono accent" id="insStatConversion">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Wateja Wote</div>
+            <div class="stat-value mono" id="insStatCustomers">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Bidhaa Stock Ndogo</div>
+            <div class="stat-value mono" id="insStatLowStock">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Walio-Nudged (Cart)</div>
+            <div class="stat-value mono accent" id="insStatReEngaged">—</div>
+          </div>
+        </div>
+
+        <div class="insights-section">
+          <h3>🔥 Wateja Wanaoweza Kununua</h3>
+          <p class="view-sub" style="margin-bottom:14px;">Wateja wenye mazungumzo mengi lakini bado hawajakamilisha oda
+          </p>
+          <div id="potentialCustomersList"></div>
+        </div>
+
+        <div class="insights-section">
+          <h3>📣 Wateja Waliofanyiwa Cart Re-engagement</h3>
+          <p class="view-sub" style="margin-bottom:14px;">Wateja waliorudishiwa ujumbe wa kukumbushwa kiotomatiki
+            (Automated Abandoned Cart Nudge)
+          </p>
+          <div id="reEngagedCustomersList"></div>
+        </div>
+
+        <div class="insights-section">
+          <h3>💡 Ushauri wa AI kwa Biashara Yako</h3>
+          <button class="btn-primary" id="generateAdviceBtn" style="margin-bottom:14px;">Pata Ushauri Sasa</button>
+          <div id="adviceBox" class="advice-box hidden"></div>
+        </div>
+
+        <div class="insights-section">
+          <h3>💬 Uliza AI Chochote Kuhusu Biashara Yako</h3>
+          <div class="ask-box">
+            <input type="text" id="askQuestionInput" placeholder="mfano: Ni bidhaa gani niongeze stock wiki hii?" />
+            <button class="btn-primary" id="askQuestionBtn">Uliza</button>
+          </div>
+          <div id="askHistory"></div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="view-settings" class="view">
+        <header class="view-header">
+          <h2>Mipangilio ya Duka</h2>
+          <p class="view-sub">Badilisha maelezo ya duka lako, sheria za AI, na ratiba ya nudge ya WhatsApp</p>
+        </header>
+
+        <div class="settings-card"
+          style="background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+          <h3
+            style="margin-top: 0; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px;">
+            <span>⚙️</span> Taarifa & Miongozo ya AI
+          </h3>
+          <form id="settingsForm">
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label style="display: block; font-weight: 500; margin-bottom: 8px;">Jina la Biashara / Duka</label>
+              <input type="text" id="setBusinessName" required
+                style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label style="display: block; font-weight: 500; margin-bottom: 8px;">Miongozo Maalum ya AI (Business
+                Context / Instructions)</label>
+              <textarea id="setBusinessContext" rows="5"
+                placeholder="mfano: Duka letu lipo Kariakoo Congo. Tunafungua saa 2 asubuhi na kufunga saa 12 jioni. Bidhaa zetu zote hazina mazungumzo zaidi ya 1%. Tunatuma bidhaa mikoani kwa TZS 10,000..."
+                style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px; resize: vertical;"></textarea>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Weka maelezo ya duka, mahali
+                lilipo, na sheria zako ili AI izijue inapojibu wateja.</p>
+            </div>
+
+            <!-- SECURITY SECTION -->
+            <h3
+              style="margin-top: 32px; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 20px;">
+              <span>🔒</span> Usalama wa Akaunti (Security)
+            </h3>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Namba ya Simu Yako (Kuthibitisha)</label>
+                <input type="text" id="setVerifyPhone" placeholder="mfano: 255712345678"
+                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Neno Siri la Zamani (Kuthibitisha)</label>
+                <input type="password" id="setOldPassword" placeholder="Neno siri unalotumia sasa"
+                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label style="display: block; font-weight: 500; margin-bottom: 8px;">Neno Jipya la Siri (New
+                Password)</label>
+              <input type="password" id="setNewPassword" placeholder="Acha wazi kama hutaki kubadili neno siri"
+                style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+                Ili kubadili neno siri, ni lazima ujaze namba ya simu na neno siri la zamani hapo juu kwanza.
+              </p>
+            </div>
+
+            <!-- APPEARANCE & THEME SECTION -->
+            <h3
+              style="margin-top: 32px; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 20px;">
+              <span>🎨</span> Muonekano & Lugha (Appearance)
+            </h3>
+            <div class="form-row"
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Mandhari (Theme)</label>
+                <select id="setTheme"
+                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;">
+                  <option value="light">Mwanga (Light Mode)</option>
+                  <option value="dark">Giza (Dark Mode)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Lugha ya Dashboard</label>
+                <select id="setLanguage"
+                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;">
+                  <option value="sw">Kiswahili</option>
+                  <option value="en">English (Inakuja Hivi Karibuni)</option>
+                </select>
+              </div>
+            </div>
+
+            <h3
+              style="margin-top: 32px; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 20px;">
+              <span>⏰</span> Ratiba ya Nudge (Abandoned Cart Nudging)
+            </h3>
+
+            <div class="form-row"
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Muda wa chini
+                  (Masaa)</label>
+                <input type="number" id="setNudgeMin" min="1" required
+                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kusubiri kabla ya kumtumia mteja
+                  nudge (default: 12)</p>
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Muda wa juu
+                  (Masaa)</label>
+                <input type="number" id="setNudgeMax" min="2" required
+                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kutopitiza masaa haya tangu chat
+                  ya mwisho (default: 24)</p>
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Nudge Cooldown
+                  (Masaa)</label>
+                <input type="number" id="setNudgeCooldown" min="12" required
+                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kusubiri kabla ya kutuma nudge
+                  nyingine tena (default: 48)</p>
+              </div>
+            </div>
+
+            <div class="form-row"
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Saa ya kuanza
+                  kutuma (EAT)</label>
+                <input type="number" id="setNudgeStartHour" min="0" max="23" required
+                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">AI haitatuma usiku kabla ya saa
+                  hii (default: 7)</p>
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Saa ya mwisho
+                  kutuma (EAT)</label>
+                <input type="number" id="setNudgeEndHour" min="0" max="23" required
+                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">AI haitatuma baada ya saa hii
+                  (default: 21)</p>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center; margin-top: 20px;">
+              <span id="settingsSaveStatus" style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
+              <button type="submit" class="btn-primary" style="padding: 12px 24px; font-weight: 600; border-radius: 6px; cursor: pointer;">Hifadhi Mipangilio</button>
+            </div>
+          </form>
+
+          <!-- DANGER ZONE -->
+          <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--danger);">
+            <h3 style="margin-top: 0; margin-bottom: 8px; color: var(--danger); display: flex; align-items: center; gap: 8px;">
+              <span>⚠️</span> Eneo la Hatari (Danger Zone)
+            </h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+              Kufuta akaunti yako kutafuta data zako zote (bidhaa, oda, jumbe) moja kwa moja kutoka kwenye mfumo wetu. Kitendo hiki hakirudishiki nyuma.
+            </p>
+            <button type="button" id="triggerDeleteAccountBtn" class="btn-ghost" style="color: var(--danger); border-color: var(--danger); font-weight: 600;">
+              Futa Akaunti Yangu
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- PRODUCT MODAL -->
+  <div id="productModal" class="modal-overlay hidden">
+    <div class="modal">
+      <h3 id="productModalTitle">Ongeza Bidhaa</h3>
+      <form id="productForm">
+        <input type="hidden" id="productId" />
+        <label>Jina la Bidhaa</label>
+        <input type="text" id="pName" required />
+
+        <label>Category</label>
+        <select id="pCategory" required>
+          <!-- Categories zinaongezwa kwa nguvu na app.js kutoka kwa bidhaa zilizopo -->
+        </select>
+
+        <div class="form-row">
+          <div>
+            <label>Bei (TZS)</label>
+            <input type="number" id="pPrice" required />
+          </div>
+          <div>
+            <label>Stock</label>
+            <input type="number" id="pStock" required />
+          </div>
+        </div>
+
+        <label>Rangi (tenganisha kwa comma)</label>
+        <input type="text" id="pColors" placeholder="Nyekundu,Bluu,Nyeusi" />
+
+        <label>Size (tenganisha kwa comma)</label>
+        <input type="text" id="pSizes" placeholder="S,M,L,XL" />
+
+        <label>Maelezo</label>
+        <textarea id="pDescription" rows="3"></textarea>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="cancelProductBtn">Ghairi</button>
+          <button type="submit" class="btn-primary">Hifadhi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- DELETE ACCOUNT MODAL -->
+  <div id="deleteAccountModal" class="modal-overlay hidden">
+    <div class="modal" style="border-top: 4px solid var(--danger);">
+      <h3 style="color: var(--danger); margin-top: 0;">Futa Akaunti</h3>
+      <p style="font-size: 14px; margin-bottom: 20px;">
+        Onyo! Kufuta akaunti kutapoteza bidhaa zako zote, oda, na historia ya mazungumzo na wateja. 
+        Tafadhali ingiza <strong>neno siri</strong> lako ili kuthibitisha.
+      </p>
+      <form id="deleteAccountForm">
+        <label>Neno Siri Lako</label>
+        <input type="password" id="deleteAccountPassword" required style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--danger); border-radius: 6px; background: var(--bg); color: var(--text);" />
+        
+        <div id="deleteAccountError" style="color: var(--danger); font-size: 13px; font-weight: 600; margin-bottom: 16px;"></div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="cancelDeleteBtn">Ghairi</button>
+          <button type="submit" class="btn-primary" style="background: var(--danger); border-color: var(--danger);">Ndiyo, Futa Akaunti</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

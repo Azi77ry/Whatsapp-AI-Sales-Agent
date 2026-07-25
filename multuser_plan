@@ -1,0 +1,156 @@
+# Multi-Tenant SaaS WhatsApp AI Sales Agent — Implementation Plan
+
+Tutaboresha mfumo huu kutoka kwa ajili ya **mfanyabiashara mmoja tu** kuwa **Jukwaa la SaaS (Multi-Tenant)**. Hii itaruhusu wafanyabiashara wengi kujisajili, kuingia (login), kusimamia bidhaa zao wenyewe, na kila mmoja kuunganisha namba yake ya WhatsApp kipekee.
+
+---
+
+## 🏛️ Ramani ya Usanifu Mpya (New SaaS Architecture)
+
+```mermaid
+graph TD
+    UserA[Merchant A] -->|Login/Manage| Dashboard[Auth Dashboard]
+    UserB[Merchant B] -->|Login/Manage| Dashboard
+    
+    Dashboard -->|JWT Token| REST_API[Express Multi-Tenant Router]
+    
+    REST_API -->|merchantId| Prisma[Prisma DB client]
+    Prisma -->|Separate schemas| SQLite[(dev.db)]
+    
+    REST_API -->|Dynamic session check| WA_Manager[WhatsApp Multi-Session Manager]
+    WA_Manager -->|Session A| Baileys_A[Baileys Connection A - Phone A]
+    WA_Manager -->|Session B| Baileys_B[Baileys Connection B - Phone B]
+```
+
+---
+
+## Proposed Changes
+
+### 1. 🗄️ Database Schema Updates
+
+#### [MODIFY] [schema.prisma](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/prisma/schema.prisma)
+
+Tutaongeza model mpya ya `Merchant` na kuhusisha models zote za bidhaa, oda, na mazungumzo na `Merchant`:
+
+```prisma
+model Merchant {
+  id           Int      @id @default(autoincrement())
+  businessName String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  products        Product[]
+  conversations   Conversation[]
+  orders          Order[]
+  specialRequests SpecialRequest[]
+
+  @@map("merchants")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  merchantId  Int      // Kiunganishi cha SaaS
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  // models nyingine za Product zinabaki...
+}
+
+model Conversation {
+  id            Int      @id @default(autoincrement())
+  merchantId    Int      // Kiunganishi cha SaaS
+  merchant      Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  // models nyingine za Conversation zinabaki...
+}
+
+model Order {
+  id             Int      @id @default(autoincrement())
+  merchantId     Int      // Kiunganishi cha SaaS
+  merchant       Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  // models nyingine za Order zinabaki...
+}
+
+model SpecialRequest {
+  id             Int      @id @default(autoincrement())
+  merchantId     Int      // Kiunganishi cha SaaS
+  merchant       Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  // models nyingine za SpecialRequest zinabaki...
+}
+```
+
+---
+
+### 2. 🔑 Authentication & SaaS Middleware
+
+#### [NEW] [src/routes/auth.js](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/src/routes/auth.js)
+Tutaongeza router mpya ya usajili na kuingia:
+- `POST /api/auth/register` — Kusajili mfanyabiashara mpya (jina la biashara, barua pepe, na neno la siri).
+- `POST /api/auth/login` — Kuingia na kupata JWT Token.
+
+#### [NEW] [src/middleware/auth.js](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/src/middleware/auth.js)
+- Middleware ya JWT ambayo itahakikisha kila ombi linalokuja lina token halali, itasoma `merchantId` kutoka kwenye token hiyo, na kuiweka kwenye `req.merchantId`.
+
+---
+
+### 3. 📱 WhatsApp Multi-Session Manager
+
+Sasa hivi tuna namba moja tu inayowaka kwenye startup. Tutabadilisha hii kuwa **Dynamic Multi-Session Manager**.
+
+#### [NEW] [src/whatsapp/manager.js](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/src/whatsapp/manager.js)
+Tutaongeza meneja wa session atakayeweza:
+- Kutunza muunganiko wa wafanyabiashara wengi kwa wakati mmoja (`activeSessions = new Map()`).
+- Kuanzisha muunganiko kiotomatiki kwa wafanyabiashara wote waliopo kwenye database pindi server inapowaka.
+- Kufungua session mpya, kutoa QR code ya kipekee kwa duka fulani, na kuihifadhi kwenye `sessions/merchant_<merchantId>`.
+- Kutuma ujumbe kwa kupata soketi husika ya duka: `sendMessage(merchantId, phone, text)`.
+
+#### [MODIFY] [src/whatsapp/client.js](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/src/whatsapp/client.js)
+- Tutabadilisha `startWhatsApp` ipokee `merchantId` na kuanzisha session yake maalum badala ya session kuu moja.
+
+---
+
+### 4. 🔗 Route Isolation (REST API Updates)
+
+#### [MODIFY] [src/routes/api.js](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/src/routes/api.js) + [src/routes/insights.js](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/src/routes/insights.js)
+Tutafunga endpoints zote na `authMiddleware`.
+Kila query ya Prisma itachuja kwa kutumia `req.merchantId`. Mfano:
+- `prisma.product.findMany({ where: { merchantId: req.merchantId } })`
+- `prisma.order.findMany({ where: { merchantId: req.merchantId } })`
+
+Pia tutaongeza endpoints mpya za WhatsApp kwa kila merchant:
+- `GET /api/whatsapp/status` — Kupata hali ya hewa ya WhatsApp kwa mfanyabiashara huyo.
+- `POST /api/whatsapp/connect` — Kuanzisha session na kupata QR code ya duka lake.
+- `POST /api/whatsapp/disconnect` — Kufuta session na kujiondoa kwenye simu.
+
+---
+
+### 5. 🎨 SaaS Dashboard (UI/UX)
+
+#### [NEW] [public/dashboard/login.html](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/public/dashboard/login.html) + [public/dashboard/register.html](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/public/dashboard/register.html)
+- Kurasa nzuri za kuingia na kujisajili kwa mtindo uleule wa kisasa wa CSS (gradients, soft shadows).
+
+#### [MODIFY] [public/dashboard/app.js](file:///c:/Users/Aziry Tech/Desktop/whatsapp-ai-sales-agent/public/dashboard/app.js)
+- Javascript itahifadhi JWT Token kwenye `localStorage`.
+- Kila API call itaongeza header ya `Authorization: Bearer <token>`.
+- Ikiwa mteja hajaunganisha WhatsApp, tab maalum ya mpangilio itamwonyesha QR code ili a-scan na simu yake.
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> **API Keys za AI (Gharama za AI):**
+> Je, ungependa:
+> - **Chaguo A (Recommended kwa SaaS):** Utumie API Key yako kuu ya Gemini/Groq/Qwen (iliyowekwa kwenye `.env`) kwa wafanyabiashara wote, na wewe ndio ulipe bili kisha uwaize ada ya mwezi?
+> - **Chaguo B:** Kila mfanyabiashara awe na sehemu ya kuweka API Key yake binafsi kwenye ukurasa wake wa mipangilio?
+
+> [!IMPORTANT]
+> **Abandoned Cart Cron Job:**
+> Sasa hivi cron inakimbia kila saa. Katika SaaS, itakagua wateja wa wafanyabiashara wote waliopo na kutuma nudge kupitia namba zao husika za WhatsApp. Je, tufanye hivi kwa wote?
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Test usajili wa wafanyabiashara wawili tofauti (Merchant A na Merchant B).
+- Thubutisha kuwa Merchant A hawezi kuona bidhaa wala oda za Merchant B.
+- Scan QR code mbili tofauti na uhakikishe zote mbili zinajibu kwa wakati mmoja zikiwa na tabia (Prompts) na bidhaa zao husika.

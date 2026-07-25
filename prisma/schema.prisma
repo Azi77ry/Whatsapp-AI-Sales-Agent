@@ -1,0 +1,154 @@
+// Prisma schema - hii ndio "ramani" ya database yetu
+// Tunatumia SQLite kwa urahisi (faili moja, hakuna server ya database inahitajika)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Mfanyabiashara (Tenant / SaaS Account)
+model Merchant {
+  id           Int      @id @default(autoincrement())
+  businessName String
+  email        String   @unique
+  phone        String?  @unique // Namba ya WhatsApp ya duka
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Nudging & AI Settings (Multi-Tenant Settings)
+  reEngagementMinHours      Int     @default(12)
+  reEngagementMaxHours      Int     @default(24)
+  reEngagementCooldownHours Int     @default(48)
+  reEngagementStartHour     Int     @default(7)
+  reEngagementEndHour       Int     @default(21)
+  businessContext           String? // Maelezo ya duka/miongozo maalum ya duka
+  resetToken                String? // Msimbo wa OTP wa kureset password
+  resetTokenExpires         DateTime? // Muda wa mwisho wa OTP (expiry)
+
+  // Super-Admin & Platform Management
+  role     String @default("merchant") // "merchant" au "superadmin"
+  status   String @default("active")   // "active" au "suspended"
+  aiLimit  Int    @default(500)         // Kikomo cha meseji za AI kwa mwezi
+  aiUsage  Int    @default(0)           // Matumizi ya AI mwezi huu
+
+  products        Product[]
+  conversations   Conversation[]
+  orders          Order[]
+  specialRequests SpecialRequest[]
+
+  @@map("merchants")
+}
+
+// Bidhaa - Phase 3 (Product Database)
+model Product {
+  id          Int      @id @default(autoincrement())
+  merchantId  Int      @default(1)
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  name        String   // mfano: "Jezi ya Barcelona"
+  category    String   // Jezi, Simu, Laptop, Smartwatch, Calculator, Accessories
+  price       Float
+  stock       Int      @default(0)
+  colors      String?  // comma-separated: "Nyekundu,Bluu,Nyeusi"
+  sizes       String?  // comma-separated: "S,M,L,XL"
+  description String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders Order[]
+
+  @@map("products")
+}
+
+// Mazungumzo na mteja mmoja (per phone number) - Phase 1 & 2
+model Conversation {
+  id             Int       @id @default(autoincrement())
+  merchantId     Int       @default(1)
+  merchant       Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  customerPhone  String    // mfano: 255712345678@s.whatsapp.net
+  customerName   String?
+  status         String    @default("active") // active, closed
+  needsHuman     Boolean   @default(false)    // true ikiwa AI ilishindwa kufanya kazi na mfanyakazi anahitajika kujibu
+  consentGiven   Boolean   @default(false)    // true ikiwa mteja amekubali kuhudumiwa na AI kwenye ujumbe wa kwanza
+  contactType    String    @default("customer") // "customer" (bot inajibu) au "personal" (rafiki/mtu binafsi - bot HAIJIBU)
+  contextSummary String?   // Muhtasari mfupi wa mteja ulioundwa na AI (context compaction)
+  reEngagedAt    DateTime? // Tarehe ya mwisho ya kutuma "abandoned cart" nudge - kuzuia spam (cooldown)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  messages        Message[]
+  orders          Order[]
+  specialRequests SpecialRequest[]
+
+  @@unique([merchantId, customerPhone]) // Kila duka lina mazungumzo yake na namba husika
+  @@map("conversations")
+}
+
+// Kila ujumbe binafsi ndani ya mazungumzo - kumbukumbu ya AI
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         String       // "customer" au "ai"
+  content        String
+  createdAt      DateTime     @default(now())
+
+  @@map("messages")
+}
+
+// Oda - Phase 4 (Order Taking)
+model Order {
+  id             Int          @id @default(autoincrement())
+  merchantId     Int          @default(1)
+  merchant       Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  customerName   String
+  customerPhone  String
+  productId      Int?
+  product        Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName    String       // hifadhi jina hata kama product ikifutwa baadaye
+  quantity       Int          @default(1)
+  color          String?
+  size           String?
+  deliveryType   String       // "delivery" au "pickup"
+  address        String?
+  unitPrice      Float?       // bei ya bidhaa wakati wa kuagiza
+  status         String       @default("pending") // pending, confirmed, delivered, cancelled
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("orders")
+}
+
+// Maombi Maalum (Kariakoo Broker Model) - mteja anaomba bidhaa ambayo haipo DB
+model SpecialRequest {
+  id             Int          @id @default(autoincrement())
+  merchantId     Int          @default(1)
+  merchant       Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  customerName   String
+  customerPhone  String
+  productName    String       // bidhaa waliyoiomba
+  quantity       Int          @default(1)
+  color          String?
+  size           String?
+  deliveryType   String       // "delivery" au "pickup"
+  address        String?
+  notes          String?      // maelezo ya ziada kutoka mteja
+  estimatedPrice Float?       // bei ya soko iliyokadiriwa na AI
+  status         String       @default("new") // new, sourcing, found, fulfilled, cancelled
+  adminNotes     String?      // maelezo ya muuzaji
+  quotedPrice    Float?       // bei halisi aliyoipata muuzaji
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("special_requests")
+}

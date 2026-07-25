@@ -1,0 +1,127 @@
+# WhatsApp AI Sales Agent - Codebase Review & Analysis
+
+I have completed a thorough review of the **WhatsApp AI Sales Agent** codebase. Below is a detailed breakdown of the application architecture, database schemas, key files, and core mechanisms.
+
+---
+
+## 🏗️ System Architecture
+
+The application is structured into two main parts:
+1. **WhatsApp Automation Client & AI Agent**: Operates asynchronously to receive customer messages via WhatsApp, process them using LLM providers (with fallback layers and function tools), update the Prisma database, and reply.
+2. **Admin Dashboard**: An Express-based server that serves a static frontend UI and REST endpoints to manage products, view orders/messages, adjust customer contact types, and access AI-driven business insights.
+
+```mermaid
+graph TD
+    %% WhatsApp Flow
+    WA[WhatsApp User] <-->|Baileys WebSockets| Client["WhatsApp Client (src/whatsapp/client.js)"]
+    Client -->|Events| Handler["Message Handler (src/whatsapp/messageHandler.js)"]
+    Handler -->|Filter & Log| Agent["AI Agent (src/ai/agent.js)"]
+    Agent -->|Fallback Ordering| Fallback["Fallback Router (src/ai/fallback.js)"]
+    Agent <-->|API Calls| Providers["AI Providers (Gemini, Groq, Qwen)"]
+    Providers <-->|Function Calling| Tools["Database Tools (src/ai/tools/index.js)"]
+    Tools <-->|ORM| DB[(SQLite Database)]
+    Agent -->|Response| Sender["Message Sender (src/whatsapp/sender.js)"]
+    Sender -->|Baileys Socket| WA
+    
+    %% Dashboard Flow
+    Admin[Admin Owner] <-->|Browser| Dash["Admin Dashboard (public/dashboard)"]
+    Dash <-->|REST API| Server["Express App (src/index.js)"]
+    Server -->|APIs| APIRoutes["API Routes (src/routes/api.js)"]
+    Server -->|Insights| InsightRoutes["Insights Routes (src/routes/insights.js)"]
+    APIRoutes <-->|ORM| DB
+    InsightRoutes <-->|Analyze| Advisor["Business Advisor (src/ai/businessAdvisor.js)"]
+    Advisor <-->|ORM| DB
+    Advisor <-->|Q&A / Insights| Providers
+```
+
+---
+
+## 🗄️ Database Schema (`prisma/schema.prisma`)
+
+The database uses **SQLite** (defined in [schema.prisma](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/prisma/schema.prisma)) and maps out four core models:
+
+1. **`Product` (`products`)**: Holds inventory details.
+   - `id` (Int, PK)
+   - `name` (String, e.g. *"Jezi ya Barcelona"*)
+   - `category` (String, e.g. *Jezi, Simu, Laptop, Smartwatch, Calculator, Accessories*)
+   - `price` (Float)
+   - `stock` (Int)
+   - `colors` & `sizes` (String, comma-separated values, e.g. *"S,M,L,XL"*)
+   - `description` & `imageUrl` (String?)
+   - `isActive` (Boolean, default `true` - used for soft deletes)
+
+2. **`Conversation` (`conversations`)**: Represents a conversation session mapped to a WhatsApp phone number.
+   - `id` (Int, PK)
+   - `customerPhone` (String, unique JID format)
+   - `customerName` (String?)
+   - `status` (String, default *"active"*)
+   - `needsHuman` (Boolean, default `false` - flags that AI failed/fallback was triggered)
+   - `contactType` (String, default *"customer"* - can be set to *"personal"* so the AI ignores it)
+
+3. **`Message` (`messages`)**: Contains chat logs (AI memory).
+   - `id` (Int, PK)
+   - `conversationId` (Int, FK to `Conversation`)
+   - `sender` (String, *"customer"* or *"ai"*)
+   - `content` (String)
+
+4. **`Order` (`orders`)**: Logged purchase records.
+   - `id` (Int, PK)
+   - `conversationId` (Int, FK to `Conversation`)
+   - `customerName` & `customerPhone` (String)
+   - `productId` (Int?, FK to `Product` - nullable to allow retaining details if a product is deleted)
+   - `productName` (String - copied directly from product to preserve receipt history)
+   - `quantity` (Int, default `1`)
+   - `color` & `size` (String?)
+   - `deliveryType` (String, *"delivery"* or *"pickup"*)
+   - `address` (String?)
+   - `unitPrice` (Float? - records the item price at the exact moment of checkout)
+   - `status` (String, default *"pending"* - options: *pending, confirmed, delivered, cancelled*)
+
+---
+
+## 📂 Key Files & Roles
+
+| Path | Primary Responsibility |
+| :--- | :--- |
+| **[src/index.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/index.js)** | Entrypoint. Mounts Express middleware, dashboard statics, API routes, and initiates the WhatsApp client connection. |
+| **[src/config/index.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/config/index.js)** | Consolidates environment configuration (`dotenv`), setups fallback provider priorities, and exports authentication passwords. |
+| **[src/whatsapp/client.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/whatsapp/client.js)** | Instantiates the Baileys socket, prints QR codes to the terminal on status updates, saves session credentials to disk (`/sessions`), and pushes new notifications to the Message Handler. |
+| **[src/whatsapp/messageHandler.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/whatsapp/messageHandler.js)** | Filters incoming messages (discards group chats, status feeds, empty stickers, and own messages), updates chat presence to "composing...", and coordinates AI reply generation. |
+| **[src/whatsapp/sender.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/whatsapp/sender.js)** | Shared handler for outbound WhatsApp socket messaging (e.g. notifications triggered by status changes in the admin dashboard). |
+| **[src/ai/agent.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/ai/agent.js)** | Core controller. Creates/updates conversation states in the database, retrieves message history, iterates through active AI providers, handles fallbacks, and logs final responses. |
+| **[src/ai/systemPrompt.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/ai/systemPrompt.js)** | Configures the Swahili sales persona. Instructs the model to stay brief, format WhatsApp text with asterisks (bold) and underscores (italics), query products using `search_products`, collect customer data individually, and format order confirmation receipts. |
+| **[src/ai/tools/index.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/ai/tools/index.js)** | Declares tool parameters for function calling (`search_products`, `get_all_categories`, and `create_order`). Contains execution logic that writes to the database, decrements inventory stock, and catches duplicate orders. |
+| **[src/ai/fallback.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/ai/fallback.js)** | Simple local keyword-matching engine. Returns immediate product suggestions or general messages when all AI APIs fail. |
+| **[src/ai/businessAdvisor.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/ai/businessAdvisor.js)** | Admin facing analysis layer. Queries database metrics directly for general dashboard stats, gathers customer conversation histories to prompt Gemini for buying likelihoods, and generates business suggestions. |
+| **[src/routes/api.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/routes/api.js)** | REST endpoints for dashboard operations (adding products, confirming/canceling orders, pulling message lists, updating contact types). |
+| **[src/routes/insights.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/routes/insights.js)** | REST endpoints exposing business stats, potential customers, general advice, and custom QA queries to the dashboard. |
+
+---
+
+## ⚙️ Core Mechanisms
+
+### 1. Multi-Provider API Failover & Local Fallback
+In [agent.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/ai/agent.js), when generating a reply, the script loops through `aiProviderOrder` (e.g. `gemini,groq,qwen`) and attempts to get a reply using the configured API keys.
+* If **Gemini** fails (rate-limit, down, etc.), it tries **Groq**, then **Qwen**.
+* If **all** providers fail, execution is caught in a try/catch block and routed to the **Local Fallback Engine** (`fallback.js`).
+* The local fallback uses basic Swahili keywords (greeting matching, simple splits to compare words with product names/categories in database) to give a quick reply.
+* Concurrently, the conversation's `needsHuman` flag is updated to `true`. This alerts the admin on the dashboard that a customer needs manual assistance because the AI went offline.
+
+### 2. Safeguards Against Duplicate Orders
+Inside the `create_order` tool in [tools/index.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/ai/tools/index.js#L118-L140):
+* When the AI attempts to initialize an order, the system first queries if an order containing that same product name has been created in that same conversation within the **last 30 minutes**.
+* If a match is found, the tool returns `duplicate: true` along with the existing order ID and a warning message instructing the model **not** to create another order.
+* This addresses a common issue in conversational bots where polite customer responses (e.g., *"Ok"* or *"Asante"*) after a checkout trigger the AI to re-run checkout logic.
+
+### 3. Personal Contact Exclusions (Human-Only Chats)
+A key feature of [messageHandler.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/whatsapp/messageHandler.js#L35-L43):
+* If an admin updates a contact's type to `"personal"` on the dashboard:
+* The WhatsApp message handler continues to write incoming/outgoing text logs to the message history table (`messages`) so the admin has full logs.
+* However, the AI reply generator is **bypassed entirely** for that contact.
+* This allows the admin to use their personal phone number/account to talk to friends or family normally without the AI interrupting.
+
+### 4. AI Business Advisor (Internal Analytics)
+The backend incorporates a business analysis layer in [businessAdvisor.js](file:///c:/Users/Aziry%20Tech/Desktop/whatsapp-ai-sales-agent/src/ai/businessAdvisor.js):
+* **Business Stats**: Directly calculates total orders, top products, estimated revenue (sums of delivered order prices * quantity), and low stock products directly via Prisma query aggregations.
+* **Warm Lead Extraction**: Identifies active customers (conversations containing more than 4 messages) who have *not* placed an order. It runs a single combined API call to Gemini with recent logs of all target customers, asking it to rank buying likelihoods (`Juu`, `Wastani`, `Chini`) and state a brief reason for each.
+* **Custom Advice & QA**: Feeds database summaries directly into Gemini, responding to dashboard queries regarding inventory planning, marketing tips, or pricing.
