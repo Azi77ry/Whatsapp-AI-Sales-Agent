@@ -469,6 +469,31 @@ async function loadChatThread(convId, name, phone) {
     const data = await apiFetch(`/conversations/${convId}/messages`);
     thread.innerHTML = "";
 
+    const toggleBtn = document.getElementById("toggleContactTypeBtn");
+    if (data.conversation) {
+      let isPersonal = data.conversation.contactType === "personal";
+      toggleBtn.innerHTML = isPersonal ? "👤 Rafiki (AI Imezimwa)" : "🛒 Mteja (AI Inajibu)";
+      toggleBtn.style.color = isPersonal ? "var(--text-muted)" : "var(--primary)";
+      toggleBtn.style.border = "1px solid var(--line)";
+      toggleBtn.style.borderRadius = "20px";
+      toggleBtn.style.background = isPersonal ? "var(--paper)" : "rgba(0,168,132,0.1)";
+      
+      toggleBtn.onclick = async () => {
+        try {
+          const newType = isPersonal ? "customer" : "personal";
+          toggleBtn.innerHTML = "Inabadilisha...";
+          await apiFetch(`/conversations/${convId}/contact-type`, {
+            method: "PUT",
+            body: JSON.stringify({ contactType: newType })
+          });
+          loadChatThread(convId, name, phone);
+        } catch (e) {
+          alert("Imeshindwa kubadilisha: " + e.message);
+          loadChatThread(convId, name, phone);
+        }
+      };
+    }
+
     if (!data.messages || data.messages.length === 0) {
       thread.innerHTML = `<p style="color:var(--text-muted);padding:16px;text-align:center;">Hakuna meseji bado.</p>`;
       return;
@@ -476,7 +501,7 @@ async function loadChatThread(convId, name, phone) {
 
     data.messages.forEach(msg => {
       const bubble = document.createElement("div");
-      bubble.className = `chat-bubble ${msg.sender === "customer" ? "chat-customer" : "chat-ai"}`;
+      bubble.className = `chat-bubble ${msg.sender === "customer" ? "customer" : "ai"}`;
 
       // Format WhatsApp-style markdown
       const formatted = escapeHtml(msg.content)

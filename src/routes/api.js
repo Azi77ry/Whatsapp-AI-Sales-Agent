@@ -344,7 +344,7 @@ router.get("/conversations/:id/messages", wrap(async (req, res) => {
     content: decrypt(m.content)
   }));
   
-  res.json(decryptedMessages);
+  res.json({ messages: decryptedMessages, conversation: existing });
 }));
 
 // ---- 5. DASHBOARD STATS (Scoped to req.merchantId) ----
