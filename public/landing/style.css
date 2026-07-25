@@ -847,7 +847,20 @@ section {
   
   .step-row, .step-row.reverse { flex-direction: column; text-align: center; }
   
+  .pricing-grid { 
+    display: flex; 
+    flex-wrap: nowrap; 
+    overflow-x: auto; 
+    scroll-snap-type: x mandatory; 
+    gap: 20px; 
+    padding-bottom: 20px; 
+    -webkit-overflow-scrolling: touch; 
+  }
+  .pricing-grid::-webkit-scrollbar { display: none; } /* Hide scrollbar for a cleaner look */
+  .price-card { min-width: 85vw; scroll-snap-align: center; padding: 30px 20px; }
   .price-card.popular { transform: scale(1); }
+  
+  .lipa-namba-section { padding: 20px; margin-top: 20px !important; }
   
   .footer-grid { grid-template-columns: 1fr; gap: 40px; }
   .footer-bottom { flex-direction: column; text-align: center; }
