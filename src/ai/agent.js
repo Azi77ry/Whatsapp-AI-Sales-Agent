@@ -114,6 +114,9 @@ async function logPersonalMessage({ customerPhone, customerName, userMessage, me
   const mId = parseInt(merchantId, 10);
   const conversation = await getOrCreateConversation(customerPhone, customerName, mId);
   await saveMessage(conversation.id, "customer", userMessage);
+  
+  // Fanya compaction (AI Report) ili mfanyabiashara apate muhtasari hata kama bot haijibu
+  await maybeCompact(conversation.id, conversation.customerName || customerName);
 }
 
 // Pata historia ya hivi karibuni ya mazungumzo
