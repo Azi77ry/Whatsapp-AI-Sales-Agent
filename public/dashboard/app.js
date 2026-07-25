@@ -115,6 +115,14 @@ async function handleLogin() {
     });
     const data = await res.json();
     if (res.ok && data.token) {
+      // Superadmin Redirection
+      if (data.merchant && data.merchant.role === "superadmin") {
+        localStorage.setItem("sa_token", data.token);
+        localStorage.setItem("sa_info", JSON.stringify(data.merchant));
+        window.location.href = "/superadmin/";
+        return;
+      }
+
       localStorage.setItem("merchant_token", data.token);
       localStorage.setItem("merchant_info", JSON.stringify(data.merchant));
 
@@ -311,6 +319,18 @@ function handleLogout() {
 }
 
 // ---- NAVIGATION ----
+const sidebar = document.getElementById("sidebar");
+const sidebarOverlay = document.getElementById("sidebarOverlay");
+const hamburgerBtn = document.getElementById("hamburgerBtn");
+
+function toggleSidebar() {
+  if (sidebar) sidebar.classList.toggle("open");
+  if (sidebarOverlay) sidebarOverlay.classList.toggle("open");
+}
+
+hamburgerBtn?.addEventListener("click", toggleSidebar);
+sidebarOverlay?.addEventListener("click", toggleSidebar);
+
 document.querySelectorAll(".nav-item").forEach((btn) => {
   if (btn.id === "logoutBtn") return; // Usipendeze logout kama navigation tab
   btn.addEventListener("click", () => {
@@ -319,17 +339,27 @@ document.querySelectorAll(".nav-item").forEach((btn) => {
     btn.classList.add("active");
     document.getElementById("view-" + btn.dataset.view).classList.add("active");
 
+    // Funga menyu kwenye simu kama ipo wazi
+    if (sidebar && sidebar.classList.contains("open")) {
+      toggleSidebar();
+    }
+
     if (btn.dataset.view === "overview") loadOverview();
     if (btn.dataset.view === "products") loadProducts();
     if (btn.dataset.view === "orders") loadOrders();
     if (btn.dataset.view === "conversations") loadConversations();
     if (btn.dataset.view === "insights") loadInsights();
     if (btn.dataset.view === "settings") loadSettings();
+    // support is static, no load function needed
   });
 });
 
 // Auto-Login Verification on Page Load
 document.addEventListener("DOMContentLoaded", async () => {
+  if (window.location.search.includes("register=true")) {
+    showAuthPanel("registerPanel");
+  }
+
   const token = localStorage.getItem("merchant_token");
   const infoRaw = localStorage.getItem("merchant_info");
   if (token && infoRaw) {
@@ -912,6 +942,7 @@ async function askBusinessQuestion() {
 // ---- WHATSAPP CONNECTION STATUS MONITOR ----
 let lastQrText = null;
 let statusPollTimeout = null;
+let wsConnectionStartTime = null;
 
 async function checkWhatsAppStatus() {
   if (statusPollTimeout) {
@@ -931,8 +962,43 @@ async function checkWhatsAppStatus() {
     const data = await apiFetch("/whatsapp-status");
     badge.className = "badge " + data.status;
 
+    // Track disconnects for push notifications
+    if (typeof currentWsState !== 'undefined' && currentWsState === "connected" && data.status === "disconnected") {
+      if (typeof showPushNotification === "function") {
+        showPushNotification("⚠️ WhatsApp Imekatika!", "Muunganiko wako wa WhatsApp umekatika. Tafadhali fungua mfumo kuunganisha upya ili AI iendelee kujibu wateja.");
+      }
+    }
+    window.currentWsState = data.status;
+
     // Sync bot toggle UI with server state on every poll
     if (typeof data.botActive === "boolean") updateBotToggleUI(data.botActive);
+
+    // Timeout logic (2 minutes = 120000 ms) for QR / Connecting
+    if (data.status === "connecting" || data.status === "qr") {
+      if (!wsConnectionStartTime) {
+        wsConnectionStartTime = Date.now();
+      } else if (Date.now() - wsConnectionStartTime > 120000) {
+        // Abort the connection session on the backend
+        await apiFetch("/whatsapp-disconnect", { method: "POST" });
+        wsConnectionStartTime = null;
+        
+        badge.className = "badge disconnected";
+        badge.textContent = "Muda Umeisha";
+        textEl.textContent = "⏳ Muda wa kuscan/kupair umekwisha (Dakika 2). Tafadhali bofya 'Unganisha WhatsApp' ili kuanza upya.";
+        qrContainer.classList.add("hidden");
+        qrCodeDiv.innerHTML = "";
+        lastQrText = null;
+        const pairDisplay = document.getElementById("pairCodeDisplay");
+        if (pairDisplay) pairDisplay.classList.add("hidden");
+        
+        restartBtn.textContent = "Unganisha WhatsApp";
+        restartBtn.classList.remove("hidden");
+        statusPollTimeout = setTimeout(checkWhatsAppStatus, 10000);
+        return; // Stop further processing this poll
+      }
+    } else {
+      wsConnectionStartTime = null; // Reset if connected or disconnected
+    }
 
     if (data.status === "connected") {
       badge.textContent = "Imeunganishwa";
@@ -996,6 +1062,7 @@ document.getElementById("whatsappRestartBtn").addEventListener("click", async ()
   btn.disabled = true;
   btn.textContent = "Inaunganisha...";
   textEl.textContent = "⏳ Kujaribu kuanzisha muunganiko wa WhatsApp...";
+  wsConnectionStartTime = null; // Reset on manual click
 
   try {
     await apiFetch("/whatsapp-connect", { method: "POST" });
@@ -1005,6 +1072,47 @@ document.getElementById("whatsappRestartBtn").addEventListener("click", async ()
   } finally {
     btn.disabled = false;
     btn.textContent = "Unganisha WhatsApp";
+  }
+});
+
+// ---- PAIRING CODE LOGIC ----
+document.getElementById("getPairCodeBtn")?.addEventListener("click", async () => {
+  const phoneInput = document.getElementById("pairPhoneInput");
+  const phone = phoneInput.value.trim();
+  const btn = document.getElementById("getPairCodeBtn");
+  const codeDisplay = document.getElementById("pairCodeDisplay");
+
+  if (!phone) {
+    alert("Tafadhali weka namba ya simu (mfano: 255712345678).");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Inatafuta...";
+  codeDisplay.classList.add("hidden");
+  codeDisplay.textContent = "";
+
+  try {
+    wsConnectionStartTime = Date.now(); // Reset timer when requesting new code
+    const res = await apiFetch("/whatsapp-pair-code", {
+      method: "POST",
+      body: JSON.stringify({ phoneNumber: phone })
+    });
+
+    if (res.success && res.code) {
+      // Format code slightly if it's 8 chars long (e.g., ABCD-EFGH)
+      let formattedCode = res.code;
+      if (formattedCode.length === 8 && !formattedCode.includes("-")) {
+        formattedCode = formattedCode.slice(0, 4) + "-" + formattedCode.slice(4);
+      }
+      codeDisplay.textContent = formattedCode;
+      codeDisplay.classList.remove("hidden");
+    }
+  } catch (err) {
+    alert("Kosa: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Pata Code";
   }
 });
 
@@ -1077,7 +1185,37 @@ async function loadSettings() {
     const savedLang = localStorage.getItem("merchant_lang") || "sw";
     document.getElementById("setTheme").value = savedTheme;
     document.getElementById("setLanguage").value = savedLang;
+    
+    // Reset password section
+    document.getElementById("togglePasswordChangeBtn").checked = false;
+    document.getElementById("passwordChangeSection").classList.add("hidden");
+    document.getElementById("setVerifyPhone").value = "";
+    document.getElementById("setOldPassword").value = "";
     document.getElementById("setNewPassword").value = "";
+
+    // Load Billing Info
+    const planMap = {
+      "free_trial": "Majaribio Bure (Siku 7)",
+      "monthly": "Kila Mwezi",
+      "yearly": "Kila Mwaka"
+    };
+    const currentPlanStr = settings.subscriptionPlan ? (planMap[settings.subscriptionPlan] || settings.subscriptionPlan) : "Majaribio Bure";
+    document.getElementById("currentPlanDisplay").textContent = currentPlanStr;
+    
+    if (settings.subscriptionEndDate) {
+      const expiryDate = new Date(settings.subscriptionEndDate);
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      let dateStr = expiryDate.toLocaleDateString('sw-TZ', options);
+      if (expiryDate < new Date()) {
+        dateStr += " (Imeisha Muda!)";
+        document.getElementById("planExpiryDisplay").style.color = "var(--danger)";
+      } else {
+        document.getElementById("planExpiryDisplay").style.color = "var(--primary)";
+      }
+      document.getElementById("planExpiryDisplay").textContent = dateStr;
+    } else {
+      document.getElementById("planExpiryDisplay").textContent = "--";
+    }
 
     statusEl.style.display = "none";
   } catch (err) {
@@ -1085,6 +1223,18 @@ async function loadSettings() {
     statusEl.textContent = "⚠️ Kosa la kupakia: " + err.message;
   }
 }
+
+document.getElementById("togglePasswordChangeBtn")?.addEventListener("change", (e) => {
+  const section = document.getElementById("passwordChangeSection");
+  if (e.target.checked) {
+    section.classList.remove("hidden");
+  } else {
+    section.classList.add("hidden");
+    document.getElementById("setVerifyPhone").value = "";
+    document.getElementById("setOldPassword").value = "";
+    document.getElementById("setNewPassword").value = "";
+  }
+});
 
 document.getElementById("settingsForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -1218,3 +1368,67 @@ deleteForm.addEventListener("submit", async (e) => {
     submitBtn.disabled = false;
   }
 });
+
+// ---- BROWSER PUSH NOTIFICATIONS ----
+let lastNotificationCheck = new Date();
+let notificationPollInterval = null;
+let currentWsState = "disconnected"; // to track disconnects
+
+const enableNotificationsBtn = document.getElementById("enableNotificationsBtn");
+
+if (enableNotificationsBtn) {
+  enableNotificationsBtn.addEventListener("click", async () => {
+    if (!("Notification" in window)) {
+      alert("Browser yako hairuhusu Push Notifications.");
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      alert("Safi! Sasa utapata taarifa (Pop-ups) za oda mpya hata kama Dashboard ipo background.");
+      enableNotificationsBtn.textContent = "Imewashwa ✓";
+      enableNotificationsBtn.disabled = true;
+      enableNotificationsBtn.style.background = "var(--success)";
+      startNotificationPolling();
+    } else {
+      alert("Umekataa kuruhusu Notifications. Kama unataka, utahitaji kubadili kwenye settings za Browser yako.");
+    }
+  });
+
+  // Check initial permission state
+  if ("Notification" in window && Notification.permission === "granted") {
+    enableNotificationsBtn.textContent = "Imewashwa ✓";
+    enableNotificationsBtn.disabled = true;
+    enableNotificationsBtn.style.background = "var(--success)";
+    startNotificationPolling();
+  }
+}
+
+function showPushNotification(title, body) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, {
+      body: body,
+      icon: "/dashboard/images/icon.png"
+    });
+  }
+}
+
+async function pollNotifications() {
+  if (!localStorage.getItem("merchant_token")) return;
+  try {
+    const res = await apiFetch(`/notifications/poll?since=${lastNotificationCheck.toISOString()}`);
+    lastNotificationCheck = new Date(); // update time
+
+    if (res.newOrders > 0) {
+      showPushNotification("🎉 Oda Mpya Imepatikana!", `Kuna oda ${res.newOrders} mpya zimeingia sasa hivi. Fungua dashboard kuzihudumia.`);
+      // Optional: if currently viewing overview, we might want to refresh, but user can refresh manually.
+    }
+  } catch (err) {
+    console.error("Push Poll Error:", err);
+  }
+}
+
+function startNotificationPolling() {
+  if (notificationPollInterval) clearInterval(notificationPollInterval);
+  lastNotificationCheck = new Date(); // reset time to now
+  notificationPollInterval = setInterval(pollNotifications, 15000); // Check every 15s
+}

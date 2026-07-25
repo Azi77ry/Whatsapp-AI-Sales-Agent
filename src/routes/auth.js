@@ -61,6 +61,9 @@ router.post("/register", registerLimiter, async (req, res) => {
         email,
         phone: cleanPhone,
         passwordHash,
+        subscriptionPlan: "free_trial",
+        subscriptionEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        isTrialUsed: false,
       },
     });
 

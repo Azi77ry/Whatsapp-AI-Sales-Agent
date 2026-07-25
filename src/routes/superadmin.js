@@ -145,6 +145,62 @@ router.put("/merchants/:id/status", wrap(async (req, res) => {
   });
 }));
 
+// ── FUTA AKAUNTI KABISA (Delete Merchant) ─────────────────────
+router.delete("/merchants/:id", wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  const target = await prisma.merchant.findUnique({ where: { id } });
+  if (!target) {
+    return res.status(404).json({ error: "Mfanyabiashara hajapatikana." });
+  }
+  if (target.role === "superadmin") {
+    return res.status(403).json({ error: "Huwezi kufuta Akaunti ya Super-Admin." });
+  }
+
+  // Delete everything via cascade, but explicitly deleting merchant is usually enough if DB is setup with cascade.
+  // We'll just delete the merchant.
+  await prisma.merchant.delete({ where: { id } });
+
+  console.log(`🗑️ Super-Admin: Akaunti ya "${target.businessName}" imefutwa kabisa.`);
+
+  res.json({
+    message: `Akaunti imefutwa kikamilifu.`,
+  });
+}));
+
+// ── BORESHA KIFURUSHI (Upgrade Subscription) ────────────────
+router.put("/merchants/:id/subscription", wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { subscriptionPlan, monthsToAdd } = req.body;
+
+  const target = await prisma.merchant.findUnique({ where: { id } });
+  if (!target) {
+    return res.status(404).json({ error: "Mfanyabiashara hajapatikana." });
+  }
+
+  let newEndDate = target.subscriptionEndDate ? new Date(target.subscriptionEndDate) : new Date();
+  if (newEndDate < new Date()) newEndDate = new Date(); // If expired, start from today
+
+  if (monthsToAdd) {
+    newEndDate.setMonth(newEndDate.getMonth() + parseInt(monthsToAdd, 10));
+  }
+
+  const updated = await prisma.merchant.update({
+    where: { id },
+    data: {
+      subscriptionPlan: subscriptionPlan || target.subscriptionPlan,
+      subscriptionEndDate: newEndDate,
+    }
+  });
+
+  console.log(`💳 Super-Admin: Akaunti ya "${target.businessName}" imepewa kifurushi cha ${subscriptionPlan || 'nyongeza'}. Mwisho: ${newEndDate}`);
+
+  res.json({
+    message: `Kifurushi kimeboreshwa kikamilifu.`,
+    merchant: updated,
+  });
+}));
+
 // ── BADILISHA KIKOMO CHA AI (AI Limit) ──────────────────────
 router.put("/merchants/:id/ai-limit", wrap(async (req, res) => {
   const id = parseInt(req.params.id, 10);

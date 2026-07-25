@@ -15,11 +15,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Admin dashboard (static files) - Phase 5
-app.use(express.static(path.join(__dirname, "../public/dashboard")));
+// Landing Page (Introduction Website)
+app.use(express.static(path.join(__dirname, "../public/landing")));
+
+// Admin dashboard (static files)
+app.use("/dashboard", express.static(path.join(__dirname, "../public/dashboard")));
 
 // Super-Admin dashboard (static files)
 app.use("/superadmin", express.static(path.join(__dirname, "../public/superadmin")));
+app.get("/superadmin", (req, res) => {
+  res.redirect("/superadmin/");
+});
 
 // API za Auth na Mipangilio ya SaaS
 app.use("/api/auth", authRoutes); // Usajili na Kuingia

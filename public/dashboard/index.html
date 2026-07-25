@@ -59,7 +59,8 @@
         <div style="margin-bottom: 15px; display: flex; align-items: start; gap: 8px;">
           <input type="checkbox" id="regTerms" style="margin-top: 3px;" />
           <label for="regTerms" style="font-size: 13px; color: var(--text-muted); line-height: 1.4; cursor: pointer;">
-            Nimesoma na ninakubali <a href="#" id="openTermsModal" style="color:var(--indigo); font-weight:600;">Vigezo na Masharti ya Faragha</a>
+            Nimesoma na ninakubali <a href="#" id="openTermsModal" style="color:var(--indigo); font-weight:600;">Vigezo
+              na Masharti ya Faragha</a>
           </label>
         </div>
 
@@ -78,13 +79,20 @@
           </div>
           <div class="modal-body terms-body">
             <p><strong>Tarehe ya mwisho kusasishwa:</strong> Julai 2026</p>
-            <p>Karibu kwenye Aziry Tech WhatsApp AI Sales Agent (SaaS). Tunachukulia faragha ya data zako na za wateja wako kwa uzito mkubwa sana. Kwa kujisajili na kutumia huduma hii, wewe (Mfanyabiashara) unakubaliana na masharti yafuatayo:</p>
+            <p>Karibu kwenye Aziry Tech WhatsApp AI Sales Agent (SaaS). Tunachukulia faragha ya data zako na za wateja
+              wako kwa uzito mkubwa sana. Kwa kujisajili na kutumia huduma hii, wewe (Mfanyabiashara) unakubaliana na
+              masharti yafuatayo:</p>
 
             <h4>1. Umiliki wa Data za Wateja</h4>
-            <p>Wewe ndiye mmiliki halali wa namba za simu na mazungumzo ya wateja wako. Aziry Tech haitauza, haitasambaza, wala haitatumia data za wateja wako kwa manufaa ya kibiashara nje ya kukupa huduma hii ya AI.</p>
+            <p>Wewe ndiye mmiliki halali wa namba za simu na mazungumzo ya wateja wako. Aziry Tech haitauza,
+              haitasambaza, wala haitatumia data za wateja wako kwa manufaa ya kibiashara nje ya kukupa huduma hii ya
+              AI.</p>
 
             <h4>2. Haki ya Mteja Kuchagua (Consent)</h4>
-            <p>Tumeunda mfumo huu kwa kufuata misingi ya kimaadili ya AI (Ethical AI). Mteja wako anapotuma ujumbe kwa mara ya kwanza, AI itamuuliza kwanza ikiwa anaridhia kuhudumiwa na AI au anapendelea kuongea na wewe (mmiliki) moja kwa moja. Usijaribu kuzuia au kuharibu utaratibu huu, kwani unajenga uaminifu kwa wateja wako.</p>
+            <p>Tumeunda mfumo huu kwa kufuata misingi ya kimaadili ya AI (Ethical AI). Mteja wako anapotuma ujumbe kwa
+              mara ya kwanza, AI itamuuliza kwanza ikiwa anaridhia kuhudumiwa na AI au anapendelea kuongea na wewe
+              (mmiliki) moja kwa moja. Usijaribu kuzuia au kuharibu utaratibu huu, kwani unajenga uaminifu kwa wateja
+              wako.</p>
 
             <h4>3. Hifadhi na Ufutaji wa Taarifa</h4>
             <ul>
@@ -95,7 +103,8 @@
             <h4>4. Wajibu wa Mfanyabiashara (Wewe)</h4>
             <ul>
               <li>Hutatumia mfumo huu kutuma ujumbe wa matusi, vitisho, au utapeli.</li>
-              <li>Wewe unawajibika na huduma na bidhaa unazowauzia wateja wako. Aziry Tech inatoa mfumo wa mawasiliano tu.</li>
+              <li>Wewe unawajibika na huduma na bidhaa unazowauzia wateja wako. Aziry Tech inatoa mfumo wa mawasiliano
+                tu.</li>
               <li>Utaweka nenosiri lako (password) na QR code ya WhatsApp salama wakati wote.</li>
             </ul>
           </div>
@@ -138,38 +147,55 @@
 
   <!-- MAIN APP -->
   <div id="app" class="app hidden">
-    <aside class="sidebar">
+    <!-- Overlay for Mobile Sidebar -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <aside id="sidebar" class="sidebar">
       <div class="brand">
         <img src="images/icon.png" alt="Aziry Tech" class="brand-icon" />
         <span class="brand-name" id="merchantBrandName">Aziry Tech SaaS</span>
       </div>
       <nav class="nav" style="display:flex; flex-direction:column; height: calc(100% - 70px);">
         <button class="nav-item active" data-view="overview">
-          <span class="nav-num">01</span> Muhtasari
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">📊</span> Muhtasari
         </button>
         <button class="nav-item" data-view="products">
-          <span class="nav-num">02</span> Bidhaa
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">📦</span> Bidhaa
         </button>
         <button class="nav-item" data-view="orders">
-          <span class="nav-num">03</span> Oda
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🛒</span> Oda
         </button>
         <button class="nav-item" data-view="conversations">
-          <span class="nav-num">04</span> Mazungumzo
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">💬</span> Mazungumzo
         </button>
         <button class="nav-item" data-view="insights">
-          <span class="nav-num">05</span> Ripoti za AI
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🧠</span> Ripoti za AI
         </button>
         <button class="nav-item" data-view="settings">
-          <span class="nav-num">06</span> Mipangilio
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">⚙️</span> Mipangilio
+        </button>
+        <button class="nav-item" data-view="support">
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🎧</span> Msaada
         </button>
         <button class="nav-item" id="logoutBtn" style="color:var(--danger); margin-top:auto; font-weight:600;">
-          🚪 Toka Nje
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🚪</span> Toka Nje
         </button>
       </nav>
       <div class="sidebar-foot" style="margin-top: 8px;">WhatsApp AI SaaS Agent</div>
     </aside>
 
     <main class="main">
+
+      <!-- Mobile Header (Visible only on mobile) -->
+      <header class="mobile-header">
+        <div class="mobile-brand">
+          <img src="images/icon.png" alt="Logo" />
+          <span
+            style="font-weight: 700; font-family: 'Space Grotesk', sans-serif; font-size: 18px; color: var(--text-main);">Aziry
+            Tech SaaS</span>
+        </div>
+        <button id="hamburgerBtn" class="hamburger-btn">☰</button>
+      </header>
 
       <!-- OVERVIEW -->
       <section id="view-overview" class="view active">
@@ -189,8 +215,27 @@
           <div class="ws-body" id="whatsappStatusBody">
             <p id="whatsappStatusText">Inatafuta hali ya WhatsApp...</p>
             <div id="whatsappQrContainer" class="qr-container hidden">
-              <p>Scan QR code hii na WhatsApp ya simu yako kuunganisha:</p>
-              <div id="qrcode" style="margin-top: 10px;"></div>
+              <p style="margin-bottom: 10px;">Chaguo 1: Scan QR code hii na WhatsApp ya simu yako:</p>
+              <div id="qrcode" style="margin-top: 10px; margin-bottom: 20px; display: flex; justify-content: center;">
+              </div>
+
+              <div class="pairing-code-section"
+                style="border-top: 1px solid var(--line); padding-top: 20px; text-align: left;">
+                <p style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Chaguo 2: Tumia Namba ya Simu (Pairing
+                  Code)</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Kama
+                  unatumia simu hii hii, weka namba yako hapa upate code ya kupaste kwenye WhatsApp (Linked Devices >
+                  Link with phone number).</p>
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="pairPhoneInput" placeholder="mfano: 2557..."
+                    style="padding: 10px; border: 1px solid var(--line); border-radius: 6px; width: 100%; font-size: 14px;" />
+                  <button id="getPairCodeBtn" class="btn-primary"
+                    style="padding: 10px 16px; font-weight: 600; white-space: nowrap;">Pata Code</button>
+                </div>
+                <div id="pairCodeDisplay" class="hidden"
+                  style="margin-top: 16px; font-size: 28px; font-family: monospace; font-weight: bold; letter-spacing: 6px; color: var(--indigo); background: var(--paper-raised); padding: 16px; border-radius: 8px; border: 2px dashed var(--indigo); text-align: center;">
+                </div>
+              </div>
             </div>
             <button id="whatsappRestartBtn" class="ws-btn-retry hidden">Anzisha WhatsApp Upya</button>
           </div>
@@ -468,31 +513,40 @@
 
             <!-- SECURITY SECTION -->
             <h3
-              style="margin-top: 32px; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 20px;">
+              style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
               <span>🔒</span> Usalama wa Akaunti (Security)
             </h3>
-            
-            <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Namba ya Simu Yako (Kuthibitisha)</label>
-                <input type="text" id="setVerifyPhone" placeholder="mfano: 255712345678"
-                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-              </div>
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Neno Siri la Zamani (Kuthibitisha)</label>
-                <input type="password" id="setOldPassword" placeholder="Neno siri unalotumia sasa"
-                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-              </div>
+
+            <div style="margin-bottom: 16px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="togglePasswordChangeBtn"
+                  style="width: 18px; height: 18px; accent-color: var(--primary);" />
+                <span style="font-weight: 600; color: var(--text-main); font-size: 14px;">Nataka kubadili Neno la Siri
+                  (Password)</span>
+              </label>
             </div>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-              <label style="display: block; font-weight: 500; margin-bottom: 8px;">Neno Jipya la Siri (New
-                Password)</label>
-              <input type="password" id="setNewPassword" placeholder="Acha wazi kama hutaki kubadili neno siri"
-                style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-              <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
-                Ili kubadili neno siri, ni lazima ujaze namba ya simu na neno siri la zamani hapo juu kwanza.
-              </p>
+            <div id="passwordChangeSection" class="hidden"
+              style="background: var(--bg-color); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 24px;">
+              <div class="form-row"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label style="display: block; font-weight: 500; margin-bottom: 8px;">Namba ya Simu Yako
+                    (Kuthibitisha)</label>
+                  <input type="text" id="setVerifyPhone" placeholder="mfano: 255712345678" />
+                </div>
+                <div>
+                  <label style="display: block; font-weight: 500; margin-bottom: 8px;">Neno Siri la Zamani
+                    (Kuthibitisha)</label>
+                  <input type="password" id="setOldPassword" placeholder="Neno siri unalotumia sasa" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Neno Jipya la Siri (New
+                  Password)</label>
+                <input type="password" id="setNewPassword" placeholder="Weka password mpya" />
+              </div>
             </div>
 
             <!-- APPEARANCE & THEME SECTION -->
@@ -515,13 +569,28 @@
                 <select id="setLanguage"
                   style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;">
                   <option value="sw">Kiswahili</option>
-                  <option value="en">English (Inakuja Hivi Karibuni)</option>
-                </select>
               </div>
             </div>
 
+            <!-- BROWSER NOTIFICATIONS -->
             <h3
-              style="margin-top: 32px; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 20px;">
+              style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
+              <span>🔔</span> Taarifa (Push Notifications)
+            </h3>
+            <div
+              style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="display: block; margin-bottom: 4px; color: var(--text-main);">Browser
+                  Notifications</strong>
+                <span style="font-size: 13px; color: var(--text-muted);">Pata taarifa za Oda mpya hata kama Dashboard
+                  ipo background.</span>
+              </div>
+              <button type="button" id="enableNotificationsBtn" class="btn-primary" style="padding: 8px 16px;">Washa
+                Notifications</button>
+            </div>
+
+            <h3
+              style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
               <span>⏰</span> Ratiba ya Nudge (Abandoned Cart Nudging)
             </h3>
 
@@ -574,22 +643,119 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center; margin-top: 20px;">
-              <span id="settingsSaveStatus" style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
-              <button type="submit" class="btn-primary" style="padding: 12px 24px; font-weight: 600; border-radius: 6px; cursor: pointer;">Hifadhi Mipangilio</button>
+              <span id="settingsSaveStatus"
+                style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
+              <button type="submit" class="btn-primary"
+                style="padding: 12px 24px; font-weight: 600; border-radius: 6px; cursor: pointer;">Hifadhi
+                Mipangilio</button>
             </div>
           </form>
 
+          <!-- BILLING / SUBSCRIPTION SECTION -->
+          <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line);">
+            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+              <span>💳</span> Bili na Kifurushi (Subscription)
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+              <!-- Current Plan Info -->
+              <div class="stat-card" style="background: var(--bg); border: 1px solid var(--primary); display: block;">
+                <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Kifurushi Chako Sasa</div>
+                <div id="currentPlanDisplay" style="font-size: 24px; font-weight: 700; color: var(--text-main); text-transform: capitalize;">Inapakia...</div>
+                <div style="margin-top: 12px; font-size: 13px;">Kinaisha: <strong id="planExpiryDisplay" style="color: var(--primary);">--</strong></div>
+              </div>
+
+              <!-- Upgrade Instructions -->
+              <div class="stat-card" style="background: var(--bg-color); display: block;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Jinsi ya Kuongeza Muda / Kifurushi</div>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                  Tafadhali lipia kupitia namba zifuatazo kisha utume ujumbe WhatsApp wenye Jina la Duka lako ili kifurushi chako kiwashwe:
+                </p>
+                <div style="background: var(--surface); padding: 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; display: flex; flex-direction: column; gap: 12px; align-items: center;">
+                  <div style="text-align: center; width: 100%;">
+                    <strong style="font-size: 14px;">Lipa Namba (Mixx by Yas):</strong><br/>
+                    <span style="font-size: 20px; color: var(--primary); font-weight: bold; letter-spacing: 1px;">150906529</span><br/>
+                    <small>AZIZI IDDI MOHAMED</small>
+                  </div>
+                  <img src="/dashboard/images/mixx-qr.png" alt="Lipa kwa Kuscan" style="max-width: 160px; border-radius: 8px; border: 2px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+                  <p style="text-align: center; font-size: 12px; color: var(--text-muted);">Lipa kutoka mitandao yote na Benki kwa Kuscan au kuingiza Lipa Namba</p>
+                </div>
+                <p style="font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 12px; display: flex; align-items: center; gap: 6px;">
+                  <span>💬</span> WhatsApp: +255 692 35 0076
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- DANGER ZONE -->
           <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--danger);">
-            <h3 style="margin-top: 0; margin-bottom: 8px; color: var(--danger); display: flex; align-items: center; gap: 8px;">
+            <h3
+              style="margin-top: 0; margin-bottom: 8px; color: var(--danger); display: flex; align-items: center; gap: 8px;">
               <span>⚠️</span> Eneo la Hatari (Danger Zone)
             </h3>
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-              Kufuta akaunti yako kutafuta data zako zote (bidhaa, oda, jumbe) moja kwa moja kutoka kwenye mfumo wetu. Kitendo hiki hakirudishiki nyuma.
+              Kufuta akaunti yako kutafuta data zako zote (bidhaa, oda, jumbe) moja kwa moja kutoka kwenye mfumo wetu.
+              Kitendo hiki hakirudishiki nyuma.
             </p>
-            <button type="button" id="triggerDeleteAccountBtn" class="btn-ghost" style="color: var(--danger); border-color: var(--danger); font-weight: 600;">
+            <button type="button" id="triggerDeleteAccountBtn" class="btn-ghost"
+              style="color: var(--danger); border-color: var(--danger); font-weight: 600;">
               Futa Akaunti Yangu
             </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUPPORT -->
+      <section id="view-support" class="view">
+        <header class="view-header">
+          <h2>Msaada & Maelekezo</h2>
+          <p class="view-sub">Jifunze jinsi ya kutumia mfumo wako wa AI na jinsi ya kupata msaada</p>
+        </header>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+          <!-- Guide Section -->
+          <div class="stat-card" style="align-items: flex-start; flex-direction: column;">
+            <h3
+              style="margin-top: 0; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+              <span>📖</span> Jinsi ya Kutumia</h3>
+            <div style="font-size: 14px; line-height: 1.8; color: var(--text-main);">
+              <p><strong>1. Kuunganisha WhatsApp:</strong> Nenda kwenye 'Muhtasari', bofya 'Pata Code' au scan QR Code.
+                Kisha washa bot kiotomatiki.</p>
+              <p><strong>2. Kuweka Bidhaa:</strong> Nenda 'Bidhaa', bofya '+ Ongeza Bidhaa'. Hakikisha unaweka jina,
+                bei, na stock sahihi ili AI iuze vizuri.</p>
+              <p><strong>3. Kufuatilia Oda:</strong> Kila mteja anapokubali kununua, oda itaingia kwenye 'Oda'.
+                Badilisha status (Pending, Confirmed, Delivered) kulingana na hatua iliyofikia.</p>
+              <p><strong>4. Miongozo ya AI:</strong> Nenda 'Mipangilio' na ujaze vizuri maelezo ya duka lako (mfano:
+                mahali ulipo, bei za usafiri) ili AI iyatumie kujibu wateja.</p>
+            </div>
+          </div>
+
+          <!-- Contact Section -->
+          <div class="stat-card" style="align-items: flex-start; flex-direction: column; background: var(--bg-color);">
+            <h3
+              style="margin-top: 0; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+              <span>🎧</span> Mawasiliano ya Msaada</h3>
+            <p style="font-size: 14px; line-height: 1.6; color: var(--text-main); margin-bottom: 20px;">
+              Kama umekwama sehemu au unahitaji maboresho zaidi, wasiliana nasi muda wowote tutakusaidia kwa haraka.
+            </p>
+            <div
+              style="background: var(--surface); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); width: 100%;">
+              <div style="margin-bottom: 12px; font-weight: 600;">📧 Email: <span
+                  style="font-weight: normal; color: var(--text-muted);">azirytech@gmail.com</span></div>
+              <div style="margin-bottom: 12px; font-weight: 600;">📱 WhatsApp: <span
+                  style="font-weight: normal; color: var(--text-muted);">+255 692 35 0076</span></div>
+              <div style="font-weight: 600;">🌐 Website: <span
+                  style="font-weight: normal; color: var(--text-muted);">www.azirytech.online</span></div>
+            </div>
+
+            <!-- Branding -->
+            <div
+              style="margin-top: 24px; text-align: center; width: 100%; border-top: 1px solid var(--border); padding-top: 16px;">
+              <p style="font-size: 12px; color: var(--text-muted); margin: 0;">System Engineered & Powered by</p>
+              <p
+                style="font-size: 18px; font-weight: 700; color: var(--primary); margin: 4px 0 0 0; font-family: 'Space Grotesk', sans-serif;">
+                AZIRY TECH</p>
+            </div>
           </div>
         </div>
       </section>
@@ -645,18 +811,21 @@
     <div class="modal" style="border-top: 4px solid var(--danger);">
       <h3 style="color: var(--danger); margin-top: 0;">Futa Akaunti</h3>
       <p style="font-size: 14px; margin-bottom: 20px;">
-        Onyo! Kufuta akaunti kutapoteza bidhaa zako zote, oda, na historia ya mazungumzo na wateja. 
+        Onyo! Kufuta akaunti kutapoteza bidhaa zako zote, oda, na historia ya mazungumzo na wateja.
         Tafadhali ingiza <strong>neno siri</strong> lako ili kuthibitisha.
       </p>
       <form id="deleteAccountForm">
         <label>Neno Siri Lako</label>
-        <input type="password" id="deleteAccountPassword" required style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--danger); border-radius: 6px; background: var(--bg); color: var(--text);" />
-        
-        <div id="deleteAccountError" style="color: var(--danger); font-size: 13px; font-weight: 600; margin-bottom: 16px;"></div>
-        
+        <input type="password" id="deleteAccountPassword" required
+          style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--danger); border-radius: 6px; background: var(--bg); color: var(--text);" />
+
+        <div id="deleteAccountError"
+          style="color: var(--danger); font-size: 13px; font-weight: 600; margin-bottom: 16px;"></div>
+
         <div class="modal-actions">
           <button type="button" class="btn-ghost" id="cancelDeleteBtn">Ghairi</button>
-          <button type="submit" class="btn-primary" style="background: var(--danger); border-color: var(--danger);">Ndiyo, Futa Akaunti</button>
+          <button type="submit" class="btn-primary"
+            style="background: var(--danger); border-color: var(--danger);">Ndiyo, Futa Akaunti</button>
         </div>
       </form>
     </div>

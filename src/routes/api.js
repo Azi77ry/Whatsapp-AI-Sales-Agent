@@ -116,6 +116,15 @@ router.post("/whatsapp-disconnect", wrap(async (req, res) => {
   res.json({ success: true, message: "Umeunganishwa upya na WhatsApp imefutwa." });
 }));
 
+router.post("/whatsapp-pair-code", wrap(async (req, res) => {
+  const { phoneNumber } = req.body;
+  if (!phoneNumber) {
+    return res.status(400).json({ error: "Namba ya simu inahitajika." });
+  }
+  const code = await manager.requestPairingCode(req.merchantId, phoneNumber);
+  res.json({ success: true, code });
+}));
+
 router.post("/bot-toggle", wrap((req, res) => {
   const { active } = req.body;
   if (typeof active !== "boolean") {
@@ -198,6 +207,25 @@ router.delete("/products/:id", wrap(async (req, res) => {
 }));
 
 // ---- 3. ORDERS (Scoped to req.merchantId) ----
+
+router.get("/notifications/poll", wrap(async (req, res) => {
+  const sinceStr = req.query.since;
+  if (!sinceStr) return res.json({ newOrders: 0, orders: [] });
+
+  const sinceDate = new Date(sinceStr);
+  if (isNaN(sinceDate.getTime())) return res.json({ newOrders: 0, orders: [] });
+
+  const newOrders = await prisma.order.findMany({
+    where: {
+      merchantId: req.merchantId,
+      createdAt: { gt: sinceDate }
+    },
+    include: { product: true },
+    orderBy: { createdAt: "desc" }
+  });
+
+  res.json({ newOrders: newOrders.length, orders: newOrders });
+}));
 
 router.get("/orders", wrap(async (req, res) => {
   const orders = await prisma.order.findMany({
@@ -403,6 +431,8 @@ router.get("/settings", wrap(async (req, res) => {
       reEngagementCooldownHours: true,
       reEngagementStartHour: true,
       reEngagementEndHour: true,
+      subscriptionPlan: true,
+      subscriptionEndDate: true,
     }
   });
   res.json(merchant);

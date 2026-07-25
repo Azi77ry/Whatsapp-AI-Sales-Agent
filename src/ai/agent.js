@@ -218,13 +218,21 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
       where: { id: mId },
     });
 
-    // Angalia limit ya AI
-    if (merchant && merchant.aiUsage >= merchant.aiLimit) {
+    // Angalia limit ya AI au Kama Subscription imeisha
+    let blockedReason = null;
+    if (merchant) {
+      if (merchant.aiUsage >= merchant.aiLimit) {
+        blockedReason = "Samahani, duka hili limefikisha kikomo chake cha huduma ya AI kwa mwezi huu. Mhudumu (mmiliki) atawasiliana nawe hivi punde.";
+      } else if (merchant.subscriptionEndDate && new Date() > merchant.subscriptionEndDate) {
+        blockedReason = "Samahani, duka hili halijalipia kifurushi cha huduma ya AI. Mhudumu (mmiliki) atawasiliana nawe hivi punde.";
+      }
+    }
+
+    if (blockedReason) {
       await saveMessage(conversation.id, "customer", userMessage);
-      const limitMsg = "Samahani, duka hili limefikisha kikomo chake cha huduma ya AI kwa mwezi huu. Mhudumu (mmiliki) atawasiliana nawe hivi punde.";
       await flagNeedsHuman(conversation.id, true);
-      await saveMessage(conversation.id, "ai", limitMsg);
-      return limitMsg;
+      await saveMessage(conversation.id, "ai", blockedReason);
+      return blockedReason;
     }
 
     // Consent Flow Interception

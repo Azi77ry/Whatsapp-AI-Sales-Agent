@@ -215,6 +215,33 @@ async function initializeAllSessions() {
   }
 }
 
+/**
+ * Omba Pairing Code kwa ajili ya kuunganisha kupitia namba ya simu
+ */
+async function requestPairingCode(merchantId, phoneNumber) {
+  const mId = parseInt(merchantId, 10);
+  const sock = activeSessions.get(mId);
+  
+  if (!sock) {
+    throw new Error("WhatsApp haijaunganishwa bado. Bofya 'Anzisha WhatsApp Upya' kwanza.");
+  }
+
+  if (sock.authState.creds.registered) {
+    throw new Error("Akaunti yako tayari imeunganishwa!");
+  }
+
+  // Safisha namba ya simu (ondoa alama za + na spaces)
+  const cleanNumber = phoneNumber.replace(/[^0-9]/g, "");
+  
+  try {
+    const code = await sock.requestPairingCode(cleanNumber);
+    return code;
+  } catch (err) {
+    console.error(`Kosa wakati wa kuomba pairing code (Merchant #${mId}):`, err.message);
+    throw new Error("Imeshindwa kutengeneza code. Hakikisha namba ipo sahihi (mfano: 255712...).");
+  }
+}
+
 module.exports = {
   startSession,
   stopSession,
@@ -225,4 +252,5 @@ module.exports = {
   isBotActive,
   initializeAllSessions,
   activeSessions,
+  requestPairingCode,
 };

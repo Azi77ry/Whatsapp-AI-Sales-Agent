@@ -31,10 +31,13 @@ model Merchant {
   resetTokenExpires         DateTime? // Muda wa mwisho wa OTP (expiry)
 
   // Super-Admin & Platform Management
-  role     String @default("merchant") // "merchant" au "superadmin"
-  status   String @default("active")   // "active" au "suspended"
-  aiLimit  Int    @default(500)         // Kikomo cha meseji za AI kwa mwezi
-  aiUsage  Int    @default(0)           // Matumizi ya AI mwezi huu
+  role                String    @default("merchant") // "merchant" au "superadmin"
+  status              String    @default("active")   // "active" au "suspended"
+  aiLimit             Int       @default(500)         // Kikomo cha meseji za AI kwa mwezi
+  aiUsage             Int       @default(0)           // Matumizi ya AI mwezi huu
+  subscriptionPlan    String    @default("free_trial") // "free_trial", "monthly", "yearly"
+  subscriptionEndDate DateTime? // Tarehe ya mwisho ya kifurushi
+  isTrialUsed         Boolean   @default(false)       // Ikiwa ametumia ofa ya siku 7
 
   products        Product[]
   conversations   Conversation[]
