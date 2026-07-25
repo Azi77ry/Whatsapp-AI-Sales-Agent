@@ -867,8 +867,23 @@ section {
 }
 
 @media (max-width: 480px) {
-  .hero-title { font-size: 2.5rem; }
-  .section-title { font-size: 2rem; }
-  .price-val { font-size: 2.5rem; }
-  .cta-content h2 { font-size: 2rem; }
+  .hero-title { font-size: 2rem; line-height: 1.3; }
+  .hero-desc { font-size: 0.95rem; }
+  .section-title { font-size: 1.6rem; line-height: 1.3; }
+  .section-desc { font-size: 0.95rem; }
+  
+  .price-val { font-size: 2rem; }
+  .price-card h3 { font-size: 1.2rem; }
+  .price-features li { font-size: 0.95rem; }
+  
+  .cta-content h2 { font-size: 1.6rem; }
+  
+  .faq-q { font-size: 1.05rem; padding: 16px; }
+  .faq-a { font-size: 0.95rem; }
+  
+  .step-content h3 { font-size: 1.2rem; }
+  .step-content p { font-size: 0.95rem; }
+  
+  .feature-card h3 { font-size: 1.1rem; }
+  .feature-card p { font-size: 0.95rem; }
 }
