@@ -84,9 +84,17 @@ async function updateConsent(conversationId, consentGiven, needsHuman) {
 async function saveMessage(conversationId, sender, content) {
   // Ingiza usalama wa hali ya juu: fiche (encrypt) ujumbe kabla ya kuhifadhi kwenye database
   const encryptedContent = encrypt(content);
-  return prisma.message.create({
+  const msg = await prisma.message.create({
     data: { conversationId, sender, content: encryptedContent },
   });
+  
+  // UPDATE conversation updatedAt ili mazungumzo yapande juu kwenye dashboard
+  await prisma.conversation.update({
+    where: { id: conversationId },
+    data: { updatedAt: new Date() }
+  });
+  
+  return msg;
 }
 
 // Angalia kama namba hii imewekwa alama ya "Rafiki (Personal)" na admin
