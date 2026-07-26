@@ -390,9 +390,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function initDashboard() {
-  await checkOnboardingStatus();
-  loadOverview();
-  checkWhatsAppStatus();
+  try {
+    await checkOnboardingStatus();
+  } catch (e) {
+    console.error("Onboarding check failed:", e);
+  }
+  
+  try {
+    await loadOverview();
+  } catch (e) {
+    console.error("Failed to load overview:", e);
+  }
+  
+  try {
+    await checkWhatsAppStatus();
+  } catch (e) {
+    console.error("Failed to check WhatsApp status:", e);
+  }
 }
 
 // ---- ONBOARDING LOGIC ----
@@ -821,16 +835,20 @@ function formatTimeAgo(dateStr) {
 
 
 async function loadOverview() {
-  const stats = await apiFetch("/stats");
-  document.getElementById("statProducts").textContent = stats.productCount;
-  document.getElementById("statOrders").textContent = stats.orderCount;
-  document.getElementById("statPending").textContent = stats.pendingOrders;
-  document.getElementById("statConversations").textContent = stats.conversationCount;
-  if (document.getElementById("statReEngaged")) {
-    document.getElementById("statReEngaged").textContent = stats.reEngagedCount || 0;
-  }
-  if (document.getElementById("statSpecialRequests")) {
-    document.getElementById("statSpecialRequests").textContent = stats.pendingSpecialRequests || 0;
+  try {
+    const stats = await apiFetch("/stats");
+    document.getElementById("statProducts").textContent = stats.productCount;
+    document.getElementById("statOrders").textContent = stats.orderCount;
+    document.getElementById("statPending").textContent = stats.pendingOrders;
+    document.getElementById("statConversations").textContent = stats.conversationCount;
+    if (document.getElementById("statReEngaged")) {
+      document.getElementById("statReEngaged").textContent = stats.reEngagedCount || 0;
+    }
+    if (document.getElementById("statSpecialRequests")) {
+      document.getElementById("statSpecialRequests").textContent = stats.pendingSpecialRequests || 0;
+    }
+  } catch (err) {
+    console.error("Failed to load overview stats:", err);
   }
   
   // Sync the bot toggle state visually
@@ -1226,20 +1244,24 @@ document.getElementById("generateAdviceBtn").addEventListener("click", async () 
   btn.textContent = "Inatengeneza ushauri...";
   box.classList.remove("hidden");
   box.innerHTML = `<p class="conv-empty" style="margin:0;">AI inachambua takwimu zako, subiri kidogo...</p>`;
+  btn.disabled = true;
+  btn.textContent = "Inachanganua...";
+  const adviceDiv = document.getElementById("aiAdviceContent");
+  adviceDiv.innerHTML = "<p>Tafadhali subiri, AI inachanganua data za duka lako...</p>";
 
   try {
-    const { advice } = await insightsFetch("/advice");
-    box.innerHTML = formatAiText(advice);
-  } catch (e) {
-    box.innerHTML = `<p style="color:#b84c3a; margin:0;">Imeshindwa kupata ushauri: ${escapeHtml(e.message)}</p>`;
+    const res = await apiFetch("/insights/advice");
+    adviceDiv.innerHTML = formatAiText(res.advice);
+  } catch (err) {
+    adviceDiv.innerHTML = `<p style="color:red;">Imeshindwa kupata ushauri: ${err.message}</p>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = "Pata Ushauri Sasa";
+    btn.textContent = "Pata Ushauri Mpya";
   }
 });
 
-document.getElementById("askQuestionBtn").addEventListener("click", askBusinessQuestion);
-document.getElementById("askQuestionInput").addEventListener("keydown", (e) => {
+document.getElementById("askQuestionBtn")?.addEventListener("click", askBusinessQuestion);
+document.getElementById("askQuestionInput")?.addEventListener("keydown", (e) => {
   if (e.key === "Enter") askBusinessQuestion();
 });
 
@@ -1390,7 +1412,7 @@ async function checkWhatsAppStatus() {
   }
 }
 
-document.getElementById("whatsappRestartBtn").addEventListener("click", async () => {
+document.getElementById("whatsappRestartBtn")?.addEventListener("click", async () => {
   const btn = document.getElementById("whatsappRestartBtn");
   const textEl = document.getElementById("whatsappStatusText");
   btn.disabled = true;
@@ -1474,7 +1496,7 @@ function updateBotToggleUI(isActive) {
   }
 }
 
-document.getElementById("botToggleBtn").addEventListener("click", async () => {
+document.getElementById("botToggleBtn")?.addEventListener("click", async () => {
   const btn = document.getElementById("botToggleBtn");
   const isCurrentlyActive = btn.classList.contains("bot-toggle-active");
   const newState = !isCurrentlyActive;

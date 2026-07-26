@@ -236,6 +236,7 @@ const translations = {
     botOn: "ON",
     botOff: "OFF",
     botSub: "Auto-replying",
+    botSubPaused: "⏸️ Paused — merchant replies manually",
     ovStatus: "WhatsApp App Status",
     ovConnected: "Checking WhatsApp status...",
     ovQrOption1: "Option 1: Scan this QR code with your WhatsApp:",
