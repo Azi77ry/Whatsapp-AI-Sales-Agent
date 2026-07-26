@@ -196,7 +196,7 @@ let hasReadTerms = false;
 regTermsCheckbox.addEventListener("click", (e) => {
   if (!hasReadTerms) {
     e.preventDefault();
-    alert("Tafadhali fungua Vigezo na Masharti, usome mpaka mwisho, kisha ubofye 'Nimesoma & Ninakubali'.");
+    alert(t('alertTerms'));
   }
 });
 
@@ -484,7 +484,7 @@ document.getElementById("obNextBtn").addEventListener("click", async () => {
       onboardingState.step = 2;
       updateOnboardingUI();
     } catch(err) {
-      alert("Kosa: " + err.message);
+      alert(t('alertErr') + err.message);
     }
   } 
   else if (onboardingState.step === 2) {
@@ -516,7 +516,7 @@ document.getElementById("obNextBtn").addEventListener("click", async () => {
       document.getElementById("onboardingWizard").classList.add("hidden");
       loadProducts();
     } catch(err) {
-      alert("Kosa: " + err.message);
+      alert(t('alertErr') + err.message);
     }
   }
   
@@ -542,7 +542,7 @@ async function loadOnboardingQR() {
   const qrDiv = document.getElementById("obQrcode");
   const successDiv = document.getElementById("obConnectedSuccess");
   
-  qrDiv.innerHTML = "Inatafuta QR Code...";
+  qrDiv.innerHTML = t('fetchQr');
   successDiv.classList.add("hidden");
   
   try {
@@ -649,14 +649,14 @@ function fireConfetti() {
 // ---- CONVERSATIONS ----
 async function loadConversations(page = 1) {
   const list = document.getElementById("conversationsList");
-  list.innerHTML = `<p style="color:var(--text-muted);padding:16px;">Inapakia...</p>`;
+  list.innerHTML = `<p style="color:var(--text-muted);padding:16px;">${t('loading')}</p>`;
 
   try {
     const data = await apiFetch(`/conversations?page=${page}`);
     list.innerHTML = "";
 
     if (!data.conversations || data.conversations.length === 0) {
-      list.innerHTML = `<p style="color:var(--text-muted);padding:16px;">Hakuna mazungumzo bado.</p>`;
+      list.innerHTML = `<p style="color:var(--text-muted);padding:16px;">${t('emptyConversations')}</p>`;
       return;
     }
 
@@ -722,7 +722,7 @@ async function loadChatThread(convId, name, phone) {
   const header = document.getElementById("conversationThreadHeader");
   const headerName = document.getElementById("conversationThreadName");
 
-  thread.innerHTML = `<p style="color:var(--text-muted);padding:16px;text-align:center;">Inapakia mazungumzo...</p>`;
+  thread.innerHTML = `<p style="color:var(--text-muted);padding:16px;text-align:center;">${t('loadingChats')}</p>`;
   header.classList.remove("hidden");
   headerName.textContent = `${name} (${phone})`;
 
@@ -733,7 +733,7 @@ async function loadChatThread(convId, name, phone) {
     const toggleBtn = document.getElementById("toggleContactTypeBtn");
     if (data.conversation) {
       let isPersonal = data.conversation.contactType === "personal";
-      toggleBtn.innerHTML = isPersonal ? "👤 Rafiki (AI Imezimwa)" : "🛒 Mteja (AI Inajibu)";
+      toggleBtn.innerHTML = isPersonal ? t('botFriend') : t('botCustomer');
       
       // Mteja (AI Inajibu) = Kijani (Primary/Success)
       // Rafiki (AI Imezimwa) = Nyekundu (Danger)
@@ -757,18 +757,18 @@ async function loadChatThread(convId, name, phone) {
           data.conversation.contactType = newType;
           isPersonal = newType === "personal";
           
-          toggleBtn.innerHTML = isPersonal ? "👤 Rafiki (AI Imezimwa)" : "🛒 Mteja (AI Inajibu)";
+          toggleBtn.innerHTML = isPersonal ? t('botFriend') : t('botCustomer');
           toggleBtn.style.background = isPersonal ? "var(--danger)" : "var(--primary)";
           
         } catch (e) {
-          alert("Imeshindwa kubadilisha: " + e.message);
-          toggleBtn.innerHTML = isPersonal ? "👤 Rafiki (AI Imezimwa)" : "🛒 Mteja (AI Inajibu)";
+          alert(t('alertFailEdit') + e.message);
+          toggleBtn.innerHTML = isPersonal ? t('botFriend') : t('botCustomer');
         }
       };
     }
 
     if (!data.messages || data.messages.length === 0) {
-      thread.innerHTML = `<p style="color:var(--text-muted);padding:16px;text-align:center;">Hakuna meseji bado.</p>`;
+      thread.innerHTML = `<p style="color:var(--text-muted);padding:16px;text-align:center;">${t('emptyMessages')}</p>`;
       return;
     }
 
@@ -856,8 +856,8 @@ async function loadProducts() {
         <td>${p.colors ? escapeHtml(p.colors) : "—"}</td>
         <td>${p.sizes ? escapeHtml(p.sizes) : "—"}</td>
         <td>
-          <button class="btn-icon" onclick="editProduct(${p.id})">Hariri</button>
-          <button class="btn-icon danger" onclick="deleteProduct(${p.id})">Futa</button>
+          <button class="btn-icon" onclick="editProduct(${p.id})">${t('btnEdit')}</button>
+          <button class="btn-icon danger" onclick="deleteProduct(${p.id})">${t('btnDelete')}</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -881,7 +881,7 @@ document.getElementById("addProductBtn").addEventListener("click", () => openPro
 document.getElementById("cancelProductBtn").addEventListener("click", closeProductModal);
 
 function openProductModal(product) {
-  document.getElementById("productModalTitle").textContent = product ? "Hariri Bidhaa" : "Ongeza Bidhaa";
+  document.getElementById("productModalTitle").textContent = product ? t('editProduct') : t('addProduct');
   document.getElementById("productId").value = product ? product.id : "";
   document.getElementById("pName").value = product ? product.name : "";
   document.getElementById("pPrice").value = product ? product.price : "";
@@ -901,7 +901,7 @@ function openProductModal(product) {
     .map((c) => `<option value="${escapeHtml(c)}" ${product && product.category === c ? "selected" : ""}>${escapeHtml(c)}</option>`)
     .join("");
   // Ongeza uwezekano wa kuandika category yoyote mpya
-  catSelect.innerHTML += `<option value="__custom__">+ Ongeza Category Mpya...</option>`;
+  catSelect.innerHTML += `<option value="__custom__">${t('addCategory')}</option>`;
 
   if (product) catSelect.value = product.category;
 
@@ -916,7 +916,7 @@ function closeProductModal() {
 // Kushughulikia chaguo la "Ongeza Category Mpya..." kwenye dropdown
 document.getElementById("pCategory").addEventListener("change", function () {
   if (this.value === "__custom__") {
-    const custom = prompt("Andika jina la category mpya:");
+    const custom = prompt(t('promptCategory'));
     if (custom && custom.trim()) {
       const opt = document.createElement("option");
       opt.value = custom.trim();
@@ -935,7 +935,7 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
   const id = document.getElementById("productId").value;
   const categoryVal = document.getElementById("pCategory").value;
   if (!categoryVal || categoryVal === "__custom__") {
-    alert("Tafadhali chagua au andika category.");
+    alert(t('alertNoCategory'));
     return;
   }
   
@@ -997,11 +997,11 @@ async function loadOrders() {
       <td>${o.deliveryType === "delivery" ? "Delivery" : "Pickup"} ${o.address ? "— " + escapeHtml(o.address) : ""}</td>
       <td>
         <select onchange="updateOrderStatus(${o.id}, this.value)" class="badge badge-${o.status}">
-          <option value="pending" ${o.status === "pending" ? "selected" : ""}>Pending</option>
-          <option value="paid" ${o.status === "paid" ? "selected" : ""}>Paid</option>
-          <option value="confirmed" ${o.status === "confirmed" ? "selected" : ""}>Confirmed</option>
-          <option value="delivered" ${o.status === "delivered" ? "selected" : ""}>Delivered</option>
-          <option value="cancelled" ${o.status === "cancelled" ? "selected" : ""}>Cancelled</option>
+          <option value="pending" ${o.status === "pending" ? "selected" : ""}>${t('optPending')}</option>
+          <option value="paid" ${o.status === "paid" ? "selected" : ""}>${t('optPaid')}</option>
+          <option value="confirmed" ${o.status === "confirmed" ? "selected" : ""}>${t('optConfirmed')}</option>
+          <option value="delivered" ${o.status === "delivered" ? "selected" : ""}>${t('optDelivered')}</option>
+          <option value="cancelled" ${o.status === "cancelled" ? "selected" : ""}>${t('optCancelled')}</option>
         </select>
       </td>
       <td class="mono">${new Date(o.createdAt).toLocaleDateString("sw-TZ")}</td>
@@ -1015,9 +1015,9 @@ async function updateOrderStatus(id, status) {
   const result = await apiFetch(`/orders/${id}`, { method: "PUT", body: JSON.stringify({ status }) });
   if (["confirmed", "delivered", "cancelled"].includes(status)) {
     if (result.customerNotified) {
-      showToast(`Mteja amearifiwa kuwa oda #${id} ni "${status}" ✅`);
+      showToast(`${t('toastOrderNotified')}${id} ni "${status}" ✅`);
     } else {
-      showToast(`Status imebadilishwa, lakini mteja HAJAARIFIWA (WhatsApp haijaunganishwa?) ⚠️`);
+      showToast(t('toastOrderNotNotified'));
     }
   }
 }
@@ -1051,11 +1051,11 @@ async function loadSpecialRequests() {
   if (badge) badge.textContent = pending > 0 ? pending : "";
 
   if (requests.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--ink-soft);padding:20px;">Hakuna maombi maalum bado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--ink-soft);padding:20px;">${t('emptySpecialRequests')}</td></tr>`;
     return;
   }
 
-  const statusLabels = { new: "🆕 Mpya", sourcing: "🔎 Inatafutwa", found: "✅ Imepatikana", fulfilled: "📦 Imetimizwa", cancelled: "❌ Imeghairiwa" };
+  const statusLabels = { new: t('srNew'), sourcing: t('srSourcing'), found: t('srFound'), fulfilled: t('srFulfilled'), cancelled: t('srCancelled') };
   const statusColors = { new: "var(--mustard)", sourcing: "#5b8dd9", found: "var(--success)", fulfilled: "#666", cancelled: "var(--danger)" };
 
   requests.forEach((r) => {
@@ -1106,9 +1106,9 @@ document.getElementById("srSaveBtn").addEventListener("click", async () => {
   });
 
   if (result.customerNotified) {
-    showToast(`Mteja amearifiwa kikamilifu kuhusu ombi #SR-${currentSrId} ✅`);
+    showToast(`${t('toastSrNotified')}${currentSrId} ✅`);
   } else {
-    showToast(`Ombi #SR-${currentSrId} limesasishwa. (Hakuna ujumbe wa mteja kwa status hii) 💾`);
+    showToast(t('toastSrUpdated'));
   }
   document.getElementById("srUpdatePanel").classList.add("hidden");
   currentSrId = null;
@@ -1156,12 +1156,12 @@ async function loadInsights() {
 
 async function loadPotentialCustomers() {
   const listEl = document.getElementById("potentialCustomersList");
-  listEl.innerHTML = `<p class="conv-empty" style="margin:0;">Inapakia...</p>`;
+  listEl.innerHTML = `<p class="conv-empty" style="margin:0;">${t('loading')}</p>`;
 
   const customers = await insightsFetch("/potential-customers");
 
   if (customers.length === 0) {
-    listEl.innerHTML = `<p class="conv-empty" style="margin:0;">Hakuna wateja wenye nia dhahiri kwa sasa - jaribu tena baadaye.</p>`;
+    listEl.innerHTML = `<p class="conv-empty" style="margin:0;">${t('emptyIntent')}</p>`;
     return;
   }
 
@@ -1184,12 +1184,12 @@ async function loadPotentialCustomers() {
 async function loadReEngagedCustomers() {
   const listEl = document.getElementById("reEngagedCustomersList");
   if (!listEl) return;
-  listEl.innerHTML = `<p class="conv-empty" style="margin:0;">Inapakia...</p>`;
+  listEl.innerHTML = `<p class="conv-empty" style="margin:0;">${t('loading')}</p>`;
 
   const customers = await insightsFetch("/re-engaged");
 
   if (customers.length === 0) {
-    listEl.innerHTML = `<p class="conv-empty" style="margin:0;">Hakuna mteja aliyetumwa nudge bado — mfumo unakagua na kutuma kiotomatiki kila saa.</p>`;
+    listEl.innerHTML = `<p class="conv-empty" style="margin:0;">${t('emptyNudges')}</p>`;
     return;
   }
 
@@ -1309,15 +1309,15 @@ async function checkWhatsAppStatus() {
         wsConnectionStartTime = null;
         
         badge.className = "badge disconnected";
-        badge.textContent = "Muda Umeisha";
-        textEl.textContent = "⏳ Muda wa kuscan/kupair umekwisha (Dakika 2). Tafadhali bofya 'Unganisha WhatsApp' ili kuanza upya.";
+        badge.textContent = t('statusTimeoutBadge');
+        textEl.textContent = t('statusTimeoutDesc');
         qrContainer.classList.add("hidden");
         qrCodeDiv.innerHTML = "";
         lastQrText = null;
         const pairDisplay = document.getElementById("pairCodeDisplay");
         if (pairDisplay) pairDisplay.classList.add("hidden");
         
-        restartBtn.textContent = "Unganisha WhatsApp";
+        restartBtn.textContent = t('btnConnectWa');
         restartBtn.classList.remove("hidden");
         statusPollTimeout = setTimeout(checkWhatsAppStatus, 10000);
         return; // Stop further processing this poll
@@ -1327,24 +1327,24 @@ async function checkWhatsAppStatus() {
     }
 
     if (data.status === "connected") {
-      badge.textContent = "Imeunganishwa";
-      textEl.textContent = "✅ WhatsApp imeunganishwa kikamilifu! Msaidizi wa AI anaweza kupokea na kujibu wateja sasa.";
+      badge.textContent = t('statusConnectedBadge');
+      textEl.textContent = t('statusConnectedDesc');
       qrContainer.classList.add("hidden");
       qrCodeDiv.innerHTML = "";
       lastQrText = null;
       restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 15000);
     } else if (data.status === "connecting") {
-      badge.textContent = "Inaunganisha";
-      textEl.textContent = "⏳ Inajaribu kuunganisha na WhatsApp. Tafadhali subiri kidogo...";
+      badge.textContent = t('statusConnectingBadge');
+      textEl.textContent = t('statusConnectingDesc');
       qrContainer.classList.add("hidden");
       qrCodeDiv.innerHTML = "";
       lastQrText = null;
       restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 4000);
     } else if (data.status === "qr") {
-      badge.textContent = "Scan QR";
-      textEl.textContent = "📱 QR code ipo tayari. Scan na simu yako ili kuunganisha kifaa.";
+      badge.textContent = t('statusQrBadge');
+      textEl.textContent = t('statusQrDesc');
       restartBtn.classList.add("hidden");
 
       if (data.qr && data.qr !== lastQrText) {
@@ -1362,12 +1362,12 @@ async function checkWhatsAppStatus() {
       qrContainer.classList.remove("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 4000);
     } else {
-      badge.textContent = "Imekatika";
-      textEl.textContent = "❌ Muunganiko wa WhatsApp umekatika au namba yako haijaunganishwa bado.";
+      badge.textContent = t('statusDiscBadge');
+      textEl.textContent = t('statusDiscDesc');
       qrContainer.classList.add("hidden");
       qrCodeDiv.innerHTML = "";
       lastQrText = null;
-      restartBtn.textContent = "Unganisha WhatsApp";
+      restartBtn.textContent = t('btnConnectWa');
       restartBtn.classList.remove("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 10000);
     }
@@ -1375,8 +1375,8 @@ async function checkWhatsAppStatus() {
     console.error("Kosa la kuangalia hali ya WhatsApp:", err);
     badge.className = "badge disconnected";
     badge.textContent = "Error";
-    textEl.textContent = "⚠️ Imeshindwa kuwasiliana na server kuangalia hali ya WhatsApp.";
-    restartBtn.textContent = "Jaribu Upya";
+    textEl.textContent = t('statusErrorDesc');
+    restartBtn.textContent = t('btnRetry');
     restartBtn.classList.remove("hidden");
     statusPollTimeout = setTimeout(checkWhatsAppStatus, 10000);
   }
@@ -1386,18 +1386,18 @@ document.getElementById("whatsappRestartBtn").addEventListener("click", async ()
   const btn = document.getElementById("whatsappRestartBtn");
   const textEl = document.getElementById("whatsappStatusText");
   btn.disabled = true;
-  btn.textContent = "Inaunganisha...";
-  textEl.textContent = "⏳ Kujaribu kuanzisha muunganiko wa WhatsApp...";
+  btn.textContent = t('btnConnecting');
+  textEl.textContent = t('statusStartingWa');
   wsConnectionStartTime = null; // Reset on manual click
 
   try {
     await apiFetch("/whatsapp-connect", { method: "POST" });
     checkWhatsAppStatus();
   } catch (err) {
-    textEl.textContent = "⚠️ Imeshindwa kuunganisha: " + err.message;
+    textEl.textContent = t('statusFailConnect') + err.message;
   } finally {
     btn.disabled = false;
-    btn.textContent = "Unganisha WhatsApp";
+    btn.textContent = t('btnConnectWa');
   }
 });
 
@@ -1409,12 +1409,12 @@ document.getElementById("getPairCodeBtn")?.addEventListener("click", async () =>
   const codeDisplay = document.getElementById("pairCodeDisplay");
 
   if (!phone) {
-    alert("Tafadhali weka namba ya simu (mfano: 255712345678).");
+    alert(t('alertNoPhone'));
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = "Inatafuta...";
+  btn.textContent = t('fetching');
   codeDisplay.classList.add("hidden");
   codeDisplay.textContent = "";
 
@@ -1493,7 +1493,7 @@ async function loadSettings() {
 
   statusEl.style.display = "block";
   statusEl.style.color = "var(--text-muted)";
-  statusEl.textContent = "⏳ Inapakia mipangilio...";
+  statusEl.textContent = t('loadingSettings');
 
   try {
     const settings = await apiFetch("/settings");
@@ -1674,7 +1674,7 @@ deleteForm.addEventListener("submit", async (e) => {
   const password = document.getElementById("deleteAccountPassword").value;
 
   submitBtn.disabled = true;
-  submitBtn.textContent = "Inafuta...";
+  submitBtn.textContent = t('deleting');
 
   try {
     const res = await apiFetch("/settings/account", {
@@ -1683,14 +1683,14 @@ deleteForm.addEventListener("submit", async (e) => {
     });
 
     if (res.success) {
-      alert("Akaunti yako imefutwa kikamilifu. Tunasikitika kukuona ukiondoka.");
+      alert(t('alertAccountDeleted'));
       deleteModal.classList.add("hidden");
 
       handleLogout();
     }
   } catch (err) {
-    deleteError.textContent = err.message || "Imeshindwa kufuta akaunti.";
-    submitBtn.textContent = "Ndiyo, Futa Akaunti";
+    deleteError.textContent = err.message || t('failDelete');
+    submitBtn.textContent = t('btnDeleteAccount');
     submitBtn.disabled = false;
   }
 });
@@ -1705,18 +1705,18 @@ const enableNotificationsBtn = document.getElementById("enableNotificationsBtn")
 if (enableNotificationsBtn) {
   enableNotificationsBtn.addEventListener("click", async () => {
     if (!("Notification" in window)) {
-      alert("Browser yako hairuhusu Push Notifications.");
+      alert(t('alertPushNotSupported'));
       return;
     }
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
-      alert("Safi! Sasa utapata taarifa (Pop-ups) za oda mpya hata kama Dashboard ipo background.");
+      alert(t('alertPushEnabled'));
       enableNotificationsBtn.textContent = "Imewashwa ✓";
       enableNotificationsBtn.disabled = true;
       enableNotificationsBtn.style.background = "var(--success)";
       startNotificationPolling();
     } else {
-      alert("Umekataa kuruhusu Notifications. Kama unataka, utahitaji kubadili kwenye settings za Browser yako.");
+      alert(t('alertPushDenied'));
     }
   });
 
@@ -1745,7 +1745,7 @@ async function pollNotifications() {
     lastNotificationCheck = new Date(); // update time
 
     if (res.newOrders > 0) {
-      showPushNotification("🎉 Oda Mpya Imepatikana!", `Kuna oda ${res.newOrders} mpya zimeingia sasa hivi. Fungua dashboard kuzihudumia.`);
+      showPushNotification(t('pushNewOrderTitle'), t('pushNewOrderDesc').replace('{n}', res.newOrders));
       // Optional: if currently viewing overview, we might want to refresh, but user can refresh manually.
     }
   } catch (err) {
