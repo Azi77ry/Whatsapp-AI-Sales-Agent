@@ -123,9 +123,12 @@ async function logPersonalMessage({ customerPhone, customerName, userMessage, me
 async function getConversationHistory(conversationId) {
   const messages = await prisma.message.findMany({
     where: { conversationId },
-    orderBy: { createdAt: "asc" },
+    orderBy: { createdAt: "desc" },
     take: config.historyLimit,
   });
+
+  // Re-order to chronological (oldest to newest)
+  messages.reverse();
 
   // Decrypt content (inarejesha maandishi halisi kutoka kwenye encryption)
   return messages.map((m) => ({ sender: m.sender, content: decrypt(m.content) }));
@@ -137,7 +140,8 @@ async function getConversationHistory(conversationId) {
 async function maybeCompact(conversationId, customerName) {
   const totalCount = await prisma.message.count({ where: { conversationId } });
 
-  if (totalCount < config.compactionThreshold) return;
+  // Fanya compaction kila baada ya kufikisha kiwango (mfano: meseji 15, 30, 45, n.k.) ili kuokoa tokens
+  if (totalCount < config.compactionThreshold || totalCount % config.compactionThreshold !== 0) return;
 
   console.log(
     `🗜️  Compaction: Mazungumzo #${conversationId} yana ujumbe ${totalCount}. Inaanza kufupisha...`
@@ -277,10 +281,12 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
     // Kama amesha-consent, endelea kama kawaida
     await saveMessage(conversation.id, "customer", userMessage);
 
-    // Fanya compaction ikiwa imefikia kiwango
-    await maybeCompact(conversation.id, conversation.customerName || customerName);
+    // Fanya compaction ikiwa imefikia kiwango (Tunaiacha irun background ili isicheleweshe jibu kwa mteja)
+    maybeCompact(conversation.id, conversation.customerName || customerName).catch(err => {
+      console.error("⚠️ Compaction Error:", err);
+    });
 
-    // Soma upya ili kupata contextSummary iliyohuishwa
+    // Tunatumia contextSummary iliyopo kwa sasa
     const updatedConversation = await prisma.conversation.findUnique({
       where: { id: conversation.id },
       select: { contextSummary: true },
