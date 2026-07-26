@@ -208,22 +208,22 @@ h3,
 }
 
 /* ---- BUTTONS ---- */
-.btn-primary {
-  background: var(--primary);
-  color: white;
+button {
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
   border: none;
+  background: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, #7551FF 100%);
+  color: #fff;
   padding: 12px 24px;
   border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  font-family: 'Space Grotesk', sans-serif;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-primary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
 
 .btn-primary:hover {
@@ -240,6 +240,30 @@ h3,
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+.btn-logout-premium {
+  margin-top: auto;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.btn-logout-premium:hover {
+  background: var(--danger);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+  border-color: var(--danger);
 }
 
 .btn-ghost {
@@ -420,6 +444,7 @@ h3,
   padding: 40px 48px;
   overflow-y: auto;
   position: relative;
+  margin-left: var(--sidebar-w);
 }
 
 .view {
@@ -1117,6 +1142,7 @@ tr:hover td {
   .main {
     padding: 24px 16px;
     margin-top: 0;
+    margin-left: 0;
   }
 
   .stat-grid {

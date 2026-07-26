@@ -397,26 +397,8 @@ async function initDashboard() {
 
 // ---- ONBOARDING LOGIC ----
 async function checkOnboardingStatus() {
-  try {
-    const [settingsRes, statsRes] = await Promise.all([
-      apiFetch("/settings"),
-      apiFetch("/stats")
-    ]);
-    
-    // Angalia kama mteja ameunganisha WhatsApp, ana business context, na ana bidhaa (angalau 1)
-    const hasContext = settingsRes.settings && settingsRes.settings.businessContext && settingsRes.settings.businessContext.trim().length > 10;
-    const hasProduct = statsRes.products > 0;
-    
-    // Kama yote yapo sawa, usionyeshe Onboarding
-    if (hasContext && hasProduct) {
-      return; 
-    }
-    
-    // Onyesha Onboarding Wizard
-    startOnboardingWizard(settingsRes.settings);
-  } catch (err) {
-    console.error("Failed to check onboarding status", err);
-  }
+  // Mteja (User) aliomba kuondoa hii welcome wizard inayojitokeza
+  return;
 }
 
 let onboardingState = {
