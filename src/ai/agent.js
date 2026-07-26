@@ -327,7 +327,10 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
       usedFallback = true;
     }
 
-    await flagNeedsHuman(conversation.id, usedFallback);
+    // Tunaondoa `await flagNeedsHuman(conversation.id, usedFallback);` ili bot isizime 
+    // moja kwa moja kwa sababu tu ya mtandao kusumbua (temporary API failure).
+    // Kama ilishindwa, itajaribu tena kwenye ujumbe unaofuata wa mteja.
+    
     await saveMessage(conversation.id, "ai", finalReplyText);
 
     return finalReplyText;

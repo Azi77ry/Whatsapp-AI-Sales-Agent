@@ -90,7 +90,15 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
   ) return;
 
   const text = extractTextFromMessage(msg);
-  if (!text) return;
+  if (!text) {
+    const m = msg.message;
+    // Jibu kwa heshima kama mteja ametuma Voice Note au Sauti
+    if (m?.audioMessage) {
+      await sendWithRetry(sock, remoteJid, "Samahani, bado sijajifunza kusikiliza sauti (Voice Notes) 🎙️. Tafadhali andika ujumbe wako kwa maandishi ili niweze kukusaidia kikamilifu. 🙏");
+    }
+    // Kama ni stika au kitu kingine, puuza kimya kimya
+    return;
+  }
 
   const customerName = msg.pushName || null;
 
