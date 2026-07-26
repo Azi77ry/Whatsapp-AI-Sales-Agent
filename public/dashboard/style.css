@@ -366,29 +366,47 @@ button {
   color: var(--text-muted);
   text-align: left;
   padding: 14px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.nav-num {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  color: var(--text-muted);
-  opacity: 0.5;
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 0 4px 4px 0;
 }
 
 .nav-item:hover {
-  background: var(--bg-color);
+  background: rgba(67, 24, 255, 0.04);
   color: var(--text-main);
+  transform: translateX(4px);
+}
+
+.nav-item:hover::before {
+  opacity: 1;
 }
 
 .nav-item.active {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, #7551FF 100%);
   color: white;
   box-shadow: var(--shadow-primary);
+  transform: translateY(-2px);
+}
+
+.nav-item.active::before {
+  display: none;
 }
 
 .nav-item.active .nav-num {
@@ -420,12 +438,23 @@ button {
 }
 
 .hamburger-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
+  background: var(--bg-color);
+  border: 1px solid var(--border);
   color: var(--text-main);
   cursor: pointer;
-  padding: 0;
+  padding: 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.hamburger-btn:hover {
+  background: var(--surface);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .mobile-brand {
