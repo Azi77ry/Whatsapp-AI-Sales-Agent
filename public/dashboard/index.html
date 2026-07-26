@@ -204,12 +204,43 @@
 
       <!-- OVERVIEW -->
       <section id="view-overview" class="view active">
-        <header class="view-header">
+        <header class="view-header" style="margin-bottom: 24px;">
           <h2>Muhtasari</h2>
           <p class="view-sub">Hali ya duka lako kwa ujumla</p>
         </header>
+
+        <!-- Premium Hero Card -->
+        <div class="premium-hero-card" style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <p class="muted" style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">AI Agent Status</p>
+              <h1 style="margin: 8px 0; font-size: 28px; font-weight: 700;">Imeunganishwa</h1>
+              <p class="muted" style="margin: 0; font-size: 14px;" id="heroAiUsage">Matumizi: 0 / 500 meseji</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; backdrop-filter: blur(5px);">
+              <span style="font-weight: 600; font-size: 14px;">Mwezi Huu</span>
+            </div>
+          </div>
+          
+          <div style="margin-top: 32px; display: flex; align-items: center; justify-content: space-between;">
+            <div class="bot-toggle-row" style="background: transparent; border: none; padding: 0;">
+              <div class="bot-toggle-info">
+                <span class="bot-toggle-icon" id="botToggleIcon" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);">🤖</span>
+                <div>
+                  <div class="bot-toggle-label" style="color: white;">Bot Switch</div>
+                  <div class="bot-toggle-sublabel muted" id="botToggleSublabel">Inajibu kiotomatiki</div>
+                </div>
+              </div>
+              <button id="botToggleBtn" class="bot-toggle-btn bot-toggle-active" style="background: white;">
+                <span class="bot-toggle-pill" style="background: var(--primary);"></span>
+                <span class="bot-toggle-text" id="botToggleBtnText" style="color: var(--primary);">Washa</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- WhatsApp Connection Status -->
-        <div class="whatsapp-status-card" id="whatsappStatusCard">
+        <div class="card" id="whatsappStatusCard" style="margin-bottom: 24px; padding: 20px;">
           <div class="ws-header">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="ws-icon">📱</span>
@@ -244,51 +275,38 @@
             </div>
             <button id="whatsappRestartBtn" class="ws-btn-retry hidden">Anzisha WhatsApp Upya</button>
           </div>
-          <!-- Bot Toggle -->
-          <div class="ws-divider"></div>
-          <div class="ws-footer">
-            <div class="bot-toggle-row">
-              <div class="bot-toggle-info">
-                <span class="bot-toggle-icon" id="botToggleIcon">🤖</span>
-                <div>
-                  <div class="bot-toggle-label">AI Sales Agent</div>
-                  <div class="bot-toggle-sublabel" id="botToggleSublabel">Inajibu wateja kiotomatiki</div>
-                </div>
-              </div>
-              <button id="botToggleBtn" class="bot-toggle-btn bot-toggle-active">
-                <span class="bot-toggle-pill"></span>
-                <span class="bot-toggle-text" id="botToggleBtnText">Zima</span>
-              </button>
-            </div>
           </div>
         </div>
 
-        <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-label">Bidhaa Zilizopo</div>
-            <div class="stat-value mono" id="statProducts">—</div>
+        <h3 style="font-size: 16px; margin: 24px 0 16px;">Huduma Zako (Quick Stats)</h3>
+        <div class="icon-box-grid" style="margin-bottom: 32px;">
+          <!-- Icons imitating the design -->
+          <div class="icon-item" onclick="document.querySelector('[data-view=\'products\']').click()">
+            <div class="icon-box icon-box-danger">📦</div>
+            <div class="icon-label">Bidhaa <br><span id="statProducts" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Oda Zote</div>
-            <div class="stat-value mono" id="statOrders">—</div>
+          <div class="icon-item" onclick="document.querySelector('[data-view=\'orders\']').click()">
+            <div class="icon-box icon-box-primary">🛒</div>
+            <div class="icon-label">Oda <br><span id="statOrders" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Oda Zinazosubiri</div>
-            <div class="stat-value mono accent" id="statPending">—</div>
+          <div class="icon-item" onclick="document.querySelector('[data-view=\'conversations\']').click()">
+            <div class="icon-box icon-box-success">💬</div>
+            <div class="icon-label">Wateja <br><span id="statConversations" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Wateja Waliowasiliana</div>
-            <div class="stat-value mono" id="statConversations">—</div>
+          <div class="icon-item" onclick="document.querySelector('[data-view=\'orders\']').click()">
+            <div class="icon-box icon-box-accent">⏳</div>
+            <div class="icon-label">Pending <br><span id="statPending" style="font-weight: 400; color: var(--danger);">0</span></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Walio-Nudged (Cart)</div>
-            <div class="stat-value mono accent" id="statReEngaged">—</div>
+          <div class="icon-item" onclick="document.querySelector('[data-view=\'insights\']').click()">
+            <div class="icon-box icon-box-info">🔄</div>
+            <div class="icon-label">Re-engaged <br><span id="statReEngaged" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
-          <div class="stat-card" style="border-left: 4px solid var(--mustard);">
-            <div class="stat-label">Maombi Maalum (Pending)</div>
-            <div class="stat-value mono accent" id="statSpecialRequests">—</div>
+          <div class="icon-item" onclick="document.querySelector('[data-view=\'orders\']').click()">
+            <div class="icon-box icon-box-danger">🔍</div>
+            <div class="icon-label">Special <br><span id="statSpecialRequests" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
         </div>
+
       </section>
 
       <!-- PRODUCTS -->
@@ -494,8 +512,7 @@
           <p class="view-sub">Badilisha maelezo ya duka lako, sheria za AI, na ratiba ya nudge ya WhatsApp</p>
         </header>
 
-        <div class="settings-card"
-          style="background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+        <div class="card settings-card" style="padding: 24px; margin-bottom: 24px;">
           <h3
             style="margin-top: 0; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px;">
             <span>⚙️</span> Taarifa & Miongozo ya AI
