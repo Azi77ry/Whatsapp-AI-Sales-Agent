@@ -35,6 +35,7 @@ const translations = {
     botOn: "Washa",
     botOff: "Zima",
     botSub: "Inajibu kiotomatiki",
+    botSubPaused: "⏸️ Imesimamishwa — muuzaji anajibu mwenyewe",
     ovStatus: "Hali ya WhatsApp App",
     ovConnected: "Inatafuta hali ya WhatsApp...",
     ovQrOption1: "Chaguo 1: Scan QR code hii na WhatsApp ya simu yako:",

@@ -546,7 +546,7 @@ async function loadOnboardingQR() {
   successDiv.classList.add("hidden");
   
   try {
-    const statusData = await apiFetch("/whatsapp/status");
+    const statusData = await apiFetch("/whatsapp-status");
     if (statusData.state === "connected") {
       qrDiv.style.display = "none";
       successDiv.classList.remove("hidden");
@@ -562,7 +562,7 @@ async function loadOnboardingQR() {
       // Poll every 3 seconds to check if connected
       clearInterval(obPollInterval);
       obPollInterval = setInterval(async () => {
-        const checkData = await apiFetch("/whatsapp/status");
+        const checkData = await apiFetch("/whatsapp-status");
         if (checkData.state === "connected") {
           clearInterval(obPollInterval);
           qrDiv.style.display = "none";
@@ -831,6 +831,14 @@ async function loadOverview() {
   }
   if (document.getElementById("statSpecialRequests")) {
     document.getElementById("statSpecialRequests").textContent = stats.pendingSpecialRequests || 0;
+  }
+  
+  // Sync the bot toggle state visually
+  try {
+    const settings = await apiFetch("/settings");
+    updateBotToggleUI(settings.botActive);
+  } catch (e) {
+    console.error("Failed to load bot settings for toggle state", e);
   }
 }
 
@@ -1453,14 +1461,14 @@ function updateBotToggleUI(isActive) {
 
   if (isActive) {
     btn.className = "bot-toggle-btn bot-toggle-active";
-    btnText.textContent = "Zima";
-    sublabel.textContent = "Inajibu wateja kiotomatiki";
+    btnText.textContent = t('botOff');
+    sublabel.textContent = t('botSub');
     sublabel.classList.remove("bot-sublabel-paused");
     icon.textContent = "🤖";
   } else {
     btn.className = "bot-toggle-btn bot-toggle-paused";
-    btnText.textContent = "Washa";
-    sublabel.textContent = "⏸️ Imesimamishwa — muuzaji anajibu mwenyewe";
+    btnText.textContent = t('botOn');
+    sublabel.textContent = t('botSubPaused') || "⏸️ Imesimamishwa — muuzaji anajibu mwenyewe";
     sublabel.classList.add("bot-sublabel-paused");
     icon.textContent = "💤";
   }
