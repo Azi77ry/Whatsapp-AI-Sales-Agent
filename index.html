@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="sw">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aziry Tech Poster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #111827;
+            /* Tailwind gray-900 */
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Instagram Portrait Ratio (4:5) -> 1080x1350 scaled down for web view */
+        .poster-container {
+            width: 1080px;
+            height: 1350px;
+            background: radial-gradient(circle at top right, #1e3a8a 0%, #0f172a 60%, #020617 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            color: white;
+        }
+
+        /* Decorative Glowing Orbs */
+        .glow-orb-1 {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .glow-orb-2 {
+            position: absolute;
+            bottom: -200px;
+            left: -200px;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        /* Grid background */
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            padding: 80px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Glassmorphism Phone */
+        .glass-phone {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            padding: 15px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-bubble-ai {
+            background: #10b981;
+            /* Emerald 500 */
+            color: white;
+            border-radius: 20px 20px 20px 4px;
+            padding: 16px 20px;
+            font-size: 24px;
+            margin-bottom: 24px;
+            max-width: 85%;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .chat-bubble-user {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 20px 20px 4px 20px;
+            padding: 16px 20px;
+            font-size: 24px;
+            margin-bottom: 24px;
+            max-width: 85%;
+            align-self: flex-end;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- THE POSTER (1080x1350) -->
+    <div class="poster-container" id="poster">
+        <div class="bg-grid"></div>
+        <div class="glow-orb-1"></div>
+        <div class="glow-orb-2"></div>
+
+        <div class="content-wrapper">
+
+            <!-- HEADER: Logo -->
+            <div class="flex items-center mb-16">
+                <div
+                    class="w-20 h-20 bg-emerald-500 rounded-2xl flex items-center justify-center mr-6 shadow-[0_0_30px_rgba(16,185,129,0.5)]">
+                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-5xl font-bold tracking-tight text-white font-['Space_Grotesk']">Aziry<span
+                        class="text-emerald-400">Tech</span></h2>
+            </div>
+
+            <!-- MAIN CONTENT: Split layout -->
+            <div class="flex flex-1 mt-4">
+
+                <!-- Left Side: Copy -->
+                <div class="w-7/12 pr-12 flex flex-col justify-center">
+                    <div
+                        class="inline-block px-6 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-2xl tracking-widest uppercase mb-8 self-start">
+                        WhatsApp AI Sales Agent
+                    </div>
+
+                    <h1
+                        class="text-[85px] leading-[1.1] font-bold mb-10 text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400">
+                        Geuza WhatsApp Yako Kuwa Mashine Ya Mauzo.
+                    </h1>
+
+                    <p class="text-3xl text-gray-300 leading-relaxed mb-16 max-w-2xl">
+                        Pumzika huku Msaidizi wetu wa AI akijibu wateja wako, akionyesha bidhaa, kuchukua oda na kufanya
+                        follow-up masaa 24/7.
+                    </p>
+
+                    <div class="grid grid-cols-1 gap-6 mb-16">
+                        <div class="flex items-center">
+                            <div
+                                class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center mr-6 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-3xl font-semibold text-gray-100">Inajibu Meseji Zote Kiotomatiki
+                                (24/7)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div
+                                class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center mr-6 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-3xl font-semibold text-gray-100">Inatuma Picha & Bei za Bidhaa</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div
+                                class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center mr-6 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-3xl font-semibold text-gray-100">Inachukua Oda & Address za Wateja</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div
+                                class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center mr-6 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-3xl font-semibold text-gray-100">Smart Follow-up kwa Wateja
+                                Waliopotea</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Phone Visual -->
+                <div class="w-5/12 flex items-center justify-center relative">
+                    <!-- Floating glass cards -->
+                    <div
+                        class="absolute -left-16 top-32 feature-card z-20 flex items-center shadow-2xl transform -rotate-6">
+                        <span class="text-4xl mr-4">📈</span>
+                        <span class="text-2xl font-bold">Mauzo +300%</span>
+                    </div>
+
+                    <div
+                        class="absolute -right-12 bottom-48 feature-card z-20 flex items-center shadow-2xl transform rotate-3">
+                        <span class="text-4xl mr-4">🤖</span>
+                        <span class="text-2xl font-bold">Inafanya kazi Ukiwa Umelala</span>
+                    </div>
+
+                    <!-- Phone Outline -->
+                    <div class="glass-phone w-full h-[850px] relative flex flex-col">
+                        <!-- Notch -->
+                        <div
+                            class="absolute top-0 left-1/2 transform -translate-x-1/2 w-48 h-10 bg-black rounded-b-3xl">
+                        </div>
+
+                        <!-- Chat Interface -->
+                        <div class="flex-1 bg-[#0b141a] rounded-[26px] overflow-hidden flex flex-col relative">
+                            <!-- Chat Header -->
+                            <div class="bg-[#202c33] h-24 flex items-center px-6">
+                                <div
+                                    class="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center text-2xl">
+                                    🤖</div>
+                                <div class="ml-4">
+                                    <h3 class="text-2xl font-bold text-white">Aziry AI Assistant</h3>
+                                    <p class="text-emerald-400 text-lg">Online</p>
+                                </div>
+                            </div>
+
+                            <!-- Chat Body -->
+                            <div class="flex-1 p-6 flex flex-col justify-end bg-[#0b141a]"
+                                style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-size: cover; background-blend-mode: overlay; background-color: rgba(11,20,26,0.9);">
+
+                                <div class="flex flex-col w-full">
+                                    <div class="chat-bubble-user">
+                                        Habari, nataka kiatu cha Nike Airforce size 42.
+                                    </div>
+
+                                    <div class="chat-bubble-ai flex flex-col">
+                                        <span>Habari! Ndio tunacho. Nike Airforce size 42 ipo rangi nyeupe na nyeusi.
+                                            Bei yake ni TSH 45,000 tu.</span>
+                                        <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                                            class="w-full h-48 object-cover rounded-xl mt-4" alt="Shoe">
+                                    </div>
+
+                                    <div class="chat-bubble-user">
+                                        Nalipia vipi? Nafanya delivery Mbezi.
+                                    </div>
+
+                                    <div class="chat-bubble-ai">
+                                        Sawa kabisa! Tumia Lipa Namba 150906529. Tuma risiti hapa nikuandalie oda yako
+                                        ya Mbezi mara moja! 🚀
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Chat Input -->
+                            <div class="h-20 bg-[#202c33] flex items-center px-6">
+                                <div
+                                    class="flex-1 bg-[#2a3942] h-12 rounded-full px-6 flex items-center text-gray-400 text-xl">
+                                    Type a message...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER: CTA -->
+            <div class="mt-auto flex justify-between items-end border-t border-white/10 pt-12">
+                <div>
+                    <p class="text-3xl text-gray-400 mb-2">Anza Sasa. Hakuna kadi ya benki inahitajika.</p>
+                    <p class="text-6xl font-bold text-white tracking-tight">www.azirytech.online</p>
+                </div>
+                <div
+                    class="bg-emerald-500 text-white text-4xl font-bold py-6 px-12 rounded-2xl shadow-[0_15px_40px_rgba(16,185,129,0.4)]">
+                    ANZA BURE LEO &rarr;
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

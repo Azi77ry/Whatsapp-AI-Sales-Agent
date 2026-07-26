@@ -8,6 +8,23 @@ const { sendMessage } = require("../whatsapp/sender");
 const manager = require("../whatsapp/manager");
 const authMiddleware = require("../middleware/auth");
 const { decrypt } = require("../utils/crypto");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, "../../public/uploads/products", String(req.merchantId));
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
 
 // Msaidizi mdogo: inachukua sync au async route handler na kuimarishia try/catch otomatikal
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch((err) => {
@@ -146,8 +163,17 @@ router.get("/products", wrap(async (req, res) => {
   res.json(products);
 }));
 
+router.post("/products/upload", upload.single("image"), wrap(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "Tafadhali chagua picha." });
+  }
+  // Tengeneza URL inayoweza kufikiwa public (mfano: /uploads/products/1/12345.png)
+  const imageUrl = `/uploads/products/${req.merchantId}/${req.file.filename}`;
+  res.json({ imageUrl });
+}));
+
 router.post("/products", wrap(async (req, res) => {
-  const { name, category, price, stock, colors, sizes, description } = req.body;
+  const { name, category, price, stock, colors, sizes, description, imageUrl } = req.body;
   const product = await prisma.product.create({
     data: {
       merchantId: req.merchantId, // SaaS scoping
@@ -158,6 +184,7 @@ router.post("/products", wrap(async (req, res) => {
       colors: colors || null,
       sizes: sizes || null,
       description: description || null,
+      imageUrl: imageUrl || null,
     },
   });
   res.json(product);
@@ -165,7 +192,7 @@ router.post("/products", wrap(async (req, res) => {
 
 router.put("/products/:id", wrap(async (req, res) => {
   const { id } = req.params;
-  const { name, category, price, stock, colors, sizes, description, isActive } = req.body;
+  const { name, category, price, stock, colors, sizes, description, isActive, imageUrl } = req.body;
   const prodId = parseInt(id, 10);
 
   // Thibitisha uandishi/umiliki
@@ -185,6 +212,7 @@ router.put("/products/:id", wrap(async (req, res) => {
       ...(sizes !== undefined && { sizes }),
       ...(description !== undefined && { description }),
       ...(isActive !== undefined && { isActive }),
+      ...(imageUrl !== undefined && { imageUrl }),
     },
   });
   res.json(product);

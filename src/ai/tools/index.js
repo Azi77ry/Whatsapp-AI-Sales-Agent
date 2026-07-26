@@ -145,6 +145,7 @@ async function searchProducts({ query, merchantId = 1 }) {
       colors: p.colors ? p.colors.split(",") : null,
       sizes: p.sizes ? p.sizes.split(",") : null,
       description: p.description,
+      imageUrl: p.imageUrl || null,
     })),
   };
 }

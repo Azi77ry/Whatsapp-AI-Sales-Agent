@@ -389,10 +389,280 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-function initDashboard() {
+async function initDashboard() {
+  await checkOnboardingStatus();
   loadOverview();
   checkWhatsAppStatus();
 }
+
+// ---- ONBOARDING LOGIC ----
+async function checkOnboardingStatus() {
+  try {
+    const [settingsRes, statsRes] = await Promise.all([
+      apiFetch("/settings"),
+      apiFetch("/stats")
+    ]);
+    
+    // Angalia kama mteja ameunganisha WhatsApp, ana business context, na ana bidhaa (angalau 1)
+    const hasContext = settingsRes.settings && settingsRes.settings.businessContext && settingsRes.settings.businessContext.trim().length > 10;
+    const hasProduct = statsRes.products > 0;
+    
+    // Kama yote yapo sawa, usionyeshe Onboarding
+    if (hasContext && hasProduct) {
+      return; 
+    }
+    
+    // Onyesha Onboarding Wizard
+    startOnboardingWizard(settingsRes.settings);
+  } catch (err) {
+    console.error("Failed to check onboarding status", err);
+  }
+}
+
+let onboardingState = {
+  step: 1,
+  hasWhatsApp: false
+};
+
+function startOnboardingWizard(settings) {
+  const wizard = document.getElementById("onboardingWizard");
+  wizard.classList.remove("hidden");
+  
+  // Weka jina la mteja
+  const merchantInfo = JSON.parse(localStorage.getItem("merchant_info") || "{}");
+  document.getElementById("obMerchantName").textContent = merchantInfo.businessName || "Kiongozi";
+  
+  // Weka context kama ipo
+  if (settings && settings.businessContext) {
+    document.getElementById("obBusinessContext").value = settings.businessContext;
+  }
+  
+  updateOnboardingUI();
+}
+
+function updateOnboardingUI() {
+  document.getElementById("obStep1").classList.add("hidden");
+  document.getElementById("obStep2").classList.add("hidden");
+  document.getElementById("obStep3").classList.add("hidden");
+  document.getElementById("obStep1").style.display = "none";
+  document.getElementById("obStep2").style.display = "none";
+  document.getElementById("obStep3").style.display = "none";
+  
+  const currentStep = document.getElementById(`obStep${onboardingState.step}`);
+  currentStep.classList.remove("hidden");
+  currentStep.style.display = "block";
+  
+  // Update Progress Bar
+  const progressPercent = [33, 66, 100][onboardingState.step - 1];
+  document.getElementById("obProgressBar").style.width = `${progressPercent}%`;
+  
+  // Back Button
+  const backBtn = document.getElementById("obBackBtn");
+  if (onboardingState.step > 1) {
+    backBtn.classList.remove("hidden");
+    backBtn.style.display = "block";
+  } else {
+    backBtn.classList.add("hidden");
+    backBtn.style.display = "none";
+  }
+  
+  // Next Button Text
+  const nextBtn = document.getElementById("obNextBtn");
+  if (onboardingState.step === 3) {
+    nextBtn.innerHTML = `Kamilisha <span style="margin-left: 8px;">🚀</span>`;
+  } else {
+    nextBtn.innerHTML = `Endelea <span style="margin-left: 8px;">&rarr;</span>`;
+  }
+  
+  if (onboardingState.step === 2) {
+    loadOnboardingQR();
+  }
+}
+
+document.getElementById("obNextBtn").addEventListener("click", async () => {
+  const nextBtn = document.getElementById("obNextBtn");
+  nextBtn.disabled = true;
+  nextBtn.textContent = "⏳...";
+  
+  if (onboardingState.step === 1) {
+    const ctx = document.getElementById("obBusinessContext").value.trim();
+    if (!ctx) {
+      document.getElementById("obStep1Error").classList.remove("hidden");
+      nextBtn.disabled = false;
+      nextBtn.innerHTML = `Endelea <span style="margin-left: 8px;">&rarr;</span>`;
+      return;
+    }
+    document.getElementById("obStep1Error").classList.add("hidden");
+    // Save Context
+    try {
+      await apiFetch("/settings/context", {
+        method: "PUT",
+        body: JSON.stringify({ context: ctx })
+      });
+      onboardingState.step = 2;
+      updateOnboardingUI();
+    } catch(err) {
+      alert("Kosa: " + err.message);
+    }
+  } 
+  else if (onboardingState.step === 2) {
+    // Endelea hata kama hajaunganisha WhatsApp (Optional skip per user choice inside step)
+    onboardingState.step = 3;
+    updateOnboardingUI();
+  }
+  else if (onboardingState.step === 3) {
+    const name = document.getElementById("obProdName").value.trim();
+    const price = document.getElementById("obProdPrice").value.trim();
+    const desc = document.getElementById("obProdDesc").value.trim();
+    
+    if (!name || !price) {
+      document.getElementById("obStep3Error").classList.remove("hidden");
+      nextBtn.disabled = false;
+      nextBtn.innerHTML = `Kamilisha <span style="margin-left: 8px;">🚀</span>`;
+      return;
+    }
+    document.getElementById("obStep3Error").classList.add("hidden");
+    
+    try {
+      await apiFetch("/products", {
+        method: "POST",
+        body: JSON.stringify({ name, price: Number(price), description: desc, isAvailable: true })
+      });
+      
+      // Fire Confetti
+      fireConfetti();
+      document.getElementById("onboardingWizard").classList.add("hidden");
+      loadProducts();
+    } catch(err) {
+      alert("Kosa: " + err.message);
+    }
+  }
+  
+  nextBtn.disabled = false;
+  if (onboardingState.step !== 3) {
+    nextBtn.innerHTML = `Endelea <span style="margin-left: 8px;">&rarr;</span>`;
+  }
+});
+
+document.getElementById("obBackBtn").addEventListener("click", () => {
+  if (onboardingState.step > 1) {
+    onboardingState.step--;
+    updateOnboardingUI();
+  }
+});
+
+document.getElementById("obSkipBtn").addEventListener("click", () => {
+  document.getElementById("onboardingWizard").classList.add("hidden");
+});
+
+let obPollInterval;
+async function loadOnboardingQR() {
+  const qrDiv = document.getElementById("obQrcode");
+  const successDiv = document.getElementById("obConnectedSuccess");
+  
+  qrDiv.innerHTML = "Inatafuta QR Code...";
+  successDiv.classList.add("hidden");
+  
+  try {
+    const statusData = await apiFetch("/whatsapp/status");
+    if (statusData.state === "connected") {
+      qrDiv.style.display = "none";
+      successDiv.classList.remove("hidden");
+      onboardingState.hasWhatsApp = true;
+      return;
+    }
+    
+    qrDiv.style.display = "block";
+    if (statusData.qr) {
+      qrDiv.innerHTML = "";
+      new QRCode(qrDiv, { text: statusData.qr, width: 200, height: 200 });
+      
+      // Poll every 3 seconds to check if connected
+      clearInterval(obPollInterval);
+      obPollInterval = setInterval(async () => {
+        const checkData = await apiFetch("/whatsapp/status");
+        if (checkData.state === "connected") {
+          clearInterval(obPollInterval);
+          qrDiv.style.display = "none";
+          successDiv.classList.remove("hidden");
+          onboardingState.hasWhatsApp = true;
+          // Auto advance to step 3 after 2 seconds
+          setTimeout(() => {
+            onboardingState.step = 3;
+            updateOnboardingUI();
+          }, 2000);
+        }
+      }, 3000);
+    } else {
+      qrDiv.innerHTML = "Akaunti inaunganishwa au inaanza. Subiri kidogo kisha rudisha nyuma na uje mbele.";
+    }
+  } catch (err) {
+    qrDiv.innerHTML = "Kosa: " + err.message;
+  }
+}
+
+// ---- CONFETTI ANIMATION ----
+function fireConfetti() {
+  const canvas = document.getElementById("confettiCanvas");
+  canvas.classList.remove("hidden");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  
+  const particles = [];
+  const colors = ['#00DC82', '#6366f1', '#f59e0b', '#ef4444', '#ec4899'];
+  
+  for(let i=0; i<150; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      r: Math.random() * 6 + 2,
+      d: Math.random() * 150 + 10,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.random() * 10 - 10,
+      tiltAngle: Math.random() * 0.05,
+      tiltAngleIncr: (Math.random() * 0.07) + 0.05
+    });
+  }
+  
+  let angle = 0;
+  let W = window.innerWidth;
+  let H = window.innerHeight;
+  let animationId;
+  
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for(let i=0; i<particles.length; i++) {
+      let p = particles[i];
+      ctx.beginPath();
+      ctx.lineWidth = p.r;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.r, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+      ctx.stroke();
+    }
+    update();
+    animationId = requestAnimationFrame(draw);
+  }
+  
+  function update() {
+    angle += 0.01;
+    for(let i=0; i<particles.length; i++) {
+      let p = particles[i];
+      p.y += Math.cos(angle + p.d) + 1 + p.r / 2;
+      p.x += Math.sin(angle);
+      p.tiltAngle += p.tiltAngleIncr;
+      p.tilt = Math.sin(p.tiltAngle) * 15;
+    }
+  }
+  
+  draw();
+  setTimeout(() => {
+    cancelAnimationFrame(animationId);
+    canvas.classList.add("hidden");
+  }, 5000);
+}
+
 
 // ---- CONVERSATIONS ----
 async function loadConversations(page = 1) {
@@ -592,7 +862,11 @@ async function loadProducts() {
     .filter((p) => p.isActive)
     .forEach((p) => {
       const tr = document.createElement("tr");
+      const imgCell = p.imageUrl 
+        ? `<img src="${p.imageUrl}" alt="picha" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />` 
+        : `<div style="width:40px;height:40px;background:var(--line);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);">Hakuna</div>`;
       tr.innerHTML = `
+        <td>${imgCell}</td>
         <td>${escapeHtml(p.name)}</td>
         <td>${escapeHtml(p.category)}</td>
         <td class="mono">${Number(p.price).toLocaleString()}</td>
@@ -633,6 +907,7 @@ function openProductModal(product) {
   document.getElementById("pColors").value = product ? product.colors || "" : "";
   document.getElementById("pSizes").value = product ? product.sizes || "" : "";
   document.getElementById("pDescription").value = product ? product.description || "" : "";
+  document.getElementById("pImage").value = ""; // Reset file input
 
   // Jaza categories kwa nguvu kutoka kwa bidhaa zilizopo + za kawaida
   const defaultCategories = ["Jezi", "Simu", "Laptop", "Smartwatch", "Calculator", "Accessories"];
@@ -681,6 +956,27 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     alert("Tafadhali chagua au andika category.");
     return;
   }
+  
+  let imageUrl = undefined;
+  const imageFile = document.getElementById("pImage").files[0];
+  if (imageFile) {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    try {
+      const uploadRes = await fetch(API_BASE + "/products/upload", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${localStorage.getItem("merchant_token")}` },
+        body: formData
+      });
+      if (uploadRes.ok) {
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.imageUrl;
+      }
+    } catch(err) {
+      console.error("Upload error:", err);
+    }
+  }
+
   const payload = {
     name: document.getElementById("pName").value,
     category: categoryVal,
@@ -689,6 +985,7 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     colors: document.getElementById("pColors").value,
     sizes: document.getElementById("pSizes").value,
     description: document.getElementById("pDescription").value,
+    ...(imageUrl && { imageUrl })
   };
 
   if (id) {

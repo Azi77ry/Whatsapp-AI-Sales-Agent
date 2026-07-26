@@ -302,6 +302,7 @@
           <table id="productsTable">
             <thead>
               <tr>
+                <th>Picha</th>
                 <th>Jina</th>
                 <th>Category</th>
                 <th>Bei</th>
@@ -777,6 +778,9 @@
         <label>Jina la Bidhaa</label>
         <input type="text" id="pName" required />
 
+        <label>Picha ya Bidhaa (Hiari)</label>
+        <input type="file" id="pImage" accept="image/*" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text);" />
+
         <label>Category</label>
         <select id="pCategory" required>
           <!-- Categories zinaongezwa kwa nguvu na app.js kutoka kwa bidhaa zilizopo -->
@@ -835,6 +839,69 @@
       </form>
     </div>
   </div>
+
+  <!-- ONBOARDING WIZARD MODAL -->
+  <div id="onboardingWizard" class="modal-overlay hidden" style="z-index: 9999; backdrop-filter: blur(10px);">
+    <div class="onboarding-modal" style="background: var(--surface); width: 100%; max-width: 600px; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
+      
+      <!-- Progress Bar -->
+      <div class="ob-progress" style="display: flex; height: 6px; background: var(--line);">
+        <div id="obProgressBar" style="width: 33%; background: var(--indigo); transition: width 0.4s ease;"></div>
+      </div>
+
+      <!-- Header -->
+      <div style="padding: 24px 32px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-family: 'Space Grotesk', sans-serif; color: var(--text-main); font-size: 24px;">Karibu <span id="obMerchantName" style="color: var(--indigo);"></span>! 🎉</h3>
+        <button id="obSkipBtn" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; font-weight: 500; text-decoration: underline;">Ruka kwa sasa</button>
+      </div>
+
+      <!-- Body / Steps -->
+      <div style="padding: 32px; position: relative; min-height: 350px;">
+        
+        <!-- Step 1: Context -->
+        <div id="obStep1" class="ob-step active" style="animation: slideInRight 0.4s forwards;">
+          <h4 style="font-size: 18px; color: var(--text-main); margin-top: 0; margin-bottom: 10px;">1. Tuambie kuhusu biashara yako</h4>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">AI yetu inahitaji kujua unauza nini na miongozo ya duka lako ili iweze kuwajibu wateja wako kwa usahihi (Kama binadamu).</p>
+          <textarea id="obBusinessContext" rows="5" placeholder="Mfano: Sisi ni duka la nguo Dar es Salaam. Tunauza nguo za kiume na kike. Tunafanya delivery mikoani kwa TSH 10,000. Lugha ya biashara ni ya kistaarabu na changamfu." style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 14px; resize: vertical;"></textarea>
+          <p id="obStep1Error" class="hidden" style="color: var(--danger); font-size: 13px; margin-top: 8px; font-weight: 600;">Tafadhali weka maelezo ya duka lako.</p>
+        </div>
+
+        <!-- Step 2: Connect WhatsApp -->
+        <div id="obStep2" class="ob-step hidden" style="display: none; animation: slideInRight 0.4s forwards;">
+          <h4 style="font-size: 18px; color: var(--text-main); margin-top: 0; margin-bottom: 10px;">2. Unganisha Namba ya WhatsApp</h4>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Scan QR Code hii ukitumia WhatsApp ya biashara yako (Linked Devices > Link a Device).</p>
+          
+          <div id="obQrContainer" style="display: flex; justify-content: center; align-items: center; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--line); min-height: 200px;">
+            <div id="obQrcode" style="text-align: center; color: var(--text-muted);">Inatafuta QR Code...</div>
+          </div>
+          <div id="obConnectedSuccess" class="hidden" style="text-align: center; margin-top: 20px; color: var(--success); font-weight: 700; font-size: 16px;">
+            ✅ WhatsApp Imeunganishwa Kikamilifu!
+          </div>
+        </div>
+
+        <!-- Step 3: Add First Product -->
+        <div id="obStep3" class="ob-step hidden" style="display: none; animation: slideInRight 0.4s forwards;">
+          <h4 style="font-size: 18px; color: var(--text-main); margin-top: 0; margin-bottom: 10px;">3. Weka Bidhaa ya Kwanza</h4>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Ili AI iweze kuuza, inahitaji bidhaa. Weka bidhaa yako ya kwanza hapa chini.</p>
+          
+          <input type="text" id="obProdName" placeholder="Jina la Bidhaa (Mfano: Airforce 1)" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text-main);" />
+          <input type="number" id="obProdPrice" placeholder="Bei (Mfano: 45000)" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text-main);" />
+          <textarea id="obProdDesc" rows="3" placeholder="Maelezo ya bidhaa (Mfano: Zipo rangi nyeusi na nyeupe, size zote)" style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; resize: vertical;"></textarea>
+          <p id="obStep3Error" class="hidden" style="color: var(--danger); font-size: 13px; margin-top: 8px; font-weight: 600;">Tafadhali jaza jina na bei.</p>
+        </div>
+
+      </div>
+
+      <!-- Footer / Actions -->
+      <div style="padding: 24px 32px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 12px; background: var(--bg);">
+        <button id="obBackBtn" class="btn-ghost" style="display: none;">Nyuma</button>
+        <button id="obNextBtn" class="btn-primary" style="padding: 10px 24px;">Endelea <span style="margin-left: 8px;">&rarr;</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confettiCanvas" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10000;"></canvas>
 
   <script src="app.js"></script>
 </body>

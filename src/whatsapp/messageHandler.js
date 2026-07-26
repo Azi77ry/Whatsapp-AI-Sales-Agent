@@ -22,9 +22,36 @@ function extractTextFromMessage(msg) {
 async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3) {
   const RETRY_DELAY_MS = 2000;
 
+  // Extract IMAGE tag if present
+  let imageUrl = null;
+  let cleanText = replyText;
+  const imageMatch = replyText.match(/\[IMAGE:\s*(.+?)\]/i);
+  if (imageMatch) {
+    imageUrl = imageMatch[1].trim();
+    cleanText = replyText.replace(imageMatch[0], "").trim();
+    
+    // Check if it's a local upload
+    if (imageUrl.startsWith("/uploads/")) {
+      const path = require("path");
+      const fs = require("fs");
+      const localPath = path.join(__dirname, "../../public", imageUrl);
+      if (fs.existsSync(localPath)) {
+        imageUrl = { url: localPath }; // Baileys reads from local path
+      } else {
+        imageUrl = { url: imageUrl };
+      }
+    } else {
+      imageUrl = { url: imageUrl };
+    }
+  }
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      await sock.sendMessage(remoteJid, { text: replyText });
+      if (imageUrl) {
+        await sock.sendMessage(remoteJid, { image: imageUrl, caption: cleanText });
+      } else {
+        await sock.sendMessage(remoteJid, { text: cleanText });
+      }
       return true;
     } catch (err) {
       const isConnectionError =
