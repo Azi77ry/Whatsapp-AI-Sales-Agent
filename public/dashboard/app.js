@@ -126,7 +126,7 @@ async function handleLogin() {
       localStorage.setItem("merchant_token", data.token);
       localStorage.setItem("merchant_info", JSON.stringify(data.merchant));
 
-      document.getElementById("merchantBrandName").textContent = data.merchant.businessName;
+      // document.getElementById("merchantBrandName").textContent = data.merchant.businessName;
       document.getElementById("loginScreen").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
       initDashboard();
