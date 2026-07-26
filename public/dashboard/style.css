@@ -21,6 +21,7 @@
   --border: #E0E5F2; /* Soft Border */
 
   /* Layout & Shadows */
+  --sidebar-w: 260px;
   --radius: 20px;
   --radius-sm: 12px;
   --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.02);
