@@ -586,6 +586,11 @@ tr:hover td {
   color: var(--accent);
 }
 
+.badge-paid {
+  background: rgba(59, 130, 246, 0.15); /* Blue */
+  color: #2563eb;
+}
+
 .badge-confirmed {
   background: rgba(16, 185, 129, 0.15);
   color: var(--success);

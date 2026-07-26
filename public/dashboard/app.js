@@ -719,6 +719,7 @@ async function loadOrders() {
       <td>
         <select onchange="updateOrderStatus(${o.id}, this.value)" class="badge badge-${o.status}">
           <option value="pending" ${o.status === "pending" ? "selected" : ""}>Pending</option>
+          <option value="paid" ${o.status === "paid" ? "selected" : ""}>Paid</option>
           <option value="confirmed" ${o.status === "confirmed" ? "selected" : ""}>Confirmed</option>
           <option value="delivered" ${o.status === "delivered" ? "selected" : ""}>Delivered</option>
           <option value="cancelled" ${o.status === "cancelled" ? "selected" : ""}>Cancelled</option>

@@ -244,6 +244,9 @@ function buildOrderStatusMessage(order, status) {
     ? `${order.productName} (${details.join(", ")})`
     : order.productName;
 
+  if (status === "paid") {
+    return `✅ *Malipo Yamepokelewa!*\n\nTumepokea muamala wako kwa oda ya:\n🛍️ ${productLine} (Oda #${order.id}).\n\nOda yako sasa inashughulikiwa na utapewa taarifa ya uwasilishaji hivi punde. Asante! 🙏`;
+  }
   if (status === "confirmed") {
     return `✅ *Oda Yako Imethibitishwa!*\n\n🛍️ ${productLine}\n🔖 Oda #${order.id}\n\nTunaandaa bidhaa yako, itakuwa tayari hivi karibuni. Asante kwa uvumilivu wako! 😊`;
   }
