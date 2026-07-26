@@ -462,33 +462,61 @@
         <header class="view-header">
           <div class="vh-text">
             <h2 data-i18n="insTitle">Ripoti na Uchambuzi wa AI</h2>
-            <p class="view-sub" data-i18n="insDesc">AI inakuchambulia mienendo ya wateja na kukuandalia ufupisho</p>
+            <p class="view-sub" data-i18n="insDesc">Takwimu za biashara, wateja wanaoweza kununua, na ushauri wa AI</p>
           </div>
         </header>
 
-        <div class="card" style="margin-bottom: 24px; border-left: 4px solid var(--primary);">
-          <h3 style="margin-top: 0; color: var(--primary);" data-i18n="insSummaryTitle">Ufupisho wa Wiki Hii (AI Summary)</h3>
-          <p id="aiSummaryText" style="line-height: 1.6; color: var(--text-muted);" data-i18n="insSummaryEmpty">Takwimu hazitoshi kuunda ufupisho. AI itaandika ripoti
-            kadiri wateja wanavyoongezeka.</p>
+        <div class="stat-grid" id="insightsStatGrid" style="margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-label">Mapato (Delivered)</div>
+            <div class="stat-value mono" id="insStatRevenue">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Conversion Rate</div>
+            <div class="stat-value mono accent" id="insStatConversion">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Wateja Wote</div>
+            <div class="stat-value mono" id="insStatCustomers">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Bidhaa Stock Ndogo</div>
+            <div class="stat-value mono" id="insStatLowStock">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Walio-Nudged (Cart)</div>
+            <div class="stat-value mono accent" id="insStatReEngaged">—</div>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-          <div class="card">
-            <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
-              📈 <span data-i18n="insTrendTitle">Mienendo (Trends) Kutoka kwa Wateja</span>
-            </h3>
-            <ul id="aiTrendsList" style="padding-left: 20px; line-height: 1.6; color: var(--text-muted);">
-              <li data-i18n="insTrendEmpty">Hakuna mienendo iliyogundulika bado.</li>
-            </ul>
+        <div class="insights-section">
+          <h3>🔥 Wateja Wanaoweza Kununua</h3>
+          <p class="view-sub" style="margin-bottom:14px;">Wateja wenye mazungumzo mengi lakini bado hawajakamilisha oda
+          </p>
+          <div id="potentialCustomersList"></div>
+        </div>
+
+        <div class="insights-section">
+          <h3>📣 Wateja Waliofanyiwa Cart Re-engagement</h3>
+          <p class="view-sub" style="margin-bottom:14px;">Wateja waliorudishiwa ujumbe wa kukumbushwa kiotomatiki
+            (Automated Abandoned Cart Nudge)
+          </p>
+          <div id="reEngagedCustomersList"></div>
+        </div>
+
+        <div class="insights-section">
+          <h3>💡 Ushauri wa AI kwa Biashara Yako</h3>
+          <button class="btn-primary" id="generateAdviceBtn" style="margin-bottom:14px;">Pata Ushauri Sasa</button>
+          <div id="adviceBox" class="advice-box hidden"></div>
+        </div>
+
+        <div class="insights-section">
+          <h3>🗣️ Uliza Swali Lolote Kuhusu Duka Lako</h3>
+          <div class="ask-box" style="margin-bottom:14px; display:flex; gap:10px;">
+            <input type="text" id="askQuestionInput" placeholder="Mfano: Bidhaa gani inauza zaidi wiki hii?" style="flex:1; padding:10px; border:1px solid var(--line); border-radius:6px; font-size:14px;" />
+            <button class="btn-primary" id="askQuestionBtn">Uliza AI</button>
           </div>
-          <div class="card">
-            <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
-              🎯 <span data-i18n="insActionTitle">Mapendekezo ya AI Kwako (Actionable Insights)</span>
-            </h3>
-            <ul id="aiActionsList" style="padding-left: 20px; line-height: 1.6; color: var(--text-muted);">
-              <li data-i18n="insActionEmpty">Hakuna mapendekezo kwa sasa.</li>
-            </ul>
-          </div>
+          <div id="askHistory"></div>
         </div>
       </section>
 

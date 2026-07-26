@@ -81,20 +81,93 @@ function handleLogout() {
   showAuthPanel("loginPanel");
 }
 
-document.getElementById("forgotToLoginLink").addEventListener("click", (e) => {
+document.getElementById("toRegisterLink")?.addEventListener("click", (e) => {
   e.preventDefault();
-  showAuthPanel("loginPanel");
+  switchAuthView("register");
 });
 
-document.getElementById("resetToLoginLink").addEventListener("click", (e) => {
+document.getElementById("toLoginLink")?.addEventListener("click", (e) => {
   e.preventDefault();
-  showAuthPanel("loginPanel");
+  switchAuthView("login");
 });
 
-// ---- LOGIN SUBMIT ----
-document.getElementById("submitLoginBtn").addEventListener("click", handleLogin);
-document.getElementById("loginPassword").addEventListener("keydown", (e) => {
+document.getElementById("toForgotLink")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  switchAuthView("forgot");
+});
+
+document.getElementById("forgotToLoginLink")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  switchAuthView("login");
+});
+
+document.getElementById("resetToLoginLink")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  switchAuthView("login");
+});
+
+document.getElementById("submitLoginBtn")?.addEventListener("click", handleLogin);
+document.getElementById("loginPassword")?.addEventListener("keydown", (e) => {
   if (e.key === "Enter") handleLogin();
+});
+
+document.getElementById("submitRegisterBtn")?.addEventListener("click", handleRegister);
+document.getElementById("regPassword")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handleRegister();
+});
+
+document.getElementById("submitForgotBtn")?.addEventListener("click", handleForgot);
+document.getElementById("forgotEmailOrPhone")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handleForgot();
+});
+
+document.getElementById("submitResetBtn")?.addEventListener("click", handleReset);
+document.getElementById("resetNewPassword")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handleReset();
+});
+
+document.getElementById("logoutBtn")?.addEventListener("click", handleLogout);
+
+document.getElementById("obNextBtn")?.addEventListener("click", async () => {
+  await completeOnboardingStep(1, { language: currentLang });
+});
+
+document.getElementById("obBackBtn")?.addEventListener("click", () => {
+  switchOnboardingStep(1);
+});
+
+document.getElementById("obSkipBtn")?.addEventListener("click", async () => {
+  await completeOnboardingStep(2, { skipped: true });
+});
+
+document.getElementById("addProductBtn")?.addEventListener("click", () => openProductModal(null));
+document.getElementById("cancelProductBtn")?.addEventListener("click", closeProductModal);
+
+document.getElementById("pCategory")?.addEventListener("change", function () {
+  const manualDiv = document.getElementById("pCategoryManualDiv");
+  if (this.value === "manual") {
+    manualDiv.classList.remove("hidden");
+  } else {
+    manualDiv.classList.add("hidden");
+  }
+});
+
+document.getElementById("productForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  await handleSaveProduct();
+});
+
+document.getElementById("srCancelBtn")?.addEventListener("click", () => {
+  document.getElementById("specialRequestModal")?.classList.add("hidden");
+});
+
+document.getElementById("srSaveBtn")?.addEventListener("click", async () => {
+  await saveSpecialRequest();
+});
+
+document.getElementById("settingsForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  await saveSettings();
 });
 
 async function handleLogin() {
@@ -1237,26 +1310,23 @@ async function loadReEngagedCustomers() {
     .join("");
 }
 
-document.getElementById("generateAdviceBtn").addEventListener("click", async () => {
+document.getElementById("generateAdviceBtn")?.addEventListener("click", async () => {
   const btn = document.getElementById("generateAdviceBtn");
   const box = document.getElementById("adviceBox");
+  if (!box) return;
   btn.disabled = true;
   btn.textContent = "Inatengeneza ushauri...";
   box.classList.remove("hidden");
   box.innerHTML = `<p class="conv-empty" style="margin:0;">AI inachambua takwimu zako, subiri kidogo...</p>`;
-  btn.disabled = true;
-  btn.textContent = "Inachanganua...";
-  const adviceDiv = document.getElementById("aiAdviceContent");
-  adviceDiv.innerHTML = "<p>Tafadhali subiri, AI inachanganua data za duka lako...</p>";
 
   try {
-    const res = await apiFetch("/insights/advice");
-    adviceDiv.innerHTML = formatAiText(res.advice);
-  } catch (err) {
-    adviceDiv.innerHTML = `<p style="color:red;">Imeshindwa kupata ushauri: ${err.message}</p>`;
+    const { advice } = await insightsFetch("/advice");
+    box.innerHTML = formatAiText(advice);
+  } catch (e) {
+    box.innerHTML = `<p style="color:#b84c3a; margin:0;">Imeshindwa kupata ushauri: ${escapeHtml(e.message)}</p>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = "Pata Ushauri Mpya";
+    btn.textContent = "Pata Ushauri Sasa";
   }
 });
 
