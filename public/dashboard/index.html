@@ -33,37 +33,37 @@
 
       <!-- Login Panel -->
       <div id="loginPanel">
-        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;">Ingia Kwenye Akaunti
+        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;" data-i18n="loginTitle">Ingia Kwenye Akaunti
         </h3>
-        <p class="login-sub">Ingia kusimamia msaidizi wako wa WhatsApp</p>
-        <input type="email" id="loginEmail" placeholder="Barua pepe (Email)"
+        <p class="login-sub" data-i18n="loginSub">Ingia kusimamia msaidizi wako wa WhatsApp</p>
+        <input type="email" id="loginEmail" placeholder="Barua pepe (Email)" data-i18n="emailPlaceholder"
           style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;"
           autofocus />
-        <input type="password" id="loginPassword" placeholder="Neno la siri (Password)"
+        <input type="password" id="loginPassword" placeholder="Neno la siri (Password)" data-i18n="passwordPlaceholder"
           style="width:100%; padding:12px; margin-bottom:12px; border:1px solid var(--line); border-radius:6px;" />
         <button id="submitLoginBtn" class="btn-primary"
-          style="width:100%; padding:12px; font-weight:600;">Ingia</button>
+          style="width:100%; padding:12px; font-weight:600;" data-i18n="loginBtn">Ingia</button>
         <p
           style="margin-top:16px; font-size:13px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <span>Huna akaunti? <a href="#" id="toRegisterLink"
-              style="color:var(--indigo); font-weight:600; text-decoration:none;">Jisajili Hapa</a></span>
+          <span><span data-i18n="noAccount">Huna akaunti?</span> <a href="#" id="toRegisterLink"
+              style="color:var(--indigo); font-weight:600; text-decoration:none;" data-i18n="registerHere">Jisajili Hapa</a></span>
           <a href="#" id="toForgotLink"
-            style="color:var(--text-muted); text-decoration:none; font-size:12px; font-weight:500;">Umesahau
+            style="color:var(--text-muted); text-decoration:none; font-size:12px; font-weight:500;" data-i18n="forgotPass">Umesahau
             password?</a>
         </p>
       </div>
 
       <!-- Register Panel -->
       <div id="registerPanel" class="hidden">
-        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;">Tengeneza Akaunti Mpya</h3>
-        <p class="login-sub">Anza kutumia Msaidizi wa AI kwenye WhatsApp yako</p>
-        <input type="text" id="regBusinessName" placeholder="Jina Lako au la Biashara/Duka"
+        <h3 style="margin-top: 0; color: var(--indigo); font-family: 'Space Grotesk', sans-serif;" data-i18n="regTitle">Tengeneza Akaunti Mpya</h3>
+        <p class="login-sub" data-i18n="regSub">Anza kutumia Msaidizi wa AI kwenye WhatsApp yako</p>
+        <input type="text" id="regBusinessName" placeholder="Jina Lako au la Biashara/Duka" data-i18n="regName"
           style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;" />
-        <input type="email" id="regEmail" placeholder="Barua pepe (Email)"
+        <input type="email" id="regEmail" placeholder="Barua pepe (Email)" data-i18n="emailPlaceholder"
           style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;" />
-        <input type="text" id="regPhone" placeholder="Namba ya WhatsApp (mfano: 255712345678)"
+        <input type="text" id="regPhone" placeholder="Namba ya WhatsApp (mfano: 255712345678)" data-i18n="regPhone"
           style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:6px;" />
-        <input type="password" id="regPassword" placeholder="Neno la siri (Password)"
+        <input type="password" id="regPassword" placeholder="Neno la siri (Password)" data-i18n="passwordPlaceholder"
           style="width:100%; padding:12px; margin-bottom:12px; border:1px solid var(--line); border-radius:6px;" />
 
         <div style="margin-bottom: 15px; display: flex; align-items: start; gap: 8px;" id="termsContainer">
@@ -75,9 +75,9 @@
         </div>
 
         <button id="submitRegisterBtn" class="btn-primary"
-          style="width:100%; padding:12px; font-weight:600; background:var(--success);">Jisajili Sasa</button>
-        <p style="margin-top:16px; font-size:13px;">Tayari una akaunti? <a href="#" id="toLoginLink"
-            style="color:var(--indigo); font-weight:600; text-decoration:none;">Ingia Hapa</a></p>
+          style="width:100%; padding:12px; font-weight:600; background:var(--success);" data-i18n="regBtn">Jisajili Sasa</button>
+        <p style="margin-top:16px; font-size:13px;"><span data-i18n="haveAccount">Tayari una akaunti?</span> <a href="#" id="toLoginLink"
+            style="color:var(--indigo); font-weight:600; text-decoration:none;" data-i18n="loginHere">Ingia Hapa</a></p>
       </div>
 
       <!-- Terms and Conditions Modal -->
@@ -164,28 +164,28 @@
       </div>
       <nav class="nav" style="display:flex; flex-direction:column; height: calc(100% - 70px);">
         <button class="nav-item active" data-view="overview">
-          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">📊</span> Muhtasari
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">📊</span> <span data-i18n="navOverview">Muhtasari</span>
         </button>
         <button class="nav-item" data-view="products">
-          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">📦</span> Bidhaa
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">📦</span> <span data-i18n="navProducts">Bidhaa</span>
         </button>
         <button class="nav-item" data-view="orders">
-          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🛒</span> Oda
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🛒</span> <span data-i18n="navOrders">Oda</span>
         </button>
         <button class="nav-item" data-view="conversations">
-          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">💬</span> Mazungumzo
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">💬</span> <span data-i18n="navConversations">Mazungumzo</span>
         </button>
         <button class="nav-item" data-view="insights">
-          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🧠</span> Ripoti za AI
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🧠</span> <span data-i18n="navInsights">Ripoti za AI</span>
         </button>
         <button class="nav-item" data-view="settings">
-          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">⚙️</span> Mipangilio
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">⚙️</span> <span data-i18n="navSettings">Mipangilio</span>
         </button>
         <button class="nav-item" data-view="support">
-          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🎧</span> Msaada
+          <span class="nav-icon" style="font-size: 18px; margin-right: 4px;">🎧</span> <span data-i18n="navSupport">Msaada</span>
         </button>
         <button class="btn-logout-premium" id="logoutBtn">
-          <svg class="nav-icon" style="width: 18px; height: 18px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> Toka Nje
+          <svg class="nav-icon" style="width: 18px; height: 18px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> <span data-i18n="navLogout">Toka Nje</span>
         </button>
       </nav>
       <div class="sidebar-foot" style="margin-top: 8px;">WhatsApp AI SaaS Agent</div>
@@ -209,8 +209,8 @@
       <!-- OVERVIEW -->
       <section id="view-overview" class="view active">
         <header class="view-header" style="margin-bottom: 24px;">
-          <h2>Muhtasari</h2>
-          <p class="view-sub">Hali ya duka lako kwa ujumla</p>
+          <h2 data-i18n="ovTitle">Muhtasari</h2>
+          <p class="view-sub" data-i18n="ovDesc">Hali ya duka lako kwa ujumla</p>
         </header>
 
         <!-- Premium Hero Card -->
@@ -248,66 +248,63 @@
           <div class="ws-header">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="ws-icon">📱</span>
-              <span class="ws-title">Hali ya WhatsApp</span>
+              <span class="ws-title" data-i18n="ovStatus">Hali ya WhatsApp</span>
             </div>
             <span class="badge" id="whatsappStatusBadge">—</span>
           </div>
           <div class="ws-body" id="whatsappStatusBody">
-            <p id="whatsappStatusText">Inatafuta hali ya WhatsApp...</p>
+            <p id="whatsappStatusText" data-i18n="ovConnected">Inatafuta hali ya WhatsApp...</p>
             <div id="whatsappQrContainer" class="qr-container hidden">
-              <p style="margin-bottom: 10px;">Chaguo 1: Scan QR code hii na WhatsApp ya simu yako:</p>
+              <p style="margin-bottom: 10px;" data-i18n="ovQrOption1">Chaguo 1: Scan QR code hii na WhatsApp ya simu yako:</p>
               <div id="qrcode" style="margin-top: 10px; margin-bottom: 20px; display: flex; justify-content: center;">
               </div>
 
               <div class="pairing-code-section"
                 style="border-top: 1px solid var(--line); padding-top: 20px; text-align: left;">
-                <p style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Chaguo 2: Tumia Namba ya Simu (Pairing
-                  Code)</p>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Kama
-                  unatumia simu hii hii, weka namba yako hapa upate code ya kupaste kwenye WhatsApp (Linked Devices >
-                  Link with phone number).</p>
+                <p style="font-size: 13px; font-weight: 600; margin-bottom: 8px;" data-i18n="ovQrOption2">Chaguo 2: Tumia Namba ya Simu (Pairing Code)</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;" data-i18n="ovQrDesc">Kama unatumia simu hii hii, weka namba yako hapa upate code ya kupaste kwenye WhatsApp (Linked Devices > Link with phone number).</p>
                 <div style="display: flex; gap: 8px;">
                   <input type="text" id="pairPhoneInput" placeholder="mfano: 2557..."
                     style="padding: 10px; border: 1px solid var(--line); border-radius: 6px; width: 100%; font-size: 14px;" />
                   <button id="getPairCodeBtn" class="btn-primary"
-                    style="padding: 10px 16px; font-weight: 600; white-space: nowrap;">Pata Code</button>
+                    style="padding: 10px 16px; font-weight: 600; white-space: nowrap;" data-i18n="ovGetCode">Pata Code</button>
                 </div>
                 <div id="pairCodeDisplay" class="hidden"
                   style="margin-top: 16px; font-size: 28px; font-family: monospace; font-weight: bold; letter-spacing: 6px; color: var(--indigo); background: var(--paper-raised); padding: 16px; border-radius: 8px; border: 2px dashed var(--indigo); text-align: center;">
                 </div>
               </div>
             </div>
-            <button id="whatsappRestartBtn" class="ws-btn-retry hidden">Anzisha WhatsApp Upya</button>
+            <button id="whatsappRestartBtn" class="ws-btn-retry hidden" data-i18n="ovRestart">Anzisha WhatsApp Upya</button>
           </div>
         </div>
 
 
-        <h3 style="font-size: 16px; margin: 24px 0 16px;">Huduma Zako (Quick Stats)</h3>
+        <h3 style="font-size: 16px; margin: 24px 0 16px;" data-i18n="ovQuickStats">Huduma Zako (Quick Stats)</h3>
         <div class="icon-box-grid" style="margin-bottom: 32px;">
           <!-- Icons imitating the design -->
           <div class="icon-item" onclick="document.querySelector('[data-view=\'products\']').click()">
             <div class="icon-box icon-box-danger">📦</div>
-            <div class="icon-label">Bidhaa <br><span id="statProducts" style="font-weight: 400; color: var(--text-muted);">0</span></div>
+            <div class="icon-label" data-i18n="navProducts">Bidhaa <br><span id="statProducts" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
           <div class="icon-item" onclick="document.querySelector('[data-view=\'orders\']').click()">
             <div class="icon-box icon-box-primary">🛒</div>
-            <div class="icon-label">Oda <br><span id="statOrders" style="font-weight: 400; color: var(--text-muted);">0</span></div>
+            <div class="icon-label" data-i18n="navOrders">Oda <br><span id="statOrders" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
           <div class="icon-item" onclick="document.querySelector('[data-view=\'conversations\']').click()">
             <div class="icon-box icon-box-success">💬</div>
-            <div class="icon-label">Wateja <br><span id="statConversations" style="font-weight: 400; color: var(--text-muted);">0</span></div>
+            <div class="icon-label" data-i18n="navConversations">Wateja <br><span id="statConversations" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
           <div class="icon-item" onclick="document.querySelector('[data-view=\'orders\']').click()">
             <div class="icon-box icon-box-accent">⏳</div>
-            <div class="icon-label">Pending <br><span id="statPending" style="font-weight: 400; color: var(--danger);">0</span></div>
+            <div class="icon-label" data-i18n="statPending">Pending <br><span id="statPending" style="font-weight: 400; color: var(--danger);">0</span></div>
           </div>
           <div class="icon-item" onclick="document.querySelector('[data-view=\'insights\']').click()">
             <div class="icon-box icon-box-info">🔄</div>
-            <div class="icon-label">Re-engaged <br><span id="statReEngaged" style="font-weight: 400; color: var(--text-muted);">0</span></div>
+            <div class="icon-label" data-i18n="statReEngaged">Re-engaged <br><span id="statReEngaged" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
           <div class="icon-item" onclick="document.querySelector('[data-view=\'orders\']').click()">
             <div class="icon-box icon-box-danger">🔍</div>
-            <div class="icon-label">Special <br><span id="statSpecialRequests" style="font-weight: 400; color: var(--text-muted);">0</span></div>
+            <div class="icon-label" data-i18n="statSpecial">Special <br><span id="statSpecialRequests" style="font-weight: 400; color: var(--text-muted);">0</span></div>
           </div>
         </div>
 
@@ -316,21 +313,21 @@
       <!-- PRODUCTS -->
       <section id="view-products" class="view">
         <header class="view-header">
-          <h2>Bidhaa</h2>
-          <p class="view-sub">Ongeza, badilisha bei, na weka stock</p>
-          <button class="btn-primary" id="addProductBtn">+ Ongeza Bidhaa</button>
+          <h2 data-i18n="prodTitle">Bidhaa</h2>
+          <p class="view-sub" data-i18n="prodDesc">Ongeza, badilisha bei, na weka stock</p>
+          <button class="btn-primary" id="addProductBtn" data-i18n="prodAddBtn">+ Ongeza Bidhaa</button>
         </header>
         <div class="table-wrap">
           <table id="productsTable">
             <thead>
               <tr>
-                <th>Picha</th>
-                <th>Jina</th>
-                <th>Category</th>
-                <th>Bei</th>
-                <th>Stock</th>
-                <th>Rangi</th>
-                <th>Size</th>
+                <th data-i18n="prodThImg">Picha</th>
+                <th data-i18n="prodThName">Jina</th>
+                <th data-i18n="prodThCat">Category</th>
+                <th data-i18n="prodThPrice">Bei</th>
+                <th data-i18n="prodThStock">Stock</th>
+                <th data-i18n="prodThColor">Rangi</th>
+                <th data-i18n="prodThSize">Size</th>
                 <th></th>
               </tr>
             </thead>
@@ -342,22 +339,28 @@
       <!-- ORDERS -->
       <section id="view-orders" class="view">
         <header class="view-header">
-          <h2>Oda</h2>
-          <p class="view-sub">Oda zote zilizowekwa na wateja kupitia WhatsApp</p>
+          <div class="vh-text">
+            <h2 data-i18n="ordTitle">Oda na Malipo</h2>
+            <p class="view-sub" data-i18n="ordDesc">Fuatilia oda zote zinazotoka kwa wateja</p>
+          </div>
+          <div class="vh-actions">
+            <button class="btn-ghost" data-i18n="ordExportBtn">📥 Pakua PDF / Excel</button>
+          </div>
         </header>
-        <div class="table-wrap">
-          <table id="ordersTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Mteja</th>
-                <th>Bidhaa</th>
-                <th>Idadi</th>
-                <th>Delivery/Pickup</th>
-                <th>Status</th>
-                <th>Tarehe</th>
-              </tr>
-            </thead>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th data-i18n="ordThId">Oda ID</th>
+                  <th data-i18n="ordThCust">Mteja</th>
+                  <th data-i18n="ordThAmount">Kiasi</th>
+                  <th data-i18n="ordThDate">Tarehe</th>
+                  <th data-i18n="ordThStatus">Status</th>
+                  <th data-i18n="ordThActions">Vitendo</th>
+                </tr>
+              </thead>
             <tbody></tbody>
           </table>
         </div>
@@ -428,12 +431,18 @@
 
       <!-- CONVERSATIONS -->
       <section id="view-conversations" class="view">
+        <header class="view-header">
+          <div class="vh-text">
+            <h2 data-i18n="convTitle">Mazungumzo</h2>
+            <p class="view-sub" data-i18n="convDesc">Ona wateja wanaowasiliana na AI hivi sasa</p>
+          </div>
+          <div class="vh-actions">
+            <input type="text" id="chatSearch" placeholder="🔍 Tafuta namba (mfano: 2557...)" data-i18n="convSearchPlaceholder"
+              style="padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);" />
+          </div>
+        </header>
         <div class="conv-layout">
           <div class="conv-list-wrap">
-            <header class="view-header">
-              <h2>Mazungumzo</h2>
-              <p class="view-sub">Wateja waliowasiliana kupitia WhatsApp</p>
-            </header>
             <div id="conversationsList" class="conv-list"></div>
           </div>
           <div class="conv-thread-wrap">
@@ -451,61 +460,35 @@
       <!-- AI INSIGHTS -->
       <section id="view-insights" class="view">
         <header class="view-header">
-          <h2>Ripoti za AI</h2>
-          <p class="view-sub">Takwimu za biashara, wateja wanaoweza kununua, na ushauri wa AI</p>
+          <div class="vh-text">
+            <h2 data-i18n="insTitle">Ripoti na Uchambuzi wa AI</h2>
+            <p class="view-sub" data-i18n="insDesc">AI inakuchambulia mienendo ya wateja na kukuandalia ufupisho</p>
+          </div>
         </header>
 
-        <div class="stat-grid" id="insightsStatGrid" style="margin-bottom:24px;">
-          <div class="stat-card">
-            <div class="stat-label">Mapato (Delivered)</div>
-            <div class="stat-value mono" id="insStatRevenue">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Wateja Waliolipa (%)</div>
-            <div class="stat-value mono accent" id="insStatConversion">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Wateja Wote</div>
-            <div class="stat-value mono" id="insStatCustomers">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Bidhaa Stock Ndogo</div>
-            <div class="stat-value mono" id="insStatLowStock">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Walio-Nudged (Cart)</div>
-            <div class="stat-value mono accent" id="insStatReEngaged">—</div>
-          </div>
+        <div class="card" style="margin-bottom: 24px; border-left: 4px solid var(--primary);">
+          <h3 style="margin-top: 0; color: var(--primary);" data-i18n="insSummaryTitle">Ufupisho wa Wiki Hii (AI Summary)</h3>
+          <p id="aiSummaryText" style="line-height: 1.6; color: var(--text-muted);" data-i18n="insSummaryEmpty">Takwimu hazitoshi kuunda ufupisho. AI itaandika ripoti
+            kadiri wateja wanavyoongezeka.</p>
         </div>
 
-        <div class="insights-section">
-          <h3>🔥 Wateja Wanaoweza Kununua</h3>
-          <p class="view-sub" style="margin-bottom:14px;">Wateja wenye mazungumzo mengi lakini bado hawajakamilisha oda
-          </p>
-          <div id="potentialCustomersList"></div>
-        </div>
-
-        <div class="insights-section">
-          <h3>📣 Wateja Waliofanyiwa Cart Re-engagement</h3>
-          <p class="view-sub" style="margin-bottom:14px;">Wateja waliorudishiwa ujumbe wa kukumbushwa kiotomatiki
-            (Automated Abandoned Cart Nudge)
-          </p>
-          <div id="reEngagedCustomersList"></div>
-        </div>
-
-        <div class="insights-section">
-          <h3>💡 Ushauri wa AI kwa Biashara Yako</h3>
-          <button class="btn-primary" id="generateAdviceBtn" style="margin-bottom:14px;">Pata Ushauri Sasa</button>
-          <div id="adviceBox" class="advice-box hidden"></div>
-        </div>
-
-        <div class="insights-section">
-          <h3>💬 Uliza AI Chochote Kuhusu Biashara Yako</h3>
-          <div class="ask-box">
-            <input type="text" id="askQuestionInput" placeholder="mfano: Ni bidhaa gani niongeze stock wiki hii?" />
-            <button class="btn-primary" id="askQuestionBtn">Uliza</button>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+          <div class="card">
+            <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+              📈 <span data-i18n="insTrendTitle">Mienendo (Trends) Kutoka kwa Wateja</span>
+            </h3>
+            <ul id="aiTrendsList" style="padding-left: 20px; line-height: 1.6; color: var(--text-muted);">
+              <li data-i18n="insTrendEmpty">Hakuna mienendo iliyogundulika bado.</li>
+            </ul>
           </div>
-          <div id="askHistory"></div>
+          <div class="card">
+            <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+              🎯 <span data-i18n="insActionTitle">Mapendekezo ya AI Kwako (Actionable Insights)</span>
+            </h3>
+            <ul id="aiActionsList" style="padding-left: 20px; line-height: 1.6; color: var(--text-muted);">
+              <li data-i18n="insActionEmpty">Hakuna mapendekezo kwa sasa.</li>
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -516,234 +499,84 @@
           <p class="view-sub">Badilisha maelezo ya duka lako, sheria za AI, na ratiba ya nudge ya WhatsApp</p>
         </header>
 
+        <!-- App Language -->
+        <div class="card settings-card" style="padding: 24px; margin-bottom: 24px;">
+          <h4 data-i18n="setLanguageTitle">Lugha / Language</h4>
+          <p class="login-sub" style="margin-bottom: 16px;" data-i18n="setLanguageDesc">Chagua lugha ya mfumo (System Language)</p>
+          <div style="display: flex; gap: 10px;">
+            <button id="langBtnSw" class="btn-primary" onclick="setLanguage('sw')" data-i18n="langSw">Kiswahili</button>
+            <button id="langBtnEn" class="btn-ghost" onclick="setLanguage('en')" data-i18n="langEn">English</button>
+          </div>
+        </div>
+
         <div class="card settings-card" style="padding: 24px; margin-bottom: 24px;">
           <h3
             style="margin-top: 0; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px;">
-            <span>⚙️</span> Taarifa & Miongozo ya AI
-          </h3>
-          <form id="settingsForm">
-            <div class="form-group" style="margin-bottom: 16px;">
-              <label style="display: block; font-weight: 500; margin-bottom: 8px;">Jina la Biashara / Duka</label>
-              <input type="text" id="setBusinessName" required
-                style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-            </div>
+            🏢 <span data-i18n="setBizContextTitle">Business Context & Rules</span></h3>
+          <p class="login-sub" style="margin-bottom: 20px;" data-i18n="setBizContextDesc">Mpe AI maelezo ya kina kuhusu duka lako, sheria, na jinsi ya
+            kujibu.</p>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-              <label style="display: block; font-weight: 500; margin-bottom: 8px;">Miongozo Maalum ya AI (Business
-                Context / Instructions)</label>
-              <textarea id="setBusinessContext" rows="5"
-                placeholder="mfano: Duka letu lipo Kariakoo Congo. Tunafungua saa 2 asubuhi na kufunga saa 12 jioni. Bidhaa zetu zote hazina mazungumzo zaidi ya 1%. Tunatuma bidhaa mikoani kwa TZS 10,000..."
-                style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px; resize: vertical;"></textarea>
-              <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Weka maelezo ya duka, mahali
-                lilipo, na sheria zako ili AI izijue inapojibu wateja.</p>
-            </div>
-
-            <!-- SECURITY SECTION -->
-            <h3
-              style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
-              <span>🔒</span> Usalama wa Akaunti (Security)
-            </h3>
-
-            <div style="margin-bottom: 16px;">
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="togglePasswordChangeBtn"
-                  style="width: 18px; height: 18px; accent-color: var(--primary);" />
-                <span style="font-weight: 600; color: var(--text-main); font-size: 14px;">Nataka kubadili Neno la Siri
-                  (Password)</span>
-              </label>
-            </div>
-
-            <div id="passwordChangeSection" class="hidden"
-              style="background: var(--bg-color); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 24px;">
-              <div class="form-row"
-                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
-                <div>
-                  <label style="display: block; font-weight: 500; margin-bottom: 8px;">Namba ya Simu Yako
-                    (Kuthibitisha)</label>
-                  <input type="text" id="setVerifyPhone" placeholder="mfano: 255712345678" />
-                </div>
-                <div>
-                  <label style="display: block; font-weight: 500; margin-bottom: 8px;">Neno Siri la Zamani
-                    (Kuthibitisha)</label>
-                  <input type="password" id="setOldPassword" placeholder="Neno siri unalotumia sasa" />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Neno Jipya la Siri (New
-                  Password)</label>
-                <input type="password" id="setNewPassword" placeholder="Weka password mpya" />
-              </div>
-            </div>
-
-            <!-- APPEARANCE & THEME SECTION -->
-            <h3
-              style="margin-top: 32px; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 20px;">
-              <span>🎨</span> Muonekano & Lugha (Appearance)
-            </h3>
-            <div class="form-row"
-              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Mandhari (Theme)</label>
-                <select id="setTheme"
-                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;">
-                  <option value="light">Mwanga (Light Mode)</option>
-                  <option value="dark">Giza (Dark Mode)</option>
-                </select>
-              </div>
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Lugha ya Dashboard</label>
-                <select id="setLanguage"
-                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;">
-                  <option value="sw">Kiswahili</option>
-              </div>
-            </div>
-
-            <!-- BROWSER NOTIFICATIONS -->
-            <h3
-              style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
-              <span>🔔</span> Taarifa (Push Notifications)
-            </h3>
-            <div
-              style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <strong style="display: block; margin-bottom: 4px; color: var(--text-main);">Browser
-                  Notifications</strong>
-                <span style="font-size: 13px; color: var(--text-muted);">Pata taarifa za Oda mpya hata kama Dashboard
-                  ipo background.</span>
-              </div>
-              <button type="button" id="enableNotificationsBtn" class="btn-primary" style="padding: 8px 16px;">Washa
-                Notifications</button>
-            </div>
-
-            <h3
-              style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
-              <span>⏰</span> Ratiba ya Nudge (Abandoned Cart Nudging)
-            </h3>
-
-            <div class="form-row"
-              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Muda wa chini
-                  (Masaa)</label>
-                <input type="number" id="setNudgeMin" min="1" required
-                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kusubiri kabla ya kumtumia mteja
-                  nudge (default: 12)</p>
-              </div>
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Muda wa juu
-                  (Masaa)</label>
-                <input type="number" id="setNudgeMax" min="2" required
-                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kutopitiza masaa haya tangu chat
-                  ya mwisho (default: 24)</p>
-              </div>
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Nudge Cooldown
-                  (Masaa)</label>
-                <input type="number" id="setNudgeCooldown" min="12" required
-                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kusubiri kabla ya kutuma nudge
-                  nyingine tena (default: 48)</p>
-              </div>
-            </div>
-
-            <div class="form-row"
-              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Saa ya kuanza
-                  kutuma (EAT)</label>
-                <input type="number" id="setNudgeStartHour" min="0" max="23" required
-                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">AI haitatuma usiku kabla ya saa
-                  hii (default: 7)</p>
-              </div>
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Saa ya mwisho
-                  kutuma (EAT)</label>
-                <input type="number" id="setNudgeEndHour" min="0" max="23" required
-                  style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">AI haitatuma baada ya saa hii
-                  (default: 21)</p>
-              </div>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center; margin-top: 20px;">
-              <span id="settingsSaveStatus"
-                style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
-              <button type="submit" class="btn-primary"
-                style="padding: 12px 24px; font-weight: 600; border-radius: 6px; cursor: pointer;">Hifadhi
-                Mipangilio</button>
-            </div>
-          </form>
-
-          <!-- BILLING / SUBSCRIPTION SECTION -->
-          <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line);">
-            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
-              <span>💳</span> Bili na Kifurushi (Subscription)
-            </h3>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-              <!-- Current Plan Info -->
-              <div class="stat-card" style="background: var(--bg); border: 1px solid var(--primary); display: block;">
-                <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Kifurushi Chako Sasa</div>
-                <div id="currentPlanDisplay" style="font-size: 24px; font-weight: 700; color: var(--text-main); text-transform: capitalize;">Inapakia...</div>
-                <div style="margin-top: 12px; font-size: 13px;">Kinaisha: <strong id="planExpiryDisplay" style="color: var(--primary);">--</strong></div>
-              </div>
-
-              <!-- Upgrade Instructions -->
-              <div class="stat-card" style="background: var(--bg-color); display: block;">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Jinsi ya Kuongeza Muda / Kifurushi</div>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
-                  Tafadhali lipia kupitia namba zifuatazo kisha utume ujumbe WhatsApp wenye Jina la Duka lako ili kifurushi chako kiwashwe:
-                </p>
-                <div style="background: var(--surface); padding: 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; display: flex; flex-direction: column; gap: 12px; align-items: center;">
-                  <div style="text-align: center; width: 100%;">
-                    <strong style="font-size: 14px;">Lipa Namba (Mixx by Yas):</strong><br/>
-                    <span style="font-size: 20px; color: var(--primary); font-weight: bold; letter-spacing: 1px;">150906529</span><br/>
-                    <small>AZIZI IDDI MOHAMED</small>
-                  </div>
-                  <img src="/dashboard/images/mixx-qr.jpg" alt="Lipa kwa Kuscan" style="max-width: 160px; border-radius: 8px; border: 2px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-                  <p style="text-align: center; font-size: 12px; color: var(--text-muted);">Lipa kutoka mitandao yote na Benki kwa Kuscan au kuingiza Lipa Namba</p>
-                </div>
-                <p style="font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 12px; display: flex; align-items: center; gap: 6px;">
-                  <span>💬</span> WhatsApp: +255 692 35 0076
-                </p>
-              </div>
-            </div>
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;" data-i18n="setBizNameLabel">Jina la
+              Duka/Biashara</label>
+            <input type="text" id="setBusinessName"
+              style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size: 14px;" />
           </div>
 
-          <!-- DANGER ZONE -->
-          <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--danger);">
-            <h3
-              style="margin-top: 0; margin-bottom: 8px; color: var(--danger); display: flex; align-items: center; gap: 8px;">
-              <span>⚠️</span> Eneo la Hatari (Danger Zone)
-            </h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-              Kufuta akaunti yako kutafuta data zako zote (bidhaa, oda, jumbe) moja kwa moja kutoka kwenye mfumo wetu.
-              Kitendo hiki hakirudishiki nyuma.
-            </p>
-            <button type="button" id="triggerDeleteAccountBtn" class="btn-ghost"
-              style="color: var(--danger); border-color: var(--danger); font-weight: 600;">
-              Futa Akaunti Yangu
-            </button>
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;" data-i18n="setBizInfoLabel">Maelezo ya
+              Biashara (Context)</label>
+            <textarea id="setBusinessInfo" rows="4"
+              style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size: 14px;"
+              placeholder="Mfano: Sisi ni duka la nguo za kiume Kariakoo. Tunauza suti, viatu na saa..."></textarea>
           </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;" data-i18n="setDeliveryLabel">Sera ya
+              Usafirishaji (Delivery)</label>
+            <textarea id="setDeliveryPolicy" rows="3"
+              style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size: 14px;"
+              placeholder="Mfano: Dar es Salaam usafiri ni bure kwa oda za juu ya Tsh 50k, mikoani ni Tsh 10k kwa basi..."></textarea>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;" data-i18n="setToneLabel">Lugha ya AI
+              (Tone)</label>
+            <select id="setBotTone"
+              style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size: 14px; background: white;">
+              <option value="kawaida, kirafiki" data-i18n="setToneOptFriendly">Kawaida, Kirafiki (Friendly)</option>
+              <option value="rasmi, kibiashara" data-i18n="setToneOptPro">Rasmi, Kibiashara (Professional)</option>
+              <option value="kuchekesha, vichekesho" data-i18n="setToneOptFunny">Kuchekesha, Vichekesho (Humorous)</option>
+              <option value="ushawishi, mauzo" data-i18n="setToneOptPersuasive">Ushawishi wa Kisales (Persuasive/Salesy)</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;" data-i18n="setPromptLabel">Maelekezo Maalum
+              (Custom Instructions)</label>
+            <textarea id="setCustomPrompt" rows="3"
+              style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size: 14px;"
+              placeholder="Mfano: Usipunguze bei zaidi ya asilimia 10. Mpe mteja ofa ya saa akiwa ananunua suti." data-i18n="setPromptPlaceholder"></textarea>
+          </div>
+
+          <button class="btn-primary" id="saveSettingsBtn" style="padding: 12px 24px; font-weight: 600;" data-i18n="setSaveBtn">💾 Hifadhi
+            Mipangilio</button>
+        </div>
+
+        <div class="card settings-card" style="padding: 24px; border-left: 4px solid var(--danger);">
+          <h3 style="margin-top: 0; color: var(--danger); font-size: 16px;" data-i18n="setDelTitle">Futa Akaunti / Delete Account</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;" data-i18n="setDelDesc">
+            Onyo: Ukifuta akaunti yako, data zako zote (bidhaa, oda, na mazungumzo) zitafutwa kabisa na hazitaweza
+            kurudishwa tena.
+          </p>
+          <button id="deleteAccountBtn" class="btn-primary"
+            style="background: var(--danger); font-size: 13px; padding: 10px 16px;" data-i18n="setDelBtn">🗑️ Futa Akaunti Yangu Moja kwa Moja</button>
         </div>
       </section>
 
       <!-- SUPPORT -->
       <section id="view-support" class="view">
         <header class="view-header">
-          <h2>Msaada & Maelekezo</h2>
-          <p class="view-sub">Jifunze jinsi ya kutumia mfumo wako wa AI na jinsi ya kupata msaada</p>
-        </header>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-          <!-- Guide Section -->
-          <div class="stat-card" style="align-items: flex-start; flex-direction: column;">
-            <h3
-              style="margin-top: 0; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
               <span>📖</span> Jinsi ya Kutumia</h3>
             <div style="font-size: 14px; line-height: 1.8; color: var(--text-main);">
               <p><strong>1. Kuunganisha WhatsApp:</strong> Nenda kwenye 'Muhtasari', bofya 'Pata Code' au scan QR Code.
@@ -924,6 +757,7 @@
   <!-- Confetti Canvas -->
   <canvas id="confettiCanvas" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10000;"></canvas>
 
+  <script src="i18n.js"></script>
   <script src="app.js"></script>
 </body>
 
