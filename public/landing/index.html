@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="sw">
-
+<html lang="sw" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-FHVLNECBFR"></script>
@@ -11,430 +10,681 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-FHVLNECBFR');
   </script>
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="logoaziry.png" />
-
-  <!-- Primary Meta Tags -->
   <title>Aziry Tech AI - WhatsApp Sales Agent Kwa Biashara Yako</title>
   <meta name="title" content="Aziry Tech AI - WhatsApp Sales Agent Kwa Biashara Yako">
-  <meta name="description"
-    content="Geuza WhatsApp yako kuwa mashine ya mauzo inayofanya kazi masaa 24. AI yetu inajibu wateja, inachukua oda, na kukumbusha waliopotea kiotomatiki.">
-  <meta name="keywords"
-    content="WhatsApp AI, Mauzo WhatsApp, WhatsApp Bot Tanzania, Aziry Tech, Msaidizi wa WhatsApp, DeepSeek WhatsApp, E-commerce Tanzania, Abandoned Cart WhatsApp">
-  <meta name="author" content="Aziry Tech">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://www.azirytech.online/"> <!-- Badilisha na domain yako halisi -->
-
-  <!-- Open Graph / Facebook -->
+  <meta name="description" content="Geuza WhatsApp yako kuwa mashine ya mauzo inayofanya kazi masaa 24. AI yetu inajibu wateja, inachukua oda, na kukumbusha waliopotea kiotomatiki.">
+  
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.azirytech.online/">
   <meta property="og:title" content="Aziry Tech AI - WhatsApp Sales Agent Kwa Biashara Yako">
-  <meta property="og:description"
-    content="Geuza WhatsApp yako kuwa mashine ya mauzo inayofanya kazi masaa 24. AI yetu inajibu wateja, inachukua oda, na kukumbusha waliopotea kiotomatiki.">
-  <meta property="og:image" content="https://www.azirytech.online/images/og-image.jpg">
-
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://www.azirytech.online/">
-  <meta property="twitter:title" content="Aziry Tech AI - WhatsApp Sales Agent Kwa Biashara Yako">
-  <meta property="twitter:description"
-    content="Geuza WhatsApp yako kuwa mashine ya mauzo inayofanya kazi masaa 24. AI yetu inajibu wateja, inachukua oda, na kukumbusha waliopotea kiotomatiki.">
-  <meta property="twitter:image" content="https://www.azirytech.online/images/og-image.jpg">
+  <meta property="og:description" content="Geuza WhatsApp yako kuwa mashine ya mauzo inayofanya kazi masaa 24. AI yetu inajibu wateja, inachukua oda, na kukumbusha waliopotea kiotomatiki.">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
   <!-- Dynamic Background -->
-  <div class="bg-mesh">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
+  <div class="bg-layer">
+    <div class="mesh-blob blob-1"></div>
+    <div class="mesh-blob blob-2"></div>
+    <div class="mesh-blob blob-3"></div>
+    <div class="grid-overlay"></div>
   </div>
 
-  <nav class="navbar glass">
-    <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
-    <div class="nav-brand">
-      <img src="logoaziry.png" alt="Aziry Tech Logo" style="height: 45px; margin-right: 8px; border-radius: 4px;" />
-      <span class="logo-text" style="font-size: 1.2rem;">Aziry Tech</span>
-    </div>
-    <div class="nav-links">
-      <a href="#features">Sifa</a>
-      <a href="#how-it-works">Jinsi Inavyofanya Kazi</a>
-      <a href="#pricing">Vifurushi</a>
-      <a href="#faq">Maswali</a>
-      <a href="/dashboard/" class="btn btn-outline" style="margin-left: 12px;">Ingia</a>
-      <a href="/dashboard/?register=true" class="btn btn-primary">Anza Bure Sasa</a>
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-brand">
+        <img src="logoaziry.png" alt="Aziry Tech Logo" class="brand-logo" />
+        <span class="brand-text">Aziry Tech AI</span>
+      </a>
+      
+      <div class="nav-links desktop-only">
+        <a href="#features" class="nav-link">Sifa</a>
+        <a href="#demo" class="nav-link">Jinsi Inavyofanya Kazi</a>
+        <a href="#pricing" class="nav-link">Bei</a>
+        <a href="#faq" class="nav-link">Maswali</a>
+      </div>
+
+      <div class="nav-actions desktop-only">
+        <a href="/dashboard/" class="btn btn-ghost">Ingia</a>
+        <a href="/dashboard/?register=true" class="btn btn-primary">
+          <span>Anza Bure</span>
+          <i data-lucide="arrow-right" class="btn-icon"></i>
+        </a>
+      </div>
+
+      <button class="mobile-menu-btn mobile-only" id="mobileMenuBtn" aria-label="Toggle Menu">
+        <i data-lucide="menu"></i>
+      </button>
     </div>
   </nav>
 
-  <!-- Mobile Nav Overlay -->
-  <div class="mobile-nav" id="mobileNav">
-    <a href="#features">Sifa</a>
-    <a href="#how-it-works">Jinsi Inavyofanya Kazi</a>
-    <a href="#pricing">Vifurushi</a>
-    <a href="#faq">Maswali</a>
-    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
-      <a href="/dashboard/" class="btn btn-outline btn-full">Ingia</a>
-      <a href="/dashboard/?register=true" class="btn btn-primary btn-full">Anza Bure Sasa</a>
+  <!-- Mobile Overlay -->
+  <div class="mobile-menu-overlay" id="mobileMenu">
+    <div class="mobile-menu-content">
+      <div class="mobile-menu-header">
+        <span class="brand-text">Menu</span>
+        <button id="closeMenuBtn" class="close-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="mobile-nav-links">
+        <a href="#features" class="mobile-link">Sifa</a>
+        <a href="#demo" class="mobile-link">Jinsi Inavyofanya Kazi</a>
+        <a href="#pricing" class="mobile-link">Bei</a>
+        <a href="#faq" class="mobile-link">Maswali</a>
+      </div>
+      <div class="mobile-nav-actions">
+        <a href="/dashboard/" class="btn btn-outline btn-full">Ingia Akaunti</a>
+        <a href="/dashboard/?register=true" class="btn btn-primary btn-full glow">Anza Sasa - Ni Bure</a>
+      </div>
     </div>
   </div>
 
-  <header class="hero">
-    <div class="hero-content">
-      <div class="badge-pill">
-        <span class="pulse"></span> 🚀 Mfumo mpya wa mapinduzi 2026
-      </div>
-      <h1 class="hero-title">Ongeza Mauzo Yako ya WhatsApp kwa Kutumia <span>Akili Mnemba (AI)</span>.</h1>
-      <p class="hero-desc">Msaidizi wa AI mwenye nguvu ya DeepSeek anayepokea oda, kujibu wateja papo hapo, na
-        kufuatilia waliopotea saa 24/7. Geuza WhatsApp yako kuwa mashine ya kutengeneza pesa.</p>
-      <div class="hero-actions">
-        <a href="/dashboard/?register=true" class="btn btn-primary btn-lg glow-btn">Pata Jaribio la Siku 7 Bure</a>
-        <a href="#how-it-works" class="btn btn-secondary btn-lg">Tazama Inavyofanya Kazi</a>
-      </div>
-      <div class="hero-trust">
-        <div class="trust-item">✔️ Setup ndani ya Dk 2</div>
-        <div class="trust-item">✔️ Hakuna Kadi ya Benki</div>
-        <div class="trust-item">✔️ Lugha zote kisw & Engl</div>
-      </div>
-    </div>
-
-    <div class="hero-visual">
-      <div class="glass-card mockup-card">
-        <div class="mockup-header">
-          <div class="dots"><span></span><span></span><span></span></div>
-          <div class="mockup-title">📱 Duka la Mteja (WhatsApp)</div>
+  <!-- Hero Section -->
+  <section class="hero pt-32 pb-20">
+    <div class="container hero-grid">
+      <div class="hero-content reveal-up">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          Mfumo wa Mauzo wa Mwaka 2026
         </div>
-        <div class="mockup-body">
-          <div class="msg user-msg">Mambo, nina shida na Jezi ya Simba ipo?</div>
-          <div class="msg ai-msg">
-            Habari! Ndiyo, Jezi ya Simba Original ipo kwa bei ya TZS 35,000. 🦁<br><br>
-            Tuna size M, L, na XL. Ungependa nikuwekee oda sasa hivi?
+        <h1 class="hero-title">
+          Badili WhatsApp Yako Kuwa Mashine Ya <span class="text-gradient">Mauzo Ya Kiotomatiki</span>
+        </h1>
+        <p class="hero-subtitle">
+          AI yetu inafanya kazi kama muuzaji wako mzoefu. Inajibu wateja, inashawishi, inachukua oda, na kukumbusha waliopotea masaa 24/7 bila kuchoka.
+        </p>
+        <div class="hero-cta-group">
+          <a href="/dashboard/?register=true" class="btn btn-primary btn-lg glow">
+            Tengeneza AI Yako Bure
+            <i data-lucide="zap" class="btn-icon"></i>
+          </a>
+          <a href="#demo" class="btn btn-secondary btn-lg">
+            Tazama Live Demo
+          </a>
+        </div>
+        <div class="hero-trust-list">
+          <div class="trust-item"><i data-lucide="check-circle-2" class="text-success"></i> Setup Dk 2 Tu</div>
+          <div class="trust-item"><i data-lucide="check-circle-2" class="text-success"></i> Hakuna Kadi ya Benki</div>
+          <div class="trust-item"><i data-lucide="check-circle-2" class="text-success"></i> Lugha zote</div>
+        </div>
+      </div>
+
+      <div class="hero-visual reveal-left">
+        <!-- Live Chat Mockup -->
+        <div class="chat-mockup glass-panel">
+          <div class="chat-header">
+            <div class="chat-contact">
+              <div class="avatar bg-gradient">
+                <i data-lucide="bot" color="white"></i>
+              </div>
+              <div class="contact-info">
+                <div class="contact-name">Aziry Sales AI <i data-lucide="badge-check" class="verified-icon text-primary"></i></div>
+                <div class="contact-status">Online</div>
+              </div>
+            </div>
+            <div class="chat-actions">
+              <i data-lucide="video"></i>
+              <i data-lucide="phone"></i>
+            </div>
           </div>
-          <div class="msg user-msg">Ndio, nahitaji size L. Mna deliver?</div>
-          <div class="msg ai-msg">
-            Sawa kabisa! Tumethibitisha oda yako ya Jezi (Size L). 📦<br>
-            Ndiyo, tunafanya delivery. Tafadhali nitumie anuani yako ili tupange usafiri.
+          <div class="chat-body" id="chatSimulation">
+            <!-- Messages injected by JS -->
+          </div>
+          <div class="chat-footer">
+            <i data-lucide="plus" class="text-muted"></i>
+            <div class="chat-input-fake">Andika ujumbe...</div>
+            <div class="chat-mic-fake bg-primary"><i data-lucide="mic" color="white"></i></div>
           </div>
         </div>
-        <div class="mockup-footer">
-          <div class="input-fake">Andika ujumbe...</div>
-          <div class="send-btn-fake">➤</div>
+        
+        <!-- Floating Elements -->
+        <div class="floating-badge badge-top-right glass-panel">
+          <div class="badge-icon bg-success-light text-success"><i data-lucide="trending-up"></i></div>
+          <div class="badge-text">
+            <span class="badge-title">+314%</span>
+            <span class="badge-sub">Mauzo yamepanda</span>
+          </div>
         </div>
-      </div>
-      <!-- Floating Elements -->
-      <div class="float-badge fb1">💰 Mauzo Yameongezeka!</div>
-      <div class="float-badge fb2">📦 Oda Mpya Imeingia</div>
-    </div>
-  </header>
-
-  <!-- Logos / Trusted By -->
-  <section class="trusted-by">
-    <p>Inaaminika na wafanyabiashara zaidi ya 500+ Afrika Mashariki</p>
-    <div class="logos-grid">
-      <div class="logo-item">DukaLako</div>
-      <div class="logo-item">SokoMjinga</div>
-      <div class="logo-item">FashionTz</div>
-      <div class="logo-item">Kariakoo Express</div>
-    </div>
-  </section>
-
-  <section class="how-it-works" id="how-it-works">
-    <div class="section-header">
-      <div class="section-tag">HATUA KWA HATUA</div>
-      <h2 class="section-title">Inafanya Kazi Kwa Urahisi Sana</h2>
-      <p class="section-desc">Haihitaji utaalam wowote wa IT. Setup inachukua dakika chache tu.</p>
-    </div>
-
-    <div class="steps-container">
-      <div class="step-row">
-        <div class="step-num">1</div>
-        <div class="step-content glass-card">
-          <h3>Jisajili na Unganisha WhatsApp</h3>
-          <p>Tengeneza akaunti, kisha Scan QR Code kupitia simu yako uliyoingia WhatsApp Business (au tumia Pairing
-            Code) - kama vile unavyounganisha WhatsApp Web.</p>
-        </div>
-      </div>
-      <div class="step-row reverse">
-        <div class="step-num">2</div>
-        <div class="step-content glass-card">
-          <h3>Ongeza Bidhaa na Taarifa za Duka</h3>
-          <p>Kwenye Dashboard yako, ongeza bidhaa zako na bei zake. Jaza "Miongozo ya Duka" (Context) ili AI ijue
-            utaratibu wako wa malipo na usafiri.</p>
-        </div>
-      </div>
-      <div class="step-row">
-        <div class="step-num">3</div>
-        <div class="step-content glass-card">
-          <h3>Washa Bot na Uanze Kupokea Pesa</h3>
-          <p>Bofya "Washa Bot". AI itaanza kuwajibu wateja wako wanaotuma meseji. Wewe utaingia tu kuangalia "Oda" na
-            kufanya delivery!</p>
+        <div class="floating-badge badge-bottom-left glass-panel">
+          <div class="badge-icon bg-primary-light text-primary"><i data-lucide="shopping-bag"></i></div>
+          <div class="badge-text">
+            <span class="badge-title">Oda Mpya Imethibitishwa</span>
+            <span class="badge-sub">Tsh 45,000</span>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="features" id="features">
-    <div class="section-header">
-      <div class="section-tag">SIFA KUU</div>
-      <h2 class="section-title">Kwanini Utumie Aziry Tech AI?</h2>
-      <p class="section-desc">Tumetengeneza mfumo kamili wa kuondoa usumbufu wa ku-manage wateja wengi kwa wakati mmoja.
+  <!-- Trusted By -->
+  <section class="trusted-by py-10 border-y glass-surface">
+    <div class="container text-center reveal-up">
+      <p class="text-sm font-semibold text-muted uppercase tracking-wider mb-6">Inaaminika na Wafanyabiashara 500+ Afrika Mashariki</p>
+      <div class="logo-cloud">
+        <span class="brand-logo-fake">DukaLako</span>
+        <span class="brand-logo-fake">SokoMjinga</span>
+        <span class="brand-logo-fake">Kariakoo Exp.</span>
+        <span class="brand-logo-fake">FashionTZ</span>
+        <span class="brand-logo-fake">BongoTech</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Preview -->
+  <section class="dashboard-preview-section py-20 relative">
+    <div class="container">
+      <div class="text-center mb-12 reveal-up">
+        <div class="badge-pill mb-4 text-primary border border-primary-light border">Smart Analytics</div>
+        <h2 class="section-title">Kila Kitu <span class="text-gradient">Kiganjani Mwako</span></h2>
+        <p class="section-subtitle">Fuatilia mauzo yako, oda zote, na mazungumzo ya wateja kupitia dashboard moja ya kisasa inayoonyesha takwimu mubashara.</p>
+      </div>
+      <div class="dashboard-mockup-wrapper reveal-up">
+        <div class="dashboard-mockup glass-panel overflow-hidden">
+          <div class="dash-header border-b border-glass p-4 flex justify-between items-center bg-surface-light">
+            <div class="font-bold text-sm flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-4 h-4 text-primary"></i> Aziry Dashboard</div>
+            <div class="flex gap-2">
+              <span class="dash-dot bg-danger"></span>
+              <span class="dash-dot bg-warning"></span>
+              <span class="dash-dot bg-success"></span>
+            </div>
+          </div>
+          <div class="dash-body p-6 flex flex-col md:flex-row gap-6 relative">
+            <div class="dash-sidebar flex-col gap-4 hidden md:flex w-48">
+              <div class="dash-item active rounded bg-primary-light border border-primary text-primary text-xs p-3 font-semibold flex items-center gap-2"><i data-lucide="home" class="w-4 h-4"></i> Muhtasari</div>
+              <div class="dash-item rounded bg-surface text-muted text-xs p-3 flex items-center gap-2"><i data-lucide="shopping-bag" class="w-4 h-4"></i> Oda Zangu</div>
+              <div class="dash-item rounded bg-surface text-muted text-xs p-3 flex items-center gap-2"><i data-lucide="message-square" class="w-4 h-4"></i> Mazungumzo</div>
+              <div class="dash-item rounded bg-surface text-muted text-xs p-3 flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Wateja</div>
+            </div>
+            <div class="dash-main flex-1 flex flex-col gap-6">
+              <div class="dash-stats flex flex-wrap md:flex-nowrap gap-4">
+                <div class="dash-stat-card bg-surface border border-glass rounded-xl p-4 flex-1 shadow-sm">
+                  <div class="text-xs text-muted mb-1">Oda za Leo</div>
+                  <div class="text-xl font-bold text-white">24 <span class="text-success text-xs font-normal">+12%</span></div>
+                </div>
+                <div class="dash-stat-card bg-surface border border-glass rounded-xl p-4 flex-1 shadow-sm">
+                  <div class="text-xs text-muted mb-1">Mapato ya Leo</div>
+                  <div class="text-xl font-bold text-white">TZS 450,000</div>
+                </div>
+                <div class="dash-stat-card bg-surface border border-glass rounded-xl p-4 flex-1 shadow-sm">
+                  <div class="text-xs text-muted mb-1">Wateja (AI)</div>
+                  <div class="text-xl font-bold text-white">128</div>
+                </div>
+              </div>
+              <div class="dash-chart bg-surface border border-glass rounded-xl p-4 flex-1 min-h-[200px] flex items-end gap-2 px-6 pt-12 pb-4 shadow-sm relative">
+                <div class="absolute top-4 left-4 text-xs font-semibold">Mwenendo wa Mauzo</div>
+                <!-- Fake Chart Bars -->
+                <div class="flex-1 bg-primary-light rounded-t-md relative h-[40%]"><div class="absolute top-[-20px] w-full text-center text-[10px] text-muted">J3</div></div>
+                <div class="flex-1 bg-primary-light rounded-t-md relative h-[60%]"><div class="absolute top-[-20px] w-full text-center text-[10px] text-muted">J4</div></div>
+                <div class="flex-1 bg-primary-light rounded-t-md relative h-[30%]"><div class="absolute top-[-20px] w-full text-center text-[10px] text-muted">J5</div></div>
+                <div class="flex-1 bg-primary rounded-t-md relative h-[90%] shadow-[0_0_15px_rgba(0,220,130,0.4)]"><div class="absolute top-[-20px] w-full text-center text-[10px] text-primary font-bold">Alh</div></div>
+                <div class="flex-1 bg-primary-light rounded-t-md relative h-[70%]"><div class="absolute top-[-20px] w-full text-center text-[10px] text-muted">Ij</div></div>
+                <div class="flex-1 bg-primary-light rounded-t-md relative h-[50%]"><div class="absolute top-[-20px] w-full text-center text-[10px] text-muted">J1</div></div>
+                <div class="flex-1 bg-primary-light rounded-t-md relative h-[80%]"><div class="absolute top-[-20px] w-full text-center text-[10px] text-muted">J2</div></div>
+              </div>
+            </div>
+            
+            <!-- Dashboard Overlay Blur -->
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-transparent to-transparent z-10 pointer-events-none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features py-20 relative">
+    <div class="container">
+      <div class="text-center mb-16 reveal-up">
+        <div class="badge-pill mb-4 text-purple border border-purple-light bg-purple-light">Sifa Kuu</div>
+        <h2 class="section-title">Sio Chatbot Kawaida, Ni <span class="text-gradient">Muuzaji Mtaalam</span></h2>
+        <p class="section-subtitle">Aziry AI imeundwa kwa teknolojia ya kisasa zaidi kufanya mauzo badala ya kujibu maswali tu.</p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card glass-panel reveal-up">
+          <div class="icon-box text-primary">
+            <i data-lucide="zap"></i>
+          </div>
+          <h3>Majibu Ya Papo Hapo</h3>
+          <p>Mteja hasubiri hata sekunde. AI inajibu meseji na kumuhudumia masaa 24/7, siku zote za wiki bila kuchoka wala kulala.</p>
+        </div>
+        <!-- Feature 2 -->
+        <div class="feature-card glass-panel reveal-up delay-100">
+          <div class="icon-box text-success">
+            <i data-lucide="shopping-cart"></i>
+          </div>
+          <h3>Inachukua Oda Kikamilifu</h3>
+          <p>AI inatambua bidhaa zako zote, inapokea oda (size, rangi), inachukua location ya mteja, na kuipanga kwenye dashboard yako tayari kwa delivery.</p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="feature-card glass-panel reveal-up delay-200">
+          <div class="icon-box text-warning">
+            <i data-lucide="refresh-cw"></i>
+          </div>
+          <h3>Kufuatilia Waliopotea (Follow-up)</h3>
+          <p>Kama mteja aliulizia bidhaa akashindwa kununua, AI itamfuatilia kwa upole (Nudge) baada ya masaa kadhaa ili amalishe malipo. Hii inaokoa mauzo kwa 40%.</p>
+        </div>
+        <!-- Feature 4 -->
+        <div class="feature-card glass-panel reveal-up">
+          <div class="icon-box text-danger">
+            <i data-lucide="languages"></i>
+          </div>
+          <h3>Akili Ya Lugha Asilia</h3>
+          <p>Inaelewa Kiswahili cha kawaida na Kiingereza. Inaweza kujadili bei, kueleza faida za bidhaa, na kumshawishi mteja kitaalam.</p>
+        </div>
+        <!-- Feature 5 -->
+        <div class="feature-card glass-panel reveal-up delay-100">
+          <div class="icon-box text-info">
+            <i data-lucide="bell-ring"></i>
+          </div>
+          <h3>Taarifa Za Papo Hapo</h3>
+          <p>Oda mpya ikiingia au mteja akifanya malipo, unapata Push Notification moja kwa moja kwenye simu yako au kompyuta.</p>
+        </div>
+        <!-- Feature 6 -->
+        <div class="feature-card glass-panel reveal-up delay-200">
+          <div class="icon-box text-purple">
+            <i data-lucide="bar-chart-3"></i>
+          </div>
+          <h3>Takwimu Za Kibiashara</h3>
+          <p>Ona ripoti za kila siku: bidhaa gani zinauzika sana, wateja wangapi wamehudumiwa, na thamani ya oda zilizofungwa na AI.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Statistics -->
+  <section class="statistics py-16 border-y border-glass glass-surface">
+    <div class="container">
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-item reveal-up">
+          <div class="stat-value text-gradient" data-target="1000000" data-suffix="+">0</div>
+          <div class="stat-label">Meseji Zilizojibiwa</div>
+        </div>
+        <div class="stat-item reveal-up delay-100">
+          <div class="stat-value text-gradient" data-target="85" data-suffix="%">0</div>
+          <div class="stat-label">Conversion Rate</div>
+        </div>
+        <div class="stat-item reveal-up delay-200">
+          <div class="stat-value text-gradient" data-target="3" data-suffix="x">0</div>
+          <div class="stat-label">Ongezeko La Mauzo</div>
+        </div>
+        <div class="stat-item reveal-up delay-300">
+          <div class="stat-value text-gradient" data-target="2" data-suffix=" Dk">0</div>
+          <div class="stat-label">Muda wa Kusetup</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="demo" class="how-it-works py-20 relative">
+    <div class="container">
+      <div class="text-center mb-16 reveal-up">
+        <div class="badge-pill mb-4 text-warning border border-warning-light bg-warning-light/10">Mchakato</div>
+        <h2 class="section-title">Inafanya Kazi Kwa <span class="text-gradient">Urahisi</span></h2>
+        <p class="section-subtitle">Hatua 3 rahisi sana kuanza. Hakuna ujuzi wa IT unaohitajika. Setup inachukua dakika mbili tu.</p>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item reveal-up">
+          <div class="timeline-icon bg-gradient"><i data-lucide="user-plus" color="white"></i></div>
+          <div class="timeline-content glass-panel">
+            <h3 class="text-xl font-bold text-white mb-2">1. Jisajili & Unganisha WhatsApp</h3>
+            <p class="text-muted">Fungua akaunti na uscan QR code au utumie Pairing code kuunganisha namba yako ya WhatsApp—kama unavyounganisha kwenye WhatsApp Web.</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item reveal-up delay-100">
+          <div class="timeline-icon bg-gradient"><i data-lucide="package-plus" color="white"></i></div>
+          <div class="timeline-content glass-panel">
+            <h3 class="text-xl font-bold text-white mb-2">2. Weka Bidhaa Zako</h3>
+            <p class="text-muted">Ongeza bidhaa zako, bei, picha, na maelezo mafupi. AI yetu itazisoma hizo bidhaa ili iweze kuwauzia wateja wako kwa usahihi.</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item reveal-up delay-200">
+          <div class="timeline-icon bg-gradient"><i data-lucide="power" color="white"></i></div>
+          <div class="timeline-content glass-panel">
+            <h3 class="text-xl font-bold text-white mb-2">3. Washa AI & Anza Kupokea Pesa</h3>
+            <p class="text-muted">Bofya "Washa Bot". Kuanzia hapo AI itahandle wateja wote. Kazi yako inabaki kuwa moja tu: Kupakia mizigo na kuituma kwa wateja waliolipa!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Table -->
+  <section class="comparison py-20 glass-surface relative">
+    <div class="container">
+      <div class="text-center mb-16 reveal-up">
+        <h2 class="section-title">Acha Kutumia Njia Za Kizamani</h2>
+        <p class="section-subtitle">Tofauti ya WhatsApp ya Kawaida dhidi ya Aziry Tech AI</p>
+      </div>
+
+      <div class="compare-table-wrapper glass-panel reveal-up overflow-x-auto">
+        <table class="compare-table w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-glass">
+              <th class="p-6 text-white font-semibold text-lg">Sifa</th>
+              <th class="p-6 text-muted font-semibold text-lg bg-surface-light rounded-tl-xl border-x border-glass">WhatsApp Kawaida</th>
+              <th class="p-6 text-primary font-bold text-lg bg-primary/10 rounded-tr-xl border-x border-primary/30">Aziry Tech AI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-glass">
+              <td class="p-6 font-medium text-white">Muda Wa Kujibu</td>
+              <td class="p-6 text-muted bg-surface-light border-x border-glass">Dakika au Masaa ⏳</td>
+              <td class="p-6 text-success font-bold bg-primary/10 border-x border-primary/30">Sekunde 2 Tu ⚡</td>
+            </tr>
+            <tr class="border-b border-glass">
+              <td class="p-6 font-medium text-white">Kupokea Oda Usiku</td>
+              <td class="p-6 text-muted bg-surface-light border-x border-glass flex items-center gap-2"><i data-lucide="x-circle" class="text-danger w-5 h-5"></i> Haiwezekani</td>
+              <td class="p-6 text-white bg-primary/10 border-x border-primary/30"><i data-lucide="check-circle-2" class="text-success w-5 h-5 inline-block mr-2"></i> Ndiyo (Masaa 24/7)</td>
+            </tr>
+            <tr class="border-b border-glass">
+              <td class="p-6 font-medium text-white">Kushawishi Wateja</td>
+              <td class="p-6 text-muted bg-surface-light border-x border-glass flex items-center gap-2"><i data-lucide="x-circle" class="text-danger w-5 h-5"></i> Inabidi uwe Online</td>
+              <td class="p-6 text-white bg-primary/10 border-x border-primary/30"><i data-lucide="check-circle-2" class="text-success w-5 h-5 inline-block mr-2"></i> AI Inauza Kama Mtaalam</td>
+            </tr>
+            <tr class="border-b border-glass">
+              <td class="p-6 font-medium text-white">Abandoned Cart</td>
+              <td class="p-6 text-muted bg-surface-light border-x border-glass flex items-center gap-2"><i data-lucide="x-circle" class="text-danger w-5 h-5"></i> Unasahau wateja</td>
+              <td class="p-6 text-white bg-primary/10 border-x border-primary/30"><i data-lucide="check-circle-2" class="text-success w-5 h-5 inline-block mr-2"></i> Auto Follow-up Messages</td>
+            </tr>
+            <tr>
+              <td class="p-6 font-medium text-white rounded-bl-xl">Kupangilia Oda</td>
+              <td class="p-6 text-muted bg-surface-light border-x border-b border-glass rounded-b-xl flex items-center gap-2"><i data-lucide="x-circle" class="text-danger w-5 h-5"></i> Kwenye Karatasi</td>
+              <td class="p-6 text-white bg-primary/10 border-x border-b border-primary/30 rounded-b-xl"><i data-lucide="check-circle-2" class="text-success w-5 h-5 inline-block mr-2"></i> Kwenye Smart Dashboard</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing & Payment -->
+  <section id="pricing" class="pricing py-20 relative">
+    <div class="container">
+      <div class="text-center mb-16 reveal-up">
+        <div class="badge-pill mb-4 text-success border border-success-light bg-success-light/10">Vifurushi</div>
+        <h2 class="section-title">Wekeza Kwenye <span class="text-gradient">Ukuaji Wako</span></h2>
+        <p class="section-subtitle">Chagua mpango unaofaa kwa biashara yako. Anza bila malipo leo.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Starter Plan -->
+        <div class="price-card glass-panel reveal-up">
+          <div class="price-header">
+            <h3>Starter Trial</h3>
+            <p class="text-muted text-sm mt-2 h-10">Bora kujaribu mfumo kwanza</p>
+          </div>
+          <div class="price-amount my-6 border-y border-glass py-6">
+            <span class="text-lg font-bold text-muted mr-1">TZS</span>
+            <span class="text-4xl font-black text-white">0</span>
+            <span class="text-sm text-muted ml-1">/ siku 7</span>
+          </div>
+          <ul class="price-features space-y-4 mb-8">
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-success w-5 h-5 shrink-0 mt-0.5"></i> Namba 1 ya WhatsApp</li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-success w-5 h-5 shrink-0 mt-0.5"></i> Meseji 500 za AI</li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-success w-5 h-5 shrink-0 mt-0.5"></i> Bidhaa zisizo na kikomo</li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-success w-5 h-5 shrink-0 mt-0.5"></i> Dashboard Kamili</li>
+          </ul>
+          <a href="/dashboard/?register=true" class="btn btn-outline btn-full">Anza Bure Sasa</a>
+        </div>
+
+        <!-- Pro Plan (Popular) -->
+        <div class="price-card glass-panel popular reveal-up delay-100 relative transform md:-translate-y-4 border-primary shadow-[0_0_30px_rgba(0,220,130,0.15)]">
+          <div class="popular-badge absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-bg-dark font-black px-4 py-1 rounded-full text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,220,130,0.4)]">Maarufu</div>
+          <div class="price-header">
+            <h3 class="text-primary font-bold text-2xl">Pro Plan</h3>
+            <p class="text-muted text-sm mt-2 h-10">Kwa wafanyabiashara makini</p>
+          </div>
+          <div class="price-amount my-6 border-y border-glass py-6">
+            <span class="text-lg font-bold text-muted mr-1">TZS</span>
+            <span class="text-4xl font-black text-white">30,000</span>
+            <span class="text-sm text-muted ml-1">/ mwezi</span>
+          </div>
+          <ul class="price-features space-y-4 mb-8">
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-primary w-5 h-5 shrink-0 mt-0.5"></i> <strong class="text-white">Meseji 2,000 za AI</strong></li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-primary w-5 h-5 shrink-0 mt-0.5"></i> Auto Follow-up (Abandoned Cart)</li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-primary w-5 h-5 shrink-0 mt-0.5"></i> Support ya Haraka</li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-primary w-5 h-5 shrink-0 mt-0.5"></i> Taarifa za Oda (Live Push)</li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-primary w-5 h-5 shrink-0 mt-0.5"></i> Voice Note Transcriptions <span class="text-[10px] uppercase font-bold tracking-wider bg-surface-light px-2 py-0.5 rounded text-muted ml-2">Soon</span></li>
+          </ul>
+          <a href="/dashboard/?register=true" class="btn btn-primary btn-full glow">Chagua Mpango Huu</a>
+        </div>
+
+        <!-- Enterprise Plan -->
+        <div class="price-card glass-panel reveal-up delay-200 relative">
+          <div class="save-badge absolute -top-4 right-6 bg-warning text-bg-dark font-black px-3 py-1 rounded text-xs uppercase tracking-wide">Okoa 15%</div>
+          <div class="price-header">
+            <h3>Enterprise</h3>
+            <p class="text-muted text-sm mt-2 h-10">Okoa pesa kwa kulipia mwaka mzima</p>
+          </div>
+          <div class="price-amount my-6 border-y border-glass py-6">
+            <span class="text-lg font-bold text-muted mr-1">TZS</span>
+            <span class="text-4xl font-black text-white">300,000</span>
+            <span class="text-sm text-muted ml-1">/ mwaka</span>
+          </div>
+          <ul class="price-features space-y-4 mb-8">
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-success w-5 h-5 shrink-0 mt-0.5"></i> <strong class="text-primary">Meseji 5,000 za AI</strong></li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-success w-5 h-5 shrink-0 mt-0.5"></i> Priority AI Speed</li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-success w-5 h-5 shrink-0 mt-0.5"></i> Wafanyakazi Wengi <span class="text-[10px] uppercase font-bold tracking-wider bg-surface-light px-2 py-0.5 rounded text-muted ml-2">Soon</span></li>
+            <li class="flex items-start gap-3 text-white"><i data-lucide="check" class="text-success w-5 h-5 shrink-0 mt-0.5"></i> Ushauri wa Biashara Bure</li>
+          </ul>
+          <a href="/dashboard/?register=true" class="btn btn-outline btn-full">Lipia Mwaka Mzima</a>
+        </div>
+      </div>
+
+      <!-- Payment Box -->
+      <div class="payment-box glass-panel mt-20 max-w-4xl mx-auto p-8 md:p-12 rounded-3xl reveal-up border-t-4 border-t-primary shadow-[0_20px_40px_rgba(0,0,0,0.4)] relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div class="relative z-10">
+          <div class="text-center mb-10">
+            <h3 class="text-3xl font-black text-white mb-4">Tayari Kulipia? <span class="text-primary">Lipa Namba 👇</span></h3>
+            <p class="text-muted text-lg max-w-2xl mx-auto">Fanya malipo kwa kutumia Lipa Namba ya Mixx by Yas kisha tutumie ujumbe ili tuwasha akaunti yako papo hapo.</p>
+          </div>
+          
+          <div class="flex flex-col md:flex-row items-center justify-center gap-10">
+            <!-- Details -->
+            <div class="text-left bg-surface/50 p-8 rounded-2xl border border-glass w-full md:w-[400px]">
+              <div class="text-xs font-bold text-muted uppercase tracking-widest mb-2">Mtandao wa Malipo</div>
+              <div class="text-xl font-bold text-white mb-6 flex items-center gap-3"><i data-lucide="smartphone" class="w-6 h-6 text-primary"></i> Mixx by Yas</div>
+              
+              <div class="text-xs font-bold text-muted uppercase tracking-widest mb-2">Lipa Namba</div>
+              <div class="text-4xl font-black text-primary tracking-widest mb-6 flex items-center gap-4">
+                150906529 
+              </div>
+              
+              <div class="text-xs font-bold text-muted uppercase tracking-widest mb-2">Jina La Akaunti</div>
+              <div class="text-xl font-bold text-white">Azizi Iddi Mohamed</div>
+            </div>
+
+            <!-- QR Code Fake -->
+            <div class="p-6 bg-white rounded-2xl shadow-[0_0_40px_rgba(0,220,130,0.2)] flex-shrink-0 flex flex-col items-center">
+              <div class="w-40 h-40 bg-[url('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Mixx150906529')] bg-contain bg-no-repeat bg-center mb-4"></div>
+              <div class="text-bg-dark font-bold text-sm uppercase tracking-wider">Scan Kulipa</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials py-20 border-y border-glass glass-surface">
+    <div class="container">
+      <div class="text-center mb-16 reveal-up">
+        <div class="badge-pill mb-4 text-info border border-info-light bg-info-light/10">Ushuhuda</div>
+        <h2 class="section-title">Wanasemaje Kuhusu Sisi?</h2>
+        <p class="section-subtitle">Tazama jinsi wafanyabiashara wengine walivyobadilisha biashara zao na Aziry Tech AI.</p>
+      </div>
+
+      <div class="testimonial-grid">
+        <div class="testimonial-card glass-panel reveal-up">
+          <div class="stars mb-6 text-warning flex gap-1">
+            <i data-lucide="star" class="fill-warning w-5 h-5"></i><i data-lucide="star" class="fill-warning w-5 h-5"></i><i data-lucide="star" class="fill-warning w-5 h-5"></i><i data-lucide="star" class="fill-warning w-5 h-5"></i><i data-lucide="star" class="fill-warning w-5 h-5"></i>
+          </div>
+          <p class="quote text-lg text-white/90 mb-8 leading-relaxed italic">"Tangu niweke hii system, mauzo yangu yamepanda sana. Wateja wanapenda namna AI inavyowajibu kwa haraka na ukarimu. Sasa hivi nalala na naamka nakuta oda zimeshapangwa."</p>
+          <div class="customer-info flex items-center gap-4 pt-6 border-t border-glass">
+            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?fit=crop&w=100&h=100" alt="Customer" class="rounded-full w-14 h-14 border-2 border-primary object-cover" />
+            <div>
+              <div class="font-bold text-white text-lg">Juma K.</div>
+              <div class="text-sm text-primary font-medium">Mmiliki, DukaLako Electronics</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card glass-panel reveal-up delay-100">
+          <div class="stars mb-6 text-warning flex gap-1">
+            <i data-lucide="star" class="fill-warning w-5 h-5"></i><i data-lucide="star" class="fill-warning w-5 h-5"></i><i data-lucide="star" class="fill-warning w-5 h-5"></i><i data-lucide="star" class="fill-warning w-5 h-5"></i><i data-lucide="star" class="fill-warning w-5 h-5"></i>
+          </div>
+          <p class="quote text-lg text-white/90 mb-8 leading-relaxed italic">"Feature ninayoipenda zaidi ni ile ya kukumbusha wateja (Follow-up). Mteja akiulizia bei akapotea, AI inamfuata tena baadaye na wengi wanaishia kununua. Ni kama nina mfanyakazi asiyechoka!"</p>
+          <div class="customer-info flex items-center gap-4 pt-6 border-t border-glass">
+            <img src="https://images.unsplash.com/photo-1531123897727-8f129e1b88ce?fit=crop&w=100&h=100" alt="Customer" class="rounded-full w-14 h-14 border-2 border-primary object-cover" />
+            <div>
+              <div class="font-bold text-white text-lg">Mariam P.</div>
+              <div class="text-sm text-primary font-medium">Founder, Fashion Boutique Dar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq py-20 relative">
+    <div class="container max-w-3xl">
+      <div class="text-center mb-16 reveal-up">
+        <h2 class="section-title">Maswali Yanayoulizwa Sana</h2>
+      </div>
+
+      <div class="faq-accordion reveal-up">
+        <div class="faq-item glass-panel mb-4 rounded-xl overflow-hidden transition-all duration-300">
+          <button class="faq-question w-full text-left p-6 flex justify-between items-center font-bold text-white text-lg hover:text-primary transition-colors cursor-pointer bg-transparent border-none">
+            <span>Je, wateja watajua kama wanachati na AI?</span>
+            <i data-lucide="chevron-down" class="faq-icon transition-transform duration-300"></i>
+          </button>
+          <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 px-6">
+            <p class="pb-6 text-muted leading-relaxed">Ndiyo na Hapana! AI yetu inatumia lugha ya asili ya Kiswahili na kujibu kiprofessional sana. Hata hivyo, tunashauri uweke kwenye 'Miongozo ya Duka' kwamba wateja wanahudumiwa na Msaidizi wa AI kwa uwazi zaidi.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass-panel mb-4 rounded-xl overflow-hidden transition-all duration-300">
+          <button class="faq-question w-full text-left p-6 flex justify-between items-center font-bold text-white text-lg hover:text-primary transition-colors cursor-pointer bg-transparent border-none">
+            <span>Kama mteja anauliza swali gumu au anataka niongee naye?</span>
+            <i data-lucide="chevron-down" class="faq-icon transition-transform duration-300"></i>
+          </button>
+          <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 px-6">
+            <p class="pb-6 text-muted leading-relaxed">AI yetu inatambua inaposhindwa kujibu au mteja akikasirika. Itakutumia Notification wewe mmiliki na kumwambia mteja "Samahani, nakuunganisha na muuzaji sasa hivi." Pia unaweza kuzima AI kwa namba fulani ukiwa kwenye Dashboard.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass-panel mb-4 rounded-xl overflow-hidden transition-all duration-300">
+          <button class="faq-question w-full text-left p-6 flex justify-between items-center font-bold text-white text-lg hover:text-primary transition-colors cursor-pointer bg-transparent border-none">
+            <span>Je, naweza kutumia namba yangu ya sasa ya WhatsApp?</span>
+            <i data-lucide="chevron-down" class="faq-icon transition-transform duration-300"></i>
+          </button>
+          <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 px-6">
+            <p class="pb-6 text-muted leading-relaxed">Ndiyo! Utascan QR Code au kutumia Pairing code kwenye Dashboard yetu kama vile unavyounganisha WhatsApp Web. Tunashauri utumie namba ya biashara (WhatsApp Business) kutenganisha na meseji binafsi.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Bottom -->
+  <section class="cta-bottom py-24 relative overflow-hidden text-center">
+    <!-- Background glow for CTA -->
+    <div class="absolute inset-0 bg-gradient-to-r from-primary/20 via-[#0B0E14] to-primary/10 opacity-50"></div>
+    <div class="container relative z-10 reveal-up">
+      <h2 class="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">Upo Tayari Kuongeza Mauzo Yako?</h2>
+      <p class="text-xl text-muted mb-10 max-w-2xl mx-auto">Usipoteze wateja kwa kuchelewa kuwajibu. Weka mashine yetu ifanye kazi badala yako.</p>
+      <a href="/dashboard/?register=true" class="btn btn-primary btn-lg glow">
+        Tengeneza Akaunti Bure
+        <i data-lucide="arrow-right" class="btn-icon w-5 h-5"></i>
+      </a>
+      <p class="mt-6 text-sm text-muted flex items-center justify-center gap-2">
+        <i data-lucide="shield-check" class="text-success w-4 h-4"></i> Hakuna Kadi ya Benki Inahitajika. Setup ndani ya Dk 2.
       </p>
     </div>
-    <div class="feature-grid">
-      <div class="glass-card feature-card">
-        <div class="f-icon-box" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">⏱️</div>
-        <h3>Majibu ya Papo Hapo</h3>
-        <p>Wateja hawatasubiri tena. AI inajibu ndani ya sekunde 2 mchana au usiku. Hii inaongeza uhakika wa wateja
-          kununua mara 3 zaidi.</p>
-      </div>
-      <div class="glass-card feature-card">
-        <div class="f-icon-box" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">📦</div>
-        <h3>Kuchukua Oda Kamili</h3>
-        <p>Inajua bidhaa ulizonazo, bei, na inachukua oda ikijumuisha size, rangi na location ya mteja kisha inaiweka
-          kwenye Dashboard yako.</p>
-      </div>
-      <div class="glass-card feature-card">
-        <div class="f-icon-box" style="background: rgba(139, 92, 246, 0.2); color: #a78bfa;">🧠</div>
-        <h3>Akili ya Kiswahili</h3>
-        <p>Hatumii kingereza kigumu! Inatumia akili mnemba ya DeepSeek kuelewa lugha za mitaani na Swahili, kisha
-          inajadiliana bei kishikaji.</p>
-      </div>
-      <div class="glass-card feature-card">
-        <div class="f-icon-box" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">🔄</div>
-        <h3>Abandoned Cart Nudge</h3>
-        <p>Kama mteja alikuja kuulizia bidhaa na akapotea, AI inamkumbusha kiungwana (Re-engagement) baada ya masaa 12
-          mpaka amalize malipo.</p>
-      </div>
-      <div class="glass-card feature-card">
-        <div class="f-icon-box" style="background: rgba(236, 72, 153, 0.2); color: #f472b6;">🔔</div>
-        <h3>Browser Notifications</h3>
-        <p>Kila oda mpya inapoingia, unapata 'Pop-up' kwenye kompyuta yako. Hakuna haja ya kukaa kwenye WhatsApp muda
-          wote.</p>
-      </div>
-      <div class="glass-card feature-card">
-        <div class="f-icon-box" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">📊</div>
-        <h3>Ripoti na Takwimu (Insights)</h3>
-        <p>Dashboard yako inakuonyesha bidhaa zinazouliziwa sana, wateja waliopotea, na makadirio ya mauzo unayoweza
-          kuyaokoa.</p>
-      </div>
-    </div>
   </section>
 
-  <!-- Video/Stats Banner -->
-  <section class="stats-banner">
-    <div class="stats-inner glass">
-      <div class="stat-box">
-        <h4>1M+</h4>
-        <p>Meseji zilizojibiwa na AI</p>
-      </div>
-      <div class="stat-box">
-        <h4>85%</h4>
-        <p>Oda zinafungwa kiotomatiki</p>
-      </div>
-      <div class="stat-box">
-        <h4>3x</h4>
-        <p>Ongezeko la Mauzo Kawaida</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="pricing" id="pricing">
-    <div class="section-header">
-      <div class="section-tag">VIFURUSHI VYA BEI</div>
-      <h2 class="section-title">Chagua Mpango Unaofaa Kwa Duka Lako</h2>
-      <p class="section-desc">Anza bure leo, lipia baadaye biashara yako itakapokua.</p>
-    </div>
-
-    <div class="pricing-grid">
-      <!-- Trial -->
-      <div class="glass-card price-card">
-        <h3>Starter / Trial</h3>
-        <div class="price-val">Bure <span>/Siku 7</span></div>
-        <p class="price-p">Jaribu uwezo kamili wa AI bila kuingiza kadi ya benki.</p>
-        <ul class="price-features">
-          <li>✔️ Unganisha WhatsApp 1</li>
-          <li>✔️ Meseji hadi 500 kwa mwezi</li>
-          <li>✔️ Ongeza bidhaa zisizo na kikomo</li>
-          <li>✔️ Dashboard System Kamili</li>
-        </ul>
-        <a href="/dashboard/?register=true" class="btn btn-outline btn-full">Anza Bure Sasa</a>
-      </div>
-
-      <!-- Monthly -->
-      <div class="glass-card price-card popular">
-        <div class="popular-badge">Maarufu</div>
-        <h3>Pro (Mwezi)</h3>
-        <div class="price-val">TZS 30,000 <span>/Mwezi</span></div>
-        <p class="price-p">Bora kwa wafanyabiashara wa kati wanaoanza kukua kwa kasi.</p>
-        <ul class="price-features">
-          <li><span style="color:var(--primary);">✔️ Meseji hadi 2000 kwa mwezi</span></li>
-          <li>✔️ Abandoned Cart Recovery (Auto Nudge)</li>
-          <li>✔️ Support ya WhatsApp & Simu</li>
-          <li>✔️ Taarifa za Oda (Push Notifications)</li>
-        </ul>
-        <a href="/dashboard/?register=true" class="btn btn-primary btn-full glow-btn">Chagua Mpango Huu</a>
-      </div>
-
-      <!-- Yearly -->
-      <div class="glass-card price-card">
-        <h3>Enterprise (Mwaka)</h3>
-        <div class="price-val">TZS 300,000 <span>/Mwaka</span></div>
-        <p class="price-p">Kwa biashara kubwa. Okoa mpaka asilimia 15 ya gharama!.</p>
-        <ul class="price-features">
-          <li><span style="color:var(--primary);">✔️ Meseji hadi 5000 kwa mwezi</span></li>
-          <li>✔️ Ongeza wafanyakazi kwenye mfumo (Soon)</li>
-          <li>✔️ AI Priority Speed</li>
-          <li>✔️ Consultation ya bure na timu yetu</li>
-        </ul>
-        <a href="/dashboard/?register=true" class="btn btn-outline btn-full">Lipia Mwaka Mzima</a>
-      </div>
-    </div>
-    <!-- Lipa Namba Section -->
-    <div class="lipa-namba-section glass-card" style="margin-top: 40px; text-align: center; max-width: 600px; margin-left: auto; margin-right: auto;">
-      <h3 style="margin-bottom: 15px; color: var(--primary);">Jinsi ya Kulipia (Lipa Namba)</h3>
-      <p style="margin-bottom: 20px; color: var(--text-muted);">Tafadhali fanya malipo kupitia <strong>Mixx by Yas</strong> kwa kuscan QR Code hapa chini, kisha ututumie ujumbe ili tuwashe akaunti yako.</p>
-      <img src="/dashboard/images/mixx-qr.jpg" alt="Mixx Lipa Namba" style="max-width: 200px; border-radius: 12px; border: 2px solid var(--primary); box-shadow: 0 0 20px rgba(0, 168, 132, 0.3);" />
-      <p style="margin-top: 15px; font-weight: bold;">Lipa Namba: <span style="color: var(--primary); font-size: 1.2rem;">150906529</span></p>
-    </div>
-  </section>
-
-  <!-- FAQ Section -->
-  <section class="faq" id="faq">
-    <div class="section-header">
-      <div class="section-tag">MASWALI NA MAJIBU</div>
-      <h2 class="section-title">Maswali Yanayoulizwa Sana</h2>
-    </div>
-    <div class="faq-container">
-      <div class="faq-item">
-        <div class="faq-q">Je, wateja watajua kama wanachati na Bot?</div>
-        <div class="faq-a">Ndiyo na Hapana! AI yetu (DeepSeek) imeundwa kutumia lugha ya asili ya Kiswahili kama
-          mwanadamu. Lakini kwa maadili ya kibiashara, unaweza kuchagua ai ijitambulishe kama msaidizi endapo utaandika
-          hivyo kwenye "Context" ya Mipangilio.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">Kama mteja anauliza swali gumu, ninawezaje kumjibu mwenyewe?</div>
-        <div class="faq-a">Ukiwa unafuatilia kwenye Dashboard, unaweza kuzima Bot kwa muda (kwa kubofya tu) au AI
-          yenyewe ikishindwa, itakutumia 'Notification' kisha itamwambia mteja "Samahani, naomba nikuunganishe na
-          Mhudumu hivi punde."</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">Je, naweza kutumia namba yangu ya kawaida ya biashara?</div>
-        <div class="faq-a">Ndiyo! Unachohitaji kufanya ni kuunganisha namba yoyote unayoitumia kwenye WhatsApp yako
-          kupitia QR Code. Hatuingilii chat zako nyingine zisizohusu biashara (Unaweza kuweka Limit za nani anajibiwa).
+  <!-- Footer -->
+  <footer class="footer border-t border-glass pt-16 pb-8 bg-surface-dark relative z-20">
+    <div class="container">
+      <div class="footer-grid flex flex-col md:flex-row justify-between gap-12 mb-12">
+        <div class="footer-brand max-w-sm">
+          <a href="#" class="nav-brand mb-6 inline-flex items-center gap-3">
+            <img src="logoaziry.png" alt="Aziry Tech Logo" class="w-10 h-10 rounded shadow-sm" />
+            <span class="font-bold text-xl text-white">Aziry Tech AI</span>
+          </a>
+          <p class="text-muted text-sm mb-6 leading-relaxed">
+            Tunarahisisha biashara za kimtandao Barani Afrika kupitia mfumo rafiki na nafuu wa Artificial Intelligence kwenye WhatsApp.
+          </p>
+          <div class="social-links flex gap-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-surface border border-glass flex items-center justify-center font-bold text-muted hover:text-primary hover:bg-primary-light/20 transition-all">X</a>
+            <a href="#" class="w-10 h-10 rounded-full bg-surface border border-glass flex items-center justify-center font-bold text-muted hover:text-primary hover:bg-primary-light/20 transition-all">IG</a>
+            <a href="#" class="w-10 h-10 rounded-full bg-surface border border-glass flex items-center justify-center font-bold text-muted hover:text-primary hover:bg-primary-light/20 transition-all">LI</a>
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- CTA Banner -->
-  <section class="cta-banner">
-    <div class="glass-card cta-content">
-      <h2>Upo tayari kuokoa muda wako na kuongeza Mauzo?</h2>
-      <p>Jiunge na wafanyabiashara wajanja wanaotumia Aziry Tech AI leo.</p>
-      <a href="/dashboard/?register=true" class="btn btn-primary btn-lg glow-btn">Tengeneza Akaunti Bure</a>
-    </div>
-  </section>
+        <div class="footer-links flex-1 flex flex-wrap gap-12 md:justify-end">
+          <div>
+            <h4 class="text-white font-bold mb-6 tracking-wide">Mfumo</h4>
+            <ul class="space-y-4 text-muted text-sm">
+              <li><a href="#features" class="hover:text-primary transition-colors">Sifa Zake</a></li>
+              <li><a href="#demo" class="hover:text-primary transition-colors">Jinsi Inavyofanya Kazi</a></li>
+              <li><a href="#pricing" class="hover:text-primary transition-colors">Vifurushi vya Bei</a></li>
+            </ul>
+          </div>
 
-  <!-- Comprehensive Footer -->
-  <footer class="main-footer">
-    <div class="footer-grid">
-      <!-- Column 1 -->
-      <div class="footer-col">
-        <div class="nav-brand" style="margin-bottom: 20px;">
-          <img src="logoaziry.png" alt="Aziry Tech Logo" style="height: 45px; margin-right: 8px; border-radius: 4px;" />
-          <span class="logo-text" style="font-size: 1.2rem;">Aziry Tech</span>
-        </div>
-        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; max-width: 300px;">
-          Tunarahisisha biashara za kimtandao Barani Afrika kupitia mfumo rafiki na nafuu wa Artificial Intelligence
-          kwenye WhatsApp.
-        </p>
-        <div class="social-icons">
-          <a href="#">X</a>
-          <a href="#">IG</a>
-          <a href="#">FB</a>
-          <a href="#">LI</a>
+          <div>
+            <h4 class="text-white font-bold mb-6 tracking-wide">Msaada</h4>
+            <ul class="space-y-4 text-muted text-sm">
+              <li><a href="#faq" class="hover:text-primary transition-colors">Maswali (FAQ)</a></li>
+              <li><a href="#" class="hover:text-primary transition-colors">Wasiliana Nasi</a></li>
+              <li class="mt-8"><a href="/superadmin/" class="text-xs opacity-50 hover:opacity-100 transition-opacity">Superadmin Login</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="text-white font-bold mb-6 tracking-wide">Mawasiliano</h4>
+            <ul class="space-y-4 text-muted text-sm">
+              <li class="flex items-center gap-3"><i data-lucide="mail" class="w-4 h-4 text-primary"></i> azirytech@gmail.com</li>
+              <li class="flex items-center gap-3"><i data-lucide="phone" class="w-4 h-4 text-primary"></i> +255 692 35 0076</li>
+              <li class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4 text-primary"></i> Dar es Salaam, Tanzania</li>
+            </ul>
+          </div>
         </div>
       </div>
 
-      <!-- Column 2 -->
-      <div class="footer-col">
-        <h4>Mfumo</h4>
-        <a href="#features">Sifa Zake</a>
-        <a href="#pricing">Vifurushi vya Bei</a>
-        <a href="#how-it-works">Jinsi Inavyofanya Kazi</a>
-        <a href="/dashboard/?register=true">Pata Free Trial</a>
-        <a href="/superadmin/" style="opacity: 0.5; margin-top: 20px;">Superadmin Login</a>
-      </div>
-
-      <!-- Column 3 -->
-      <div class="footer-col">
-        <h4>Msaada</h4>
-        <a href="#faq">Maswali Yanayoulizwa Sana</a>
-        <a href="#">Mafunzo (Tutorials)</a>
-        <a href="#">Wasiliana Nasi</a>
-        <a href="#">Kuwa Wakala/Partner</a>
-      </div>
-
-      <!-- Column 4 -->
-      <div class="footer-col">
-        <h4>Wasiliana Nasi</h4>
-        <p
-          style="color: var(--text-muted); font-size: 0.95rem; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-          📧 azirytech@gmail.com
-        </p>
-        <p
-          style="color: var(--text-muted); font-size: 0.95rem; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-          📱 +255 692 35 0076
-        </p>
-        <p style="color: var(--text-muted); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
-          📍 Dar es Salaam, Tanzania
-        </p>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <div class="footer-copy">
-        &copy;
-        <script>document.write(new Date().getFullYear())</script> Aziry Tech. Haki zote zimehifadhiwa.
-      </div>
-      <div class="footer-legal">
-        <a href="/dashboard/terms.html">Vigezo na Masharti</a>
-        <a href="#">Sera ya Faragha</a>
+      <div class="footer-bottom border-t border-glass pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted">
+        <div>&copy; <script>document.write(new Date().getFullYear())</script> Aziry Tech. Haki zote zimehifadhiwa.</div>
+        <div class="flex gap-6">
+          <a href="/dashboard/terms.html" class="hover:text-white transition-colors">Vigezo na Masharti</a>
+          <a href="#" class="hover:text-white transition-colors">Sera ya Faragha</a>
+        </div>
       </div>
     </div>
   </footer>
 
-  <script>
-    // Mobile menu toggle
-    const menuBtn = document.getElementById('mobileMenuBtn');
-    const mobileNav = document.getElementById('mobileNav');
-
-    menuBtn.addEventListener('click', () => {
-      mobileNav.classList.toggle('active');
-    });
-
-    // FAQ Toggle logic
-    const faqItems = document.querySelectorAll('.faq-item');
-    faqItems.forEach(item => {
-      item.addEventListener('click', () => {
-        item.classList.toggle('active');
-      });
-    });
-  </script>
+  <!-- Scripts -->
+  <script src="script.js"></script>
 </body>
-
 </html>
