@@ -63,9 +63,12 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
       }
       
       if (imageUrl) {
+        console.log(`[DEBUG] Kutuma picha kwenda ${remoteJid}...`);
         await sock.sendMessage(remoteJid, { image: imageUrl, caption: cleanText }, sendOptions);
       } else {
+        console.log(`[DEBUG] Kutuma maandishi kwenda ${remoteJid}: "${cleanText.substring(0, 30)}..."`);
         await sock.sendMessage(remoteJid, { text: cleanText }, sendOptions);
+        console.log(`[DEBUG] Maandishi yametumwa kikamilifu kwenda ${remoteJid}!`);
       }
       
       // Turn off composing state after successful send
@@ -73,6 +76,7 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
       
       return true;
     } catch (err) {
+      console.error(`[DEBUG ERROR] sendMessage imeshindwa (jaribio ${attempt}):`, err);
       const isConnectionError =
         err?.output?.statusCode === 428 ||
         err?.message?.includes("Connection") ||
