@@ -5,6 +5,7 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../db/client");
 const superAdminAuth = require("../middleware/superAdminAuth");
+const { getSettings, saveSettings } = require("../utils/platformSettings");
 
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch((err) => {
   console.error(`⚠️  SuperAdmin API Error [${req.method} ${req.path}]:`, err.message);
@@ -63,6 +64,8 @@ router.get("/merchants", wrap(async (req, res) => {
       status: true,
       aiLimit: true,
       aiUsage: true,
+      subscriptionPlan: true,
+      subscriptionEndDate: true,
       createdAt: true,
       updatedAt: true,
       _count: {
@@ -214,6 +217,17 @@ router.delete("/merchants/:id", wrap(async (req, res) => {
   console.log(`🗑️  Super-Admin: Akaunti ya "${target.businessName}" (${target.email}) imefutwa kabisa.`);
 
   res.json({ message: `Akaunti ya "${target.businessName}" imefutwa kwa mafanikio.` });
+}));
+
+// ── Mipangilio ya Mfumo (Platform Settings) ──────────────────
+router.get("/settings", wrap(async (req, res) => {
+  res.json(getSettings());
+}));
+
+router.put("/settings", wrap(async (req, res) => {
+  const updated = saveSettings(req.body);
+  console.log(`⚙️ Super-Admin: Mipangilio imesasishwa.`);
+  res.json({ message: "Mipangilio imehifadhiwa.", settings: updated });
 }));
 
 module.exports = router;

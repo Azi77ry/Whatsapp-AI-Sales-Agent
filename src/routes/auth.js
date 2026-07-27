@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const prisma = require("../db/client");
 const config = require("../config");
+const { getSettings } = require("../utils/platformSettings");
 const { sendMessage } = require("../whatsapp/sender");
 const mailer = require("../services/mailer");
 
@@ -55,6 +56,8 @@ router.post("/register", registerLimiter, async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
+    const { defaultAiLimit } = getSettings();
+
     const merchant = await prisma.merchant.create({
       data: {
         businessName,
@@ -64,6 +67,7 @@ router.post("/register", registerLimiter, async (req, res) => {
         subscriptionPlan: "free_trial",
         subscriptionEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
         isTrialUsed: false,
+        aiLimit: defaultAiLimit,
       },
     });
 

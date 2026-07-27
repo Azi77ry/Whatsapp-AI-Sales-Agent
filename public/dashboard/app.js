@@ -478,7 +478,24 @@ async function initDashboard() {
   try {
     await checkWhatsAppStatus();
   } catch (e) {
-    console.error("Failed to check WhatsApp status:", e);
+    console.error("Failed to check WA status:", e);
+  }
+
+  fetchPlatformBroadcast();
+}
+
+async function fetchPlatformBroadcast() {
+  try {
+    const res = await fetch("/api/platform/broadcast");
+    if(res.ok) {
+      const data = await res.json();
+      if(data.active && data.message) {
+        document.getElementById("sysBroadcastText").textContent = data.message;
+        document.getElementById("sysBroadcastBanner").style.display = "flex";
+      }
+    }
+  } catch(err) {
+    // ignore
   }
 }
 

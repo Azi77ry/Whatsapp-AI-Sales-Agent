@@ -112,6 +112,7 @@ function showApp() {
   document.getElementById("app").classList.remove("hidden");
   loadStats();
   loadMerchants();
+  loadSettings();
 }
 
 // Navigation
@@ -174,8 +175,12 @@ function renderMerchants(merchants) {
       <td>${statusBadge}</td>
       <td>${formatNumber(m._count?.orders || 0)}</td>
       <td><span style="color:var(--sa-primary)">${formatNumber(m.aiUsage)}</span> / ${m.aiLimit}</td>
-      <td style="font-size:13px; color:var(--sa-text-muted)">${new Date(m.createdAt).toLocaleDateString()}</td>
+      <td style="font-size:13px; color:var(--sa-text-muted)">
+        <div>${m.subscriptionPlan || 'Hakuna'}</div>
+        <div style="font-size:11px">${m.subscriptionEndDate ? new Date(m.subscriptionEndDate).toLocaleDateString() : 'N/A'}</div>
+      </td>
       <td class="action-btns">
+        <button class="btn-icon" title="Kifurushi (Subscription)" style="color:var(--sa-primary)" onclick="openSubModal(${m.id}, '${escapeHtml(m.businessName)}')">📅</button>
         <button class="btn-icon" title="Edit AI Limit" onclick="openLimitModal(${m.id}, '${escapeHtml(m.businessName)}', ${m.aiLimit})">⚡</button>
         ${m.status === 'active' 
           ? `<button class="btn-icon" style="color:var(--sa-danger)" title="Suspend" onclick="openActionModal('suspend', ${m.id}, '${escapeHtml(m.businessName)}')">⏸</button>` 
@@ -290,3 +295,95 @@ document.getElementById("limitModalBtn").onclick = async () => {
 if (localStorage.getItem("sa_token")) {
   showApp();
 }
+
+// Subscription Modal
+let subTarget = null;
+const subModal = document.getElementById("subModal");
+
+function openSubModal(id, name) {
+  subTarget = { id };
+  document.getElementById("subModalName").textContent = name;
+  document.getElementById("subMonths").value = "1";
+  document.getElementById("subPlan").value = "monthly";
+  subModal.classList.add("active");
+}
+
+document.getElementById("subModalClose").onclick = () => subModal.classList.remove("active");
+document.getElementById("subModalCancel").onclick = () => subModal.classList.remove("active");
+
+document.getElementById("subModalBtn").onclick = async () => {
+  if (!subTarget) return;
+  const monthsToAdd = parseInt(document.getElementById("subMonths").value, 10);
+  const plan = document.getElementById("subPlan").value;
+  if (isNaN(monthsToAdd) || monthsToAdd < 0) return showToast("Weka miezi sahihi", "error");
+
+  const btn = document.getElementById("subModalBtn");
+  btn.disabled = true;
+  btn.textContent = "Inaongeza...";
+
+  try {
+    await saFetch(`/merchants/${subTarget.id}/subscription`, {
+      method: "PUT", body: JSON.stringify({ subscriptionPlan: plan, monthsToAdd })
+    });
+    showToast(`Mteja ameongezewa kifurushi chake`, "success");
+    subModal.classList.remove("active");
+    loadMerchants();
+  } catch(err) {
+    showToast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Hifadhi (Save)";
+  }
+};
+
+// ── SETTINGS ──────────────────────────────────────
+async function loadSettings() {
+  try {
+    const data = await saFetch("/settings");
+    document.getElementById("broadcastMessage").value = data.broadcastMessage || "";
+    document.getElementById("broadcastActive").checked = data.broadcastActive || false;
+    document.getElementById("defaultAiLimit").value = data.defaultAiLimit || 50;
+  } catch (err) {
+    console.error("Failed to load settings:", err);
+  }
+}
+
+document.getElementById("saveBroadcastBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("saveBroadcastBtn");
+  btn.disabled = true;
+  btn.textContent = "Inahifadhi...";
+  try {
+    const broadcastMessage = document.getElementById("broadcastMessage").value;
+    const broadcastActive = document.getElementById("broadcastActive").checked;
+    await saFetch("/settings", {
+      method: "PUT",
+      body: JSON.stringify({ broadcastMessage, broadcastActive })
+    });
+    showToast("Tangazo limehifadhiwa", "success");
+  } catch (err) {
+    showToast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Hifadhi Tangazo";
+  }
+});
+
+document.getElementById("saveLimitBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("saveLimitBtn");
+  btn.disabled = true;
+  btn.textContent = "Inahifadhi...";
+  try {
+    const defaultAiLimit = parseInt(document.getElementById("defaultAiLimit").value, 10);
+    if (isNaN(defaultAiLimit) || defaultAiLimit < 0) throw new Error("Weka namba sahihi.");
+    await saFetch("/settings", {
+      method: "PUT",
+      body: JSON.stringify({ defaultAiLimit })
+    });
+    showToast("Default Limit imehifadhiwa", "success");
+  } catch (err) {
+    showToast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Hifadhi Limit";
+  }
+});

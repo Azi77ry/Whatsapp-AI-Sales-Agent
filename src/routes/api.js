@@ -4,6 +4,7 @@
 const express = require("express");
 const router = express.Router();
 const prisma = require("../db/client");
+const { getSettings } = require("../utils/platformSettings");
 const { sendMessage } = require("../whatsapp/sender");
 const manager = require("../whatsapp/manager");
 const authMiddleware = require("../middleware/auth");
@@ -533,6 +534,15 @@ router.delete("/settings/account", wrap(async (req, res) => {
   await prisma.merchant.delete({ where: { id: req.merchantId } });
   
   res.json({ success: true, message: "Akaunti imefutwa kikamilifu." });
+}));
+
+// ── PLATFORM BROADCAST ──────────────────────────────────
+router.get("/platform/broadcast", wrap(async (req, res) => {
+  const settings = getSettings();
+  res.json({
+    active: settings.broadcastActive,
+    message: settings.broadcastMessage
+  });
 }));
 
 module.exports = router;
