@@ -99,9 +99,11 @@ async function startSession(merchantId) {
 
     setInterval(() => {
       try {
-        store.writeToFile(storePath);
+        if (fs.existsSync(sessionDir)) {
+          store.writeToFile(storePath);
+        }
       } catch (e) {
-        console.error("Store write error:", e.message);
+        // Silently ignore if store fails to write
       }
     }, 10_000);
     
