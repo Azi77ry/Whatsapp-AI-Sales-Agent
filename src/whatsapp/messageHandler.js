@@ -166,8 +166,16 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     return;
   }
 
+  // 🛡️ SEND READ RECEIPT TO AVOID ANTI-SPAM DROPS
+  try {
+    await sock.readMessages([msg.key]);
+  } catch (err) {
+    console.log("⚠️ Hitilafu kutuma read receipt:", err.message);
+  }
+
   try {
     await sock.sendPresenceUpdate("composing", remoteJid);
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Delay for natural typing
   } catch (_) {}
 
   // 🛡️ ENFORCE AI LIMITS (SUPER ADMIN FEATURE)
