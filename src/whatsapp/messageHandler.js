@@ -54,7 +54,8 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const sendOptions = {};
-      if (originalMsg) sendOptions.quoted = originalMsg; // REQUIRED BY WHATSAPP FOR @LID ROUTING
+      // DO NOT QUOTE IF WE BYPASSED LID (To prevent mismatch 463 error)
+      if (originalMsg && !originalMsg.isLidBypassed) sendOptions.quoted = originalMsg; 
       
       if (imageUrl) {
         await sock.sendMessage(remoteJid, { image: imageUrl, caption: cleanText }, sendOptions);
@@ -90,6 +91,13 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
   if (msg.key.fromMe) return;
 
   let remoteJid = msg.key.remoteJid;
+  
+  // 🛡️ LID BYPASS: Extract real phone number if hidden behind @lid
+  if (remoteJid.includes("@lid") && msg.key.senderPn) {
+    console.log(`🔄 [LID BYPASS] Inabadilisha @lid kuwa namba halisi: ${msg.key.senderPn}`);
+    remoteJid = msg.key.senderPn;
+    msg.isLidBypassed = true; // Flag for sendWithRetry to drop quoted message
+  }
   
   // LOG THE LID ISSUE TO DEBUG FULLY
   if (remoteJid.includes("@lid")) {
