@@ -86,6 +86,7 @@ async function startSession(merchantId) {
     printQRInTerminal: false,
     msgRetryCounterCache,
     generateHighQualityLinkPreview: true,
+    browser: ["Ubuntu", "Chrome", "110.0.5481.192"], // 🛡️ ZUIA WHATSAPP KUZUIA MUUNGANIKO (Fixes 408 Timeout)
     connectTimeoutMs: 60000, // Sekunde 60 kuzuia Time Out
     defaultQueryTimeoutMs: 60000,
     keepAliveIntervalMs: 10000,
