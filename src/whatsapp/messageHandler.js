@@ -54,11 +54,9 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const sendOptions = {};
-      if (originalMsg) {
-        // REQUIRED BY WHATSAPP FOR @LID ROUTING (Fixes Error 463)
-        if (originalMsg.key.remoteJid.includes("@lid") && !originalMsg.key.participant) {
-          originalMsg.key.participant = originalMsg.key.senderPn || originalMsg.key.remoteJid;
-        }
+      
+      // KAMA NI @lid, USI-QUOTE MESEJI KABISA ILI KUKWEPA ERROR 463 YA META!
+      if (originalMsg && !remoteJid.includes("@lid")) {
         sendOptions.quoted = originalMsg; 
       }
       
