@@ -89,7 +89,13 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
   // Puuza ujumbe ambao AI mwenyewe imetuma (epuka loop)
   if (msg.key.fromMe) return;
 
-  const remoteJid = msg.key.remoteJid;
+  let remoteJid = msg.key.remoteJid;
+  
+  // 🛡️ LID BYPASS: Extract real phone number if hidden behind @lid
+  if (remoteJid.includes("@lid") && msg.key.senderPn) {
+    console.log(`🔄 [LID BYPASS] Inabadilisha @lid kuwa namba halisi: ${msg.key.senderPn}`);
+    remoteJid = msg.key.senderPn;
+  }
   
   // LOG THE LID ISSUE TO DEBUG FULLY
   if (remoteJid.includes("@lid")) {
