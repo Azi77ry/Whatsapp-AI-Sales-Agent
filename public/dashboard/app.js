@@ -1177,7 +1177,7 @@ function showToast(message) {
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   `;
   
-  toast.innerHTML = \`<div style="background: \${iconBg}; color: \${iconColor}; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">\${iconSvg}</div><span style="line-height:1.4;">\${message}</span>\`;
+  toast.innerHTML = `<div style="background: ${iconBg}; color: ${iconColor}; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${iconSvg}</div><span style="line-height:1.4;">${message}</span>`;
   container.appendChild(toast);
 
   // Trigger animation
