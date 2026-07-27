@@ -78,16 +78,33 @@ async function startSession(merchantId) {
   setConnectionStatus(mId, "connecting");
 
   const sessionDir = path.join(SESSION_BASE_DIR, `merchant_${mId}`);
+  
+  // HAKIKISHA FOLDER LIPO ILI KUZUIA ENOENT ERROR KWENYE STORE
+  const fs = require('fs');
+  if (!fs.existsSync(sessionDir)) {
+    fs.mkdirSync(sessionDir, { recursive: true });
+  }
+
   const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
   const { version } = await fetchLatestBaileysVersion();
   
   // Hifadhi ya ndani (Store) kutatua Error 463 ya @lid
   if (!stores.has(merchantId)) {
     const store = makeInMemoryStore({ logger: pino({ level: "silent" }) });
-    store.readFromFile(path.join(sessionDir, 'baileys_store_multi.json'));
+    
+    const storePath = path.join(sessionDir, 'baileys_store_multi.json');
+    try {
+      store.readFromFile(storePath);
+    } catch (e) {} // It's fine if it doesn't exist yet
+
     setInterval(() => {
-      store.writeToFile(path.join(sessionDir, 'baileys_store_multi.json'));
+      try {
+        store.writeToFile(storePath);
+      } catch (e) {
+        console.error("Store write error:", e.message);
+      }
     }, 10_000);
+    
     stores.set(merchantId, store);
   }
   const store = stores.get(merchantId);
