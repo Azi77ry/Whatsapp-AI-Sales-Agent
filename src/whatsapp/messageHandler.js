@@ -240,6 +240,9 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     }
   } catch (err) {
     console.error(`⚠️  Merchant #${mId} - Hitilafu ya kushughulikia ujumbe (${remoteJid}):`, err.message);
+  } finally {
+    // ALWAYS turn off typing indicator!
+    await sock.sendPresenceUpdate("paused", remoteJid).catch(() => {});
   }
 }
 
