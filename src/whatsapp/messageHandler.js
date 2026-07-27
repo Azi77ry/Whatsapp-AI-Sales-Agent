@@ -54,13 +54,23 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const sendOptions = {};
-      if (originalMsg) sendOptions.quoted = originalMsg; // REQUIRED BY WHATSAPP FOR @LID ROUTING
+      if (originalMsg) {
+        // REQUIRED BY WHATSAPP FOR @LID ROUTING (Fixes Error 463)
+        if (originalMsg.key.remoteJid.includes("@lid") && !originalMsg.key.participant) {
+          originalMsg.key.participant = originalMsg.key.senderPn || originalMsg.key.remoteJid;
+        }
+        sendOptions.quoted = originalMsg; 
+      }
       
       if (imageUrl) {
         await sock.sendMessage(remoteJid, { image: imageUrl, caption: cleanText }, sendOptions);
       } else {
         await sock.sendMessage(remoteJid, { text: cleanText }, sendOptions);
       }
+      
+      // Turn off composing state after successful send
+      await sock.sendPresenceUpdate("paused", remoteJid).catch(() => {});
+      
       return true;
     } catch (err) {
       const isConnectionError =
