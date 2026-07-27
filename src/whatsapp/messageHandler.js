@@ -5,6 +5,12 @@
 const { generateReply, isPersonalContact, logPersonalMessage } = require("../ai/agent");
 const prisma = require("../db/client");
 
+// Anti-Bot Rate Limiting (In-Memory)
+const userMessageCounts = new Map();
+const RATE_LIMIT_WINDOW_MS = 60000; // Sekunde 60
+const MAX_MESSAGES_PER_WINDOW = 6; // Meseji 6 kwa dakika
+const BLOCK_DURATION_MS = 15 * 60 * 1000; // Dakika 15
+
 function extractTextFromMessage(msg) {
   const m = msg.message;
   if (!m) return null;
@@ -19,7 +25,7 @@ function extractTextFromMessage(msg) {
 }
 
 // Jaribu kutuma ujumbe mara nyingi kama kunatokea kosa la muunganiko wa muda mfupi
-async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3) {
+async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, originalMsg = null) {
   const RETRY_DELAY_MS = 2000;
 
   // Extract IMAGE tag if present
@@ -47,10 +53,13 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3) {
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      const sendOptions = {};
+      if (originalMsg) sendOptions.quoted = originalMsg;
+
       if (imageUrl) {
-        await sock.sendMessage(remoteJid, { image: imageUrl, caption: cleanText });
+        await sock.sendMessage(remoteJid, { image: imageUrl, caption: cleanText }, sendOptions);
       } else {
-        await sock.sendMessage(remoteJid, { text: cleanText });
+        await sock.sendMessage(remoteJid, { text: cleanText }, sendOptions);
       }
       return true;
     } catch (err) {
@@ -89,12 +98,45 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     remoteJid.endsWith("@newsletter")
   ) return;
 
+  // 🛡️ ANTI-BOT LOOP PROTECTION (RATE LIMITING)
+  const now = Date.now();
+  if (!userMessageCounts.has(remoteJid)) {
+    userMessageCounts.set(remoteJid, { count: 1, firstMessageTime: now, blockedUntil: 0 });
+  } else {
+    const userData = userMessageCounts.get(remoteJid);
+    
+    // Kama bado amefungiwa, puuza ujumbe moja kwa moja
+    if (userData.blockedUntil > now) {
+      return; 
+    }
+
+    // Kama muda umepita tangu meseji ya kwanza, anza kuhesabu upya
+    if (now - userData.firstMessageTime > RATE_LIMIT_WINDOW_MS) {
+      userData.count = 1;
+      userData.firstMessageTime = now;
+    } else {
+      userData.count++;
+      // Ikiwa ametuma meseji nyingi sana mfululizo (zaidi ya 6 ndani ya sekunde 60)
+      if (userData.count > MAX_MESSAGES_PER_WINDOW) {
+        console.log(`🚨 SPAM/BOT LOOP DETECTED! Kuzuia namba ${remoteJid} kwa dakika 15.`);
+        userData.blockedUntil = now + BLOCK_DURATION_MS;
+        
+        // Tuma ujumbe mmoja wa kumpa taarifa mteja kisha nyamaza
+        await sendWithRetry(sock, remoteJid, "⚠️ *Kizuizi cha Usalama:* Mfumo umegundua meseji zinatumwa kwa kasi isiyo ya kawaida (Inawezekana ni Auto-Responder). Tumesitisha mazungumzo haya kwa dakika 15 ili kulinda usalama. Mmiliki atakujibu hivi punde.", 3, msg);
+        
+        // Hifadhi kwenye database ili mmiliki aone (Kama "Personal" ili Bot isijibu tena mpaka ifunguliwe)
+        await logPersonalMessage({ customerPhone: remoteJid, customerName: msg.pushName || "Unknown", userMessage: "[SYSTEM AUTO-BLOCK] Mteja huyu amefungiwa kwa muda kutokana na kutuma meseji nyingi mfululizo (Spam/Bot Loop).", merchantId: mId });
+        return;
+      }
+    }
+  }
+
   const text = extractTextFromMessage(msg);
   if (!text) {
     const m = msg.message;
     // Jibu kwa heshima kama mteja ametuma Voice Note au Sauti
     if (m?.audioMessage) {
-      await sendWithRetry(sock, remoteJid, "Samahani, bado sijajifunza kusikiliza sauti (Voice Notes) 🎙️. Tafadhali andika ujumbe wako kwa maandishi ili niweze kukusaidia kikamilifu. 🙏");
+      await sendWithRetry(sock, remoteJid, "Samahani, bado sijajifunza kusikiliza sauti (Voice Notes) 🎙️. Tafadhali andika ujumbe wako kwa maandishi ili niweze kukusaidia kikamilifu. 🙏", 3, msg);
     }
     // Kama ni stika au kitu kingine, puuza kimya kimya
     return;
@@ -135,7 +177,7 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
       
       // Optional: Send a fallback message to the customer or just stay silent
       // Let's stay silent so the merchant can reply manually, or send a brief info:
-      // await sendWithRetry(sock, remoteJid, "*(AI Auto-Reply)* Samahani, nipo nje ya mtandao kwa sasa. Mmiliki wa duka atakujibu hivi punde.");
+      // await sendWithRetry(sock, remoteJid, "*(AI Auto-Reply)* Samahani, nipo nje ya mtandao kwa sasa. Mmiliki wa duka atakujibu hivi punde.", 3, msg);
       
       // Save it as a personal message so it shows in conversations for human handling
       await logPersonalMessage({ customerPhone: remoteJid, customerName, userMessage: text, merchantId: mId });
@@ -154,7 +196,7 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     });
 
     if (replyText) {
-      const sent = await sendWithRetry(sock, remoteJid, replyText);
+      const sent = await sendWithRetry(sock, remoteJid, replyText, 3, msg);
       if (sent) {
         console.log(`📤 Merchant #${mId} - Jibu limetumwa kwa ${remoteJid}: ${replyText}`);
         
