@@ -82,7 +82,7 @@ async function startSession(merchantId) {
   const sock = makeWASocket({
     version,
     auth: state,
-    logger: pino({ level: "silent" }),
+    logger: pino({ level: "warn" }),
     printQRInTerminal: false,
     msgRetryCounterCache,
     generateHighQualityLinkPreview: true,
