@@ -3,6 +3,7 @@ const {
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
+  makeInMemoryStore
 } = require("@whiskeysockets/baileys");
 const { Boom } = require("@hapi/boom");
 const pino = require("pino");
@@ -15,6 +16,9 @@ const SESSION_BASE_DIR = path.join(__dirname, "../../sessions");
 
 // Ramani ya kuhifadhi sessions hai za WhatsApp
 const activeSessions = new Map();
+
+// STORE: Hifadhi ya ndani kwa ajili ya kutatua matatizo ya @lid (Error 463)
+const stores = new Map();
 
 // Hifadhi ya muda ya hali ya muunganiko kwa kila merchant
 const connectionStatuses = new Map();
@@ -76,6 +80,17 @@ async function startSession(merchantId) {
   const sessionDir = path.join(SESSION_BASE_DIR, `merchant_${mId}`);
   const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
   const { version } = await fetchLatestBaileysVersion();
+  
+  // Hifadhi ya ndani (Store) kutatua Error 463 ya @lid
+  if (!stores.has(merchantId)) {
+    const store = makeInMemoryStore({ logger: pino({ level: "silent" }) });
+    store.readFromFile(path.join(sessionDir, 'baileys_store_multi.json'));
+    setInterval(() => {
+      store.writeToFile(path.join(sessionDir, 'baileys_store_multi.json'));
+    }, 10_000);
+    stores.set(merchantId, store);
+  }
+  const store = stores.get(merchantId);
 
   const msgRetryCounterCache = new Map(); // Njia mbadala ya NodeCache
 
@@ -94,10 +109,16 @@ async function startSession(merchantId) {
     syncFullHistory: false, // Zima usomaji wa meseji za zamani ili isikwame
     shouldSyncHistoryMessage: () => false, // Zuia kabisa process za historia
     getMessage: async (key) => {
-      // Hii inasaidia Baileys kurudia kutuma ujumbe kama simu ya mteja (hasa Linked Devices) imeshindwa kuusoma (Bad MAC / E2E error).
+      if (store) {
+        const msg = await store.loadMessage(key.remoteJid, key.id);
+        return msg?.message || undefined;
+      }
       return { conversation: "..." };
     }
   });
+
+  // Unganisha store na socket
+  store.bind(sock.ev);
 
   activeSessions.set(mId, sock);
 
