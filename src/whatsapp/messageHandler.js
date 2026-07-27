@@ -54,6 +54,7 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const sendOptions = {};
+      if (originalMsg) sendOptions.quoted = originalMsg; // REQUIRED BY WHATSAPP FOR @LID ROUTING
       
       if (imageUrl) {
         await sock.sendMessage(remoteJid, { image: imageUrl, caption: cleanText }, sendOptions);
@@ -90,9 +91,27 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
 
   let remoteJid = msg.key.remoteJid;
   
+  // 🛡️ LID BYPASS: Extract real phone number if hidden behind @lid
+  if (remoteJid.includes("@lid") && msg.key.senderPn) {
+    console.log(`🔄 [LID BYPASS] Inabadilisha @lid kuwa namba halisi: ${msg.key.senderPn}`);
+    remoteJid = msg.key.senderPn;
+    msg.key.remoteJid = msg.key.senderPn; // 🛡️ UPDATE QUOTED MSG JID TOO
+  }
+  
+  // LOG THE LID ISSUE TO DEBUG FULLY
+  if (remoteJid.includes("@lid")) {
+    const fs = require('fs');
+    try {
+      fs.writeFileSync('lid_debug.json', JSON.stringify(msg, null, 2));
+      console.log(`🔍 [LID DEBUG] Saved full message to lid_debug.json`);
+    } catch (e) {
+      console.error('Failed to save lid_debug.json', e);
+    }
+  }
+
   // Puuza groups, broadcast, na newsletter
   if (
-    remoteJid.includes("@g.us") ||
+    remoteJid.endsWith("@g.us") ||
     remoteJid === "status@broadcast" ||
     remoteJid.endsWith("@newsletter")
   ) return;
