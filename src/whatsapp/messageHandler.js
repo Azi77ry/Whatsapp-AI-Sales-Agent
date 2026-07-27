@@ -90,6 +90,11 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
   if (msg.key.fromMe) return;
 
   const remoteJid = msg.key.remoteJid;
+  
+  // LOG THE LID ISSUE TO DEBUG
+  if (remoteJid.includes("@lid")) {
+    console.log(`🔍 [LID DEBUG] remoteJid: ${remoteJid}, participant: ${msg.key.participant}, senderKey: ${msg.message?.senderKeyDistributionMessage?.groupId}`);
+  }
 
   // Puuza groups, broadcast, na newsletter
   if (
