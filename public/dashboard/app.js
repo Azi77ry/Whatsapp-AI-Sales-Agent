@@ -1122,17 +1122,59 @@ async function updateOrderStatus(id, status) {
 }
 
 function showToast(message) {
-  let toast = document.getElementById("toast");
-  if (!toast) {
-    toast = document.createElement("div");
-    toast.id = "toast";
-    toast.style.cssText = "position:fixed;bottom:24px;right:24px;background:#22304f;color:#fff;padding:12px 18px;border-radius:4px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:100;max-width:320px;";
-    document.body.appendChild(toast);
+  const containerId = "modern-toast-container";
+  let container = document.getElementById(containerId);
+  if (!container) {
+    container = document.createElement("div");
+    container.id = containerId;
+    container.style.cssText = "position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;";
+    document.body.appendChild(container);
   }
-  toast.textContent = message;
-  toast.style.display = "block";
-  clearTimeout(toast._hideTimer);
-  toast._hideTimer = setTimeout(() => { toast.style.display = "none"; }, 4000);
+
+  const toast = document.createElement("div");
+  const isError = message.includes("⚠️") || message.toLowerCase().includes("kosa") || message.toLowerCase().includes("error");
+  
+  const iconColor = isError ? "#ff3366" : "#00dc82";
+  const iconBg = isError ? "rgba(255,51,102,0.15)" : "rgba(0,220,130,0.15)";
+  const iconSvg = isError 
+    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+
+  toast.style.cssText = `
+    background: rgba(26, 35, 50, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    box-shadow: 0 10px 30px -5px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 320px;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  `;
+  
+  toast.innerHTML = \`<div style="background: \${iconBg}; color: \${iconColor}; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">\${iconSvg}</div><span style="line-height:1.4;">\${message}</span>\`;
+  container.appendChild(toast);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.style.transform = "translateX(0)";
+    toast.style.opacity = "1";
+  });
+
+  // Remove after 4 seconds
+  setTimeout(() => {
+    toast.style.transform = "translateX(120%)";
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 400);
+  }, 4000);
 }
 
 // ---- SPECIAL REQUESTS (Kariakoo Broker Model) ----
