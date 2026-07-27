@@ -185,11 +185,14 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
   }
 
   // 🛡️ SEND READ RECEIPT TO AVOID ANTI-SPAM DROPS
+  // (IMEONDOLEWA KWA OMBI LA MTEJA ILI MMILIKI AENDELEE KUONA MESEJI MPYA)
+  /*
   try {
     await sock.readMessages([msg.key]);
   } catch (err) {
     console.log("⚠️ Hitilafu kutuma read receipt:", err.message);
   }
+  */
 
   try {
     await sock.sendPresenceUpdate("composing", remoteJid);
