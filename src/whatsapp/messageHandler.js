@@ -54,7 +54,7 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const sendOptions = {};
-      // Tumeondoa 'quoted: originalMsg' kwasababu inaweza kusababisha Mfumo wa WhatsApp ku-drop ujumbe kimya kimya kama Original Message inatoka kwa @lid ambayo haina structure kamili.
+      if (originalMsg) sendOptions.quoted = originalMsg; // REQUIRED BY WHATSAPP FOR @LID ROUTING
       
       if (imageUrl) {
         await sock.sendMessage(remoteJid, { image: imageUrl, caption: cleanText }, sendOptions);
