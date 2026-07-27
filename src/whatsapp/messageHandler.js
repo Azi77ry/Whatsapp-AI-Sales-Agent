@@ -91,9 +91,15 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
 
   const remoteJid = msg.key.remoteJid;
   
-  // LOG THE LID ISSUE TO DEBUG
+  // LOG THE LID ISSUE TO DEBUG FULLY
   if (remoteJid.includes("@lid")) {
-    console.log(`🔍 [LID DEBUG] remoteJid: ${remoteJid}, participant: ${msg.key.participant}, senderKey: ${msg.message?.senderKeyDistributionMessage?.groupId}`);
+    const fs = require('fs');
+    try {
+      fs.writeFileSync('lid_debug.json', JSON.stringify(msg, null, 2));
+      console.log(`🔍 [LID DEBUG] Saved full message to lid_debug.json`);
+    } catch (e) {
+      console.error('Failed to save lid_debug.json', e);
+    }
   }
 
   // Puuza groups, broadcast, na newsletter
