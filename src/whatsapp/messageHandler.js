@@ -95,6 +95,7 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
   if (remoteJid.includes("@lid") && msg.key.senderPn) {
     console.log(`🔄 [LID BYPASS] Inabadilisha @lid kuwa namba halisi: ${msg.key.senderPn}`);
     remoteJid = msg.key.senderPn;
+    msg.key.remoteJid = msg.key.senderPn; // 🛡️ UPDATE QUOTED MSG JID TOO
   }
   
   // LOG THE LID ISSUE TO DEBUG FULLY
