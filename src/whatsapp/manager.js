@@ -86,6 +86,10 @@ async function startSession(merchantId) {
     printQRInTerminal: false,
     msgRetryCounterCache,
     generateHighQualityLinkPreview: true,
+    connectTimeoutMs: 60000, // Sekunde 60 kuzuia Time Out
+    defaultQueryTimeoutMs: 60000,
+    keepAliveIntervalMs: 10000,
+    markOnlineOnConnect: false, // Inasaidia kuzuia kukwama wakati wa kuunganisha
     getMessage: async (key) => {
       // Hii inasaidia Baileys kurudia kutuma ujumbe kama simu ya mteja (hasa Linked Devices) imeshindwa kuusoma (Bad MAC / E2E error).
       return { conversation: "..." };
