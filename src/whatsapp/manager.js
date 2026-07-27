@@ -77,11 +77,19 @@ async function startSession(merchantId) {
   const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
   const { version } = await fetchLatestBaileysVersion();
 
+  const msgRetryCounterCache = new Map(); // Njia mbadala ya NodeCache
+
   const sock = makeWASocket({
     version,
     auth: state,
     logger: pino({ level: "silent" }),
     printQRInTerminal: false,
+    msgRetryCounterCache,
+    generateHighQualityLinkPreview: true,
+    getMessage: async (key) => {
+      // Hii inasaidia Baileys kurudia kutuma ujumbe kama simu ya mteja (hasa Linked Devices) imeshindwa kuusoma (Bad MAC / E2E error).
+      return { conversation: "..." };
+    }
   });
 
   activeSessions.set(mId, sock);
