@@ -90,6 +90,8 @@ async function startSession(merchantId) {
     defaultQueryTimeoutMs: 60000,
     keepAliveIntervalMs: 10000,
     markOnlineOnConnect: false, // Inasaidia kuzuia kukwama wakati wa kuunganisha
+    syncFullHistory: false, // Zima usomaji wa meseji za zamani ili isikwame
+    shouldSyncHistoryMessage: () => false, // Zuia kabisa process za historia
     getMessage: async (key) => {
       // Hii inasaidia Baileys kurudia kutuma ujumbe kama simu ya mteja (hasa Linked Devices) imeshindwa kuusoma (Bad MAC / E2E error).
       return { conversation: "..." };
