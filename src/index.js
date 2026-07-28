@@ -23,6 +23,7 @@ app.use("/dashboard", express.static(path.join(__dirname, "../public/dashboard")
 
 // Super-Admin dashboard (static files)
 app.use("/superadmin", express.static(path.join(__dirname, "../public/superadmin")));
+app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 app.get("/superadmin", (req, res) => {
   res.redirect("/superadmin/");
 });
