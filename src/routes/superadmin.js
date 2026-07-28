@@ -4,8 +4,11 @@
 const express = require("express");
 const router = express.Router();
 const prisma = require("../db/client");
+const jwt = require("jsonwebtoken");
+const config = require("../config");
 const superAdminAuth = require("../middleware/superAdminAuth");
 const { getSettings, saveSettings } = require("../utils/platformSettings");
+const { activeSessions, getConnectionStatus, stopSession } = require("../whatsapp/manager");
 
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch((err) => {
   console.error(`⚠️  SuperAdmin API Error [${req.method} ${req.path}]:`, err.message);
@@ -228,6 +231,63 @@ router.put("/settings", wrap(async (req, res) => {
   const updated = saveSettings(req.body);
   console.log(`⚙️ Super-Admin: Mipangilio imesasishwa.`);
   res.json({ message: "Mipangilio imehifadhiwa.", settings: updated });
+}));
+
+// ── IMPERSONATE (LOGIN AS MERCHANT) ─────────────────────────
+router.post("/merchants/:id/impersonate", wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const merchant = await prisma.merchant.findUnique({ where: { id } });
+  
+  if (!merchant) {
+    return res.status(404).json({ error: "Mfanyabiashara hajapatikana." });
+  }
+  
+  if (merchant.role === "superadmin") {
+    return res.status(403).json({ error: "Huwezi kujifanya (impersonate) Super-Admin." });
+  }
+
+  // Generate a short-lived token for impersonation
+  const token = jwt.sign(
+    { merchantId: merchant.id, email: merchant.email, role: merchant.role || "merchant" },
+    config.jwtSecret,
+    { expiresIn: "2h" } 
+  );
+
+  console.log(`🦸‍♂️ Super-Admin ameanza kumsimamia (impersonate) mfanyabiashara "${merchant.businessName}".`);
+
+  res.json({ token, merchant: { id: merchant.id, businessName: merchant.businessName, email: merchant.email } });
+}));
+
+// ── WHATSAPP SESSIONS MANAGEMENT ─────────────────────────
+router.get("/whatsapp-sessions", wrap(async (req, res) => {
+  // Pata wafanyabiashara wote
+  const merchants = await prisma.merchant.findMany({
+    where: { role: "merchant" },
+    select: { id: true, businessName: true, phone: true }
+  });
+
+  const sessionsInfo = merchants.map(m => {
+    const status = getConnectionStatus(m.id);
+    return {
+      id: m.id,
+      businessName: m.businessName,
+      phone: m.phone,
+      status: status.status,
+      botActive: status.botActive,
+    };
+  });
+
+  res.json({ sessions: sessionsInfo });
+}));
+
+router.post("/whatsapp-sessions/:id/disconnect", wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  console.log(`🔌 Super-Admin anakata session ya WhatsApp kwa Merchant #${id}`);
+  
+  // logout = true inafuta kabisa session (creds.json) ili arudie ku-scan
+  await stopSession(id, true);
+  
+  res.json({ message: "WhatsApp session imekatwa kikamilifu." });
 }));
 
 module.exports = router;

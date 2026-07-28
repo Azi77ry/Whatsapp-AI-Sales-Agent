@@ -113,6 +113,7 @@ function showApp() {
   loadStats();
   loadMerchants();
   loadSettings();
+  loadWhatsappSessions();
 }
 
 // Navigation
@@ -180,6 +181,7 @@ function renderMerchants(merchants) {
         <div style="font-size:11px">${m.subscriptionEndDate ? new Date(m.subscriptionEndDate).toLocaleDateString() : 'N/A'}</div>
       </td>
       <td class="action-btns">
+        <button class="btn-icon" title="Login As (Impersonate)" style="color:#00dc82" onclick="impersonateMerchant(${m.id})">🦸‍♂️</button>
         <button class="btn-icon" title="Kifurushi (Subscription)" style="color:var(--sa-primary)" onclick="openSubModal(${m.id}, '${escapeHtml(m.businessName)}')">📅</button>
         <button class="btn-icon" title="Edit AI Limit" onclick="openLimitModal(${m.id}, '${escapeHtml(m.businessName)}', ${m.aiLimit})">⚡</button>
         ${m.status === 'active' 
@@ -387,3 +389,78 @@ document.getElementById("saveLimitBtn").addEventListener("click", async () => {
     btn.textContent = "Hifadhi Limit";
   }
 });
+
+// ── IMPERSONATE (LOGIN AS) ──────────────────────────────────────
+async function impersonateMerchant(id) {
+  try {
+    const data = await saFetch(`/merchants/${id}/impersonate`, { method: "POST" });
+    showToast(`Inaandaa Dashboard ya ${data.merchant.businessName}...`, "success");
+    
+    // Simulia kuingia kwenye dashboard kwa kuweka token kwa muda
+    // Lakini ili tusifute token ya SuperAdmin, tutafungua tab mpya
+    // Tab mpya inahitaji token iwe kwenye localStorage yake, lakini localstorage inasharewa per domain
+    // Hivyo tutatumia URL parameter kwa usalama na Dashboard itaidaka (Inahitaji dashboard app.js update kidogo)
+    // Au kama simple hack: tunatengeneza URL iliyofichwa na kuingiza localStorage kule.
+    
+    // Njia bora: Hifadhi token ya zamani, weka mpya, fungua tab, kisha rudisha ya zamani.
+    const saToken = localStorage.getItem("sa_token");
+    localStorage.setItem("token", data.token); // Hii ni token inayotumiwa na Dashboard ya kawaida (merchant)
+    
+    window.open("/dashboard/", "_blank");
+    
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+// ── WHATSAPP SESSIONS ───────────────────────────────────────────
+async function loadWhatsappSessions() {
+  try {
+    const data = await saFetch("/whatsapp-sessions");
+    renderWhatsappSessions(data.sessions);
+  } catch (err) {
+    document.getElementById("whatsappBody").innerHTML = `<tr><td colspan="4" style="color:var(--sa-danger)">${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function renderWhatsappSessions(sessions) {
+  const tbody = document.getElementById("whatsappBody");
+  tbody.innerHTML = "";
+  
+  if (sessions.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Hakuna sessions zilizopatikana</td></tr>`;
+    return;
+  }
+
+  sessions.forEach(s => {
+    const tr = document.createElement("tr");
+    
+    let statusBadge = "";
+    if (s.status === "connected") statusBadge = `<span class="badge active">Connected</span>`;
+    else if (s.status === "connecting") statusBadge = `<span class="badge" style="background:#ffb020; color:#000;">Connecting...</span>`;
+    else if (s.status === "qr") statusBadge = `<span class="badge" style="background:#00d2ff; color:#000;">Waiting for QR</span>`;
+    else statusBadge = `<span class="badge suspended">Disconnected</span>`;
+    
+    tr.innerHTML = `
+      <td><strong>${escapeHtml(s.businessName)}</strong></td>
+      <td>${escapeHtml(s.phone || 'N/A')}</td>
+      <td>${statusBadge}</td>
+      <td class="action-btns">
+        <button class="btn-icon" style="color:var(--sa-danger)" title="Force Disconnect" onclick="disconnectWhatsappSession(${s.id}, '${escapeHtml(s.businessName)}')">🔌</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function disconnectWhatsappSession(id, name) {
+  if (!confirm(`Je, una uhakika unataka kukata muunganiko wa WhatsApp wa "${name}"? Hii itamlazimu a-scan QR code upya.`)) return;
+  
+  try {
+    await saFetch(`/whatsapp-sessions/${id}/disconnect`, { method: "POST" });
+    showToast(`WhatsApp Session ya ${name} imekatwa.`, "success");
+    loadWhatsappSessions();
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
