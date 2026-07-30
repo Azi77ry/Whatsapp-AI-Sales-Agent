@@ -28,6 +28,15 @@ const registerLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// 🛡️ Ulinzi: Rate Limiting kwa Forgot Password (Kuzuia SMS/Email Spam na Enumeration)
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // Dakika 15
+  max: 3, // Majaribio 3 tu ndani ya dakika 15 kwa kila IP
+  message: { error: "Umeomba kurejesha neno la siri mara nyingi sana. Tafadhali subiri dakika 15." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Usajili (Register)
 router.post("/register", registerLimiter, async (req, res) => {
   const { businessName, email, phone, password } = req.body;
@@ -144,11 +153,16 @@ router.post("/login", loginLimiter, async (req, res) => {
 });
 
 // ── SUBMIT EMAIL OR PHONE FOR RESET CODE (Forgot Password) ──────────────────────
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", forgotPasswordLimiter, async (req, res) => {
   const { emailOrPhone } = req.body;
 
   if (!emailOrPhone) {
     return res.status(400).json({ error: "Tafadhali weka barua pepe au namba ya simu aliyotumia kujiandikisha." });
+  }
+
+  // Ulinzi: Hakikisha input haina urefu uliopitiliza
+  if (emailOrPhone.length > 100) {
+    return res.status(400).json({ error: "Ingizo lako ni refu mno." });
   }
 
   try {
@@ -159,7 +173,7 @@ router.post("/forgot-password", async (req, res) => {
       where: {
         OR: [
           { email: emailOrPhone.trim().toLowerCase() },
-          { phone: cleanPhone.length > 5 ? cleanPhone : "invalid-phone-format-fallback" }
+          { phone: cleanPhone.length >= 9 && cleanPhone.length <= 15 ? cleanPhone : "invalid-phone-format-fallback" }
         ]
       }
     });

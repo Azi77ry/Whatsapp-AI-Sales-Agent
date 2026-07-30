@@ -97,15 +97,17 @@ async function startSession(merchantId) {
       store.readFromFile(storePath);
     } catch (e) {} // It's fine if it doesn't exist yet
 
-    setInterval(() => {
+    // FIX: Optimized store write to prevent I/O DoS.
+    // We bind a function to write the store periodically ONLY if it changed, 
+    // or we just write it on graceful shutdown. For Baileys, we'll write it on disconnect.
+    store.writeToFile = () => {
       try {
         if (fs.existsSync(sessionDir)) {
-          store.writeToFile(storePath);
+          const fs = require('fs');
+          fs.writeFileSync(storePath, JSON.stringify(store.toJSON()));
         }
-      } catch (e) {
-        // Silently ignore if store fails to write
-      }
-    }, 10_000);
+      } catch (e) {}
+    };
     
     stores.set(merchantId, store);
   }
@@ -155,6 +157,12 @@ async function startSession(merchantId) {
       console.log(`🔌 Muunganiko wa Merchant #${mId} umekatika. Kuunganisha upya: ${shouldReconnect}`);
 
       activeSessions.delete(mId);
+      
+      // Save store before reconnecting/cleaning up
+      const store = stores.get(merchantId);
+      if (store && store.writeToFile) {
+         store.writeToFile();
+      }
 
       if (shouldReconnect) {
         setConnectionStatus(mId, "connecting");
@@ -210,6 +218,12 @@ async function stopSession(merchantId, logout = false) {
       console.error(`Hitilafu wakati wa kufunga socket (Merchant #${mId}):`, e.message);
     }
     activeSessions.delete(mId);
+  }
+  
+  // Save store on manual stop
+  const store = stores.get(merchantId);
+  if (store && store.writeToFile) {
+      store.writeToFile();
   }
 
   setConnectionStatus(mId, "disconnected");

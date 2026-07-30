@@ -1,9 +1,8 @@
 require("dotenv").config({ override: true });
 
-// Angalizo: JWT_SECRET lazima iwekwe kwenye .env kwa usalama wa juu
-if (!process.env.JWT_SECRET) {
-  console.warn("\n⚠️  ONYO: JWT_SECRET haijawekwa kwenye .env! Mfumo unatumia default dhaifu.");
-  console.warn("   Weka JWT_SECRET=neno-lako-la-siri-hapa kwenye faili la .env\n");
+// Angalizo: Sasa ni lazima uweke secrets hizi kwenye .env
+if (!process.env.JWT_SECRET || !process.env.ENCRYPTION_KEY || !process.env.ADMIN_PASSWORD) {
+  throw new Error("\n⚠️  KOSA KUBWA: Lazima uweke JWT_SECRET, ENCRYPTION_KEY, na ADMIN_PASSWORD kwenye faili la .env kwa usalama wa mfumo.\n");
 }
 
 function parseProviderOrder(raw) {
@@ -14,8 +13,8 @@ function parseProviderOrder(raw) {
 }
 
 module.exports = {
-  jwtSecret: process.env.JWT_SECRET || "super-secret-key-saas-whatsapp",
-  encryptionKey: process.env.ENCRYPTION_KEY || "fallback-dev-key-32-chars-long12",
+  jwtSecret: process.env.JWT_SECRET,
+  encryptionKey: process.env.ENCRYPTION_KEY,
   
   geminiApiKey: process.env.GEMINI_API_KEY,
   geminiModel: process.env.GEMINI_MODEL || "gemini-2.5-flash",
@@ -39,7 +38,7 @@ module.exports = {
   businessName: process.env.BUSINESS_NAME || "Duka Letu",
   port: process.env.PORT || 3000,
   historyLimit: parseInt(process.env.CONVERSATION_HISTORY_LIMIT || "20", 10),
-  adminPassword: process.env.ADMIN_PASSWORD || "admin123",
+  adminPassword: process.env.ADMIN_PASSWORD,
 
   // Context compaction - ukifikia idadi hii ya ujumbe, AI inafupisha historia
   // na kuhifadhi muhtasari badala ya kuhifadhi ujumbe wote (inasaidia kuzuia token limit)
