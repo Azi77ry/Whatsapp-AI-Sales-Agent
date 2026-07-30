@@ -13,7 +13,7 @@ const router = express.Router();
 // 🛡️ Ulinzi: Rate Limiting kwa Login (Kuzuia Brute-force)
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // Dakika 15
-  max: 5, // Majaribio 5 tu ndani ya dakika 15 kwa kila IP
+  max: 8, // Majaribio 5 tu ndani ya dakika 15 kwa kila IP
   message: { error: "Umejaribu kuingia mara nyingi sana. Tafadhali subiri dakika 15." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -22,7 +22,7 @@ const loginLimiter = rateLimit({
 // 🛡️ Ulinzi: Rate Limiting kwa Register (Kuzuia Spam)
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // Saa 1
-  max: 3, // Usajili 3 tu kwa saa 1 kwa kila IP
+  max: 10, // Usajili 10 tu kwa saa 1 kwa kila IP
   message: { error: "Umesajili akaunti nyingi sana kwa muda mfupi. Tafadhali subiri saa 1." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -167,7 +167,7 @@ router.post("/forgot-password", forgotPasswordLimiter, async (req, res) => {
 
   try {
     const cleanPhone = emailOrPhone.replace(/[^0-9]/g, "");
-    
+
     // Pata mfanyabiashara kwa email au phone
     const merchant = await prisma.merchant.findFirst({
       where: {
@@ -205,9 +205,9 @@ router.post("/forgot-password", forgotPasswordLimiter, async (req, res) => {
     if (merchant.phone) {
       const recipientJid = merchant.phone.includes("@") ? merchant.phone : `${merchant.phone}@s.whatsapp.net`;
       const msg = `🔐 *Msimbo wa Kurejesha Password*\n\n` +
-                  `Habari *${merchant.businessName}*!\n` +
-                  `Msimbo wako wa OTP wa kurejesha neno la siri kwenye jukwaa la SaaS ni: *${otp}*.\n\n` +
-                  `Msimbo huu utamaliza muda wake baada ya dakika 15. Usishiriki msimbo huu na mtu yeyote! 🛡️`;
+        `Habari *${merchant.businessName}*!\n` +
+        `Msimbo wako wa OTP wa kurejesha neno la siri kwenye jukwaa la SaaS ni: *${otp}*.\n\n` +
+        `Msimbo huu utamaliza muda wake baada ya dakika 15. Usishiriki msimbo huu na mtu yeyote! 🛡️`;
 
       // Kutuma kupitia Merchant 1 (SaaS main notifier line)
       const sent = await sendMessage(recipientJid, msg, 1);
