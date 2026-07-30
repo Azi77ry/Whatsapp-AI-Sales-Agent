@@ -3,7 +3,8 @@ const {
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
-  makeInMemoryStore
+  makeInMemoryStore,
+  Browsers
 } = require("@whiskeysockets/baileys");
 const { Boom } = require("@hapi/boom");
 const pino = require("pino");
@@ -122,7 +123,7 @@ async function startSession(merchantId) {
     printQRInTerminal: false,
     msgRetryCounterCache,
     generateHighQualityLinkPreview: true,
-    browser: ["Ubuntu", "Chrome", "110.0.5481.192"], // 🛡️ ZUIA WHATSAPP KUZUIA MUUNGANIKO (Fixes 408 Timeout)
+    browser: Browsers.ubuntu("Chrome"), // 🛡️ ZUIA WHATSAPP KUZUIA MUUNGANIKO WA PAIRING CODE
     connectTimeoutMs: 60000, // Sekunde 60 kuzuia Time Out
     defaultQueryTimeoutMs: 60000,
     keepAliveIntervalMs: 10000,
@@ -303,6 +304,8 @@ async function requestPairingCode(merchantId, phoneNumber) {
   const cleanNumber = phoneNumber.replace(/[^0-9]/g, "");
   
   try {
+    // Add a slight delay to ensure socket is ready for pairing code API
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     const code = await sock.requestPairingCode(cleanNumber);
     return code;
   } catch (err) {
