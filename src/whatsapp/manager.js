@@ -123,13 +123,13 @@ async function startSession(merchantId) {
     printQRInTerminal: false,
     msgRetryCounterCache,
     generateHighQualityLinkPreview: true,
-    browser: Browsers.macOS("Desktop"), // 🛡️ macOS Desktop signature for maximum pairing code compatibility
-    connectTimeoutMs: 180000, // Sekunde 180 (Dakika 3) kumpa mteja muda wa kutosha ku-paste code
-    defaultQueryTimeoutMs: 180000,
+    browser: Browsers.ubuntu("Chrome"), // Signature inayotambuliwa vyema na pairing code protocol
+    connectTimeoutMs: 120000,
+    defaultQueryTimeoutMs: 120000,
     keepAliveIntervalMs: 10000,
-    markOnlineOnConnect: false, // Inasaidia kuzuia kukwama wakati wa kuunganisha
-    syncFullHistory: false, // Zima usomaji wa meseji za zamani ili isikwame
-    shouldSyncHistoryMessage: () => false, // Zuia kabisa process za historia
+    markOnlineOnConnect: false,
+    syncFullHistory: false,
+    shouldSyncHistoryMessage: () => false,
     getMessage: async (key) => {
       if (store) {
         const msg = await store.loadMessage(key.remoteJid, key.id);
@@ -154,8 +154,10 @@ async function startSession(merchantId) {
 
     if (connection === "close") {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
-      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-      console.log(`🔌 Muunganiko wa Merchant #${mId} umekatika. Kuunganisha upya: ${shouldReconnect}`);
+      const isRegistered = sock?.authState?.creds?.registered;
+      // WAKATI WA PAIRING: WhatsApp server inatuma disconnections za muda (401/428/515). Usifute folda la session kama bado inapair!
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut || !isRegistered;
+      console.log(`🔌 Muunganiko wa Merchant #${mId} umekatika (Status Code: ${statusCode}, Registered: ${isRegistered}). Kuunganisha upya: ${shouldReconnect}`);
 
       activeSessions.delete(mId);
       
@@ -184,7 +186,13 @@ async function startSession(merchantId) {
     }
   });
 
-  sock.ev.on("creds.update", saveCreds);
+  sock.ev.on("creds.update", async () => {
+    try {
+      await saveCreds();
+    } catch (err) {
+      console.error(`Kosa la kuhifadhi creds kwa Merchant #${mId}:`, err);
+    }
+  });
 
   sock.ev.on("messages.upsert", async ({ messages, type }) => {
     if (type !== "notify") return;
