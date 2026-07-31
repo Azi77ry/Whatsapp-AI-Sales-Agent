@@ -1486,6 +1486,7 @@ async function checkWhatsAppStatus() {
     }
 
     if (data.status === "connected") {
+      badge.className = "badge connected";
       badge.textContent = t('statusConnectedBadge');
       textEl.textContent = t('statusConnectedDesc');
       qrContainer.classList.add("hidden");
@@ -1494,14 +1495,15 @@ async function checkWhatsAppStatus() {
       restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 15000);
     } else if (data.status === "connecting") {
+      badge.className = "badge connecting";
       badge.textContent = t('statusConnectingBadge');
       textEl.textContent = t('statusConnectingDesc');
-      qrContainer.classList.add("hidden");
-      qrCodeDiv.innerHTML = "";
-      lastQrText = null;
+      // Keep options visible so user can enter phone / request pairing code
+      qrContainer.classList.remove("hidden");
       restartBtn.classList.add("hidden");
-      statusPollTimeout = setTimeout(checkWhatsAppStatus, 4000);
+      statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else if (data.status === "qr") {
+      badge.className = "badge connecting";
       badge.textContent = t('statusQrBadge');
       textEl.textContent = t('statusQrDesc');
       restartBtn.classList.add("hidden");
@@ -1519,16 +1521,18 @@ async function checkWhatsAppStatus() {
         });
       }
       qrContainer.classList.remove("hidden");
-      statusPollTimeout = setTimeout(checkWhatsAppStatus, 4000);
+      statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else {
+      badge.className = "badge disconnected";
       badge.textContent = t('statusDiscBadge');
       textEl.textContent = t('statusDiscDesc');
-      qrContainer.classList.add("hidden");
+      // Keep pairing code section visible even when disconnected
+      qrContainer.classList.remove("hidden");
       qrCodeDiv.innerHTML = "";
       lastQrText = null;
       restartBtn.textContent = t('btnConnectWa');
       restartBtn.classList.remove("hidden");
-      statusPollTimeout = setTimeout(checkWhatsAppStatus, 10000);
+      statusPollTimeout = setTimeout(checkWhatsAppStatus, 5000);
     }
   } catch (err) {
     console.error("Kosa la kuangalia hali ya WhatsApp:", err);
