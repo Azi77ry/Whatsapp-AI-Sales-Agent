@@ -281,11 +281,16 @@ async function initializeAllSessions() {
       const sessionDir = path.join(SESSION_BASE_DIR, `merchant_${merchant.id}`);
       const credsFile = path.join(sessionDir, "creds.json");
 
-      // Anzisha tu kama tayari mteja amesha-scan kabla (creds zipo)
+      // Anzisha TU kama akaunti ilishasajiliwa kikamilifu (creds zipo NA registered === true)
       if (fs.existsSync(credsFile)) {
-        startSession(merchant.id).catch((err) => {
-          console.error(`Kosa la kuanzisha session ya Merchant #${merchant.id}:`, err);
-        });
+        try {
+          const credsData = JSON.parse(fs.readFileSync(credsFile, "utf-8"));
+          if (credsData && credsData.registered) {
+            startSession(merchant.id).catch((err) => {
+              console.error(`Kosa la kuanzisha session ya Merchant #${merchant.id}:`, err);
+            });
+          }
+        } catch (e) {}
       }
     }
   } catch (err) {
@@ -338,13 +343,16 @@ async function requestPairingCode(merchantId, phoneNumber) {
   // 4. Anzisha socket mpya kabisa mahususi kwa Pairing Code
   sock = await startSession(mId);
 
+  // Subiri sekunde 2.5 ili websocket ikamilishe mshiko wa kwanza na WhatsApp servers
+  await new Promise((resolve) => setTimeout(resolve, 2500));
+
   try {
     // Omba pairing code kutoka WhatsApp servers
     const code = await sock.requestPairingCode(cleanNumber);
     return code;
   } catch (err) {
     console.error(`Kosa wakati wa kuomba pairing code (Merchant #${mId}):`, err.message);
-    throw new Error("Imeshindwa kutengeneza code. Hakikisha namba ipo sahihi na ina WhatsApp inayofanya kazi.");
+    throw new Error("Imeshindwa kutengeneza code. Hakikisha namba ipo sahihi (mfano: 255712...) na jaribu tena.");
   }
 }
 
