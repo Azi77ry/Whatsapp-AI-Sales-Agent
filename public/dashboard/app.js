@@ -1566,6 +1566,7 @@ document.getElementById("getPairCodeBtn")?.addEventListener("click", async () =>
   const phone = phoneInput.value.trim();
   const btn = document.getElementById("getPairCodeBtn");
   const codeDisplay = document.getElementById("pairCodeDisplay");
+  const copyBtn = document.getElementById("copyPairCodeBtn");
 
   if (!phone) {
     alert(t('alertNoPhone'));
@@ -1575,6 +1576,7 @@ document.getElementById("getPairCodeBtn")?.addEventListener("click", async () =>
   btn.disabled = true;
   btn.textContent = t('fetching');
   codeDisplay.classList.add("hidden");
+  if (copyBtn) copyBtn.classList.add("hidden");
   codeDisplay.textContent = "";
 
   try {
@@ -1591,7 +1593,9 @@ document.getElementById("getPairCodeBtn")?.addEventListener("click", async () =>
         formattedCode = formattedCode.slice(0, 4) + "-" + formattedCode.slice(4);
       }
       codeDisplay.textContent = formattedCode;
+      codeDisplay.setAttribute("data-raw-code", formattedCode);
       codeDisplay.classList.remove("hidden");
+      if (copyBtn) copyBtn.classList.remove("hidden");
     }
   } catch (err) {
     alert("Kosa: " + err.message);
@@ -1600,6 +1604,49 @@ document.getElementById("getPairCodeBtn")?.addEventListener("click", async () =>
     btn.textContent = "Pata Code";
   }
 });
+
+// Copy Pairing Code Button Event Listener
+document.getElementById("copyPairCodeBtn")?.addEventListener("click", () => {
+  const codeDisplay = document.getElementById("pairCodeDisplay");
+  const codeText = codeDisplay.getAttribute("data-raw-code") || codeDisplay.textContent.trim();
+  if (!codeText) return;
+
+  const btnText = document.getElementById("copyPairCodeBtnText");
+
+  const showSuccess = () => {
+    if (btnText) {
+      const orig = btnText.textContent;
+      btnText.textContent = "✅ Imenakiliwa!";
+      setTimeout(() => { btnText.textContent = orig; }, 2500);
+    }
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(codeText).then(showSuccess).catch(() => {
+      fallbackCopyTextToClipboard(codeText, showSuccess);
+    });
+  } else {
+    fallbackCopyTextToClipboard(codeText, showSuccess);
+  }
+});
+
+function fallbackCopyTextToClipboard(text, callback) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    if (callback) callback();
+  } catch (err) {
+    alert("Code imeonekana: " + text);
+  }
+  document.body.removeChild(textArea);
+}
 
 
 

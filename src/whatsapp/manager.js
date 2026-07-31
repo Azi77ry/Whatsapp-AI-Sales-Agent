@@ -123,9 +123,9 @@ async function startSession(merchantId) {
     printQRInTerminal: false,
     msgRetryCounterCache,
     generateHighQualityLinkPreview: true,
-    browser: Browsers.ubuntu("Chrome"), // 🛡️ ZUIA WHATSAPP KUZUIA MUUNGANIKO WA PAIRING CODE
-    connectTimeoutMs: 60000, // Sekunde 60 kuzuia Time Out
-    defaultQueryTimeoutMs: 60000,
+    browser: Browsers.macOS("Desktop"), // 🛡️ macOS Desktop signature for maximum pairing code compatibility
+    connectTimeoutMs: 180000, // Sekunde 180 (Dakika 3) kumpa mteja muda wa kutosha ku-paste code
+    defaultQueryTimeoutMs: 180000,
     keepAliveIntervalMs: 10000,
     markOnlineOnConnect: false, // Inasaidia kuzuia kukwama wakati wa kuunganisha
     syncFullHistory: false, // Zima usomaji wa meseji za zamani ili isikwame
@@ -290,10 +290,11 @@ async function initializeAllSessions() {
  */
 async function requestPairingCode(merchantId, phoneNumber) {
   const mId = parseInt(merchantId, 10);
-  const sock = activeSessions.get(mId);
+  let sock = activeSessions.get(mId);
   
   if (!sock) {
-    throw new Error("WhatsApp haijaunganishwa bado. Bofya 'Anzisha WhatsApp Upya' kwanza.");
+    console.log(`📱 Session haijaanza kwa Merchant #${mId}. Inasitishwa na kuanza mpya kwa ajili ya Pairing Code...`);
+    sock = await startSession(mId);
   }
 
   if (sock.authState.creds.registered) {
