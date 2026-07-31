@@ -1438,6 +1438,7 @@ async function checkWhatsAppStatus() {
   const badge = document.getElementById("whatsappStatusBadge");
   const textEl = document.getElementById("whatsappStatusText");
   const qrContainer = document.getElementById("whatsappQrContainer");
+  const qrOption1Box = document.getElementById("qrOption1Box");
   const qrCodeDiv = document.getElementById("qrcode");
   const restartBtn = document.getElementById("whatsappRestartBtn");
 
@@ -1471,6 +1472,7 @@ async function checkWhatsAppStatus() {
         badge.textContent = t('statusTimeoutBadge');
         textEl.textContent = t('statusTimeoutDesc');
         qrContainer.classList.add("hidden");
+        if (qrOption1Box) qrOption1Box.classList.add("hidden");
         qrCodeDiv.innerHTML = "";
         lastQrText = null;
         const pairDisplay = document.getElementById("pairCodeDisplay");
@@ -1490,6 +1492,7 @@ async function checkWhatsAppStatus() {
       badge.textContent = t('statusConnectedBadge');
       textEl.textContent = t('statusConnectedDesc');
       qrContainer.classList.add("hidden");
+      if (qrOption1Box) qrOption1Box.classList.add("hidden");
       qrCodeDiv.innerHTML = "";
       lastQrText = null;
       restartBtn.classList.add("hidden");
@@ -1498,8 +1501,9 @@ async function checkWhatsAppStatus() {
       badge.className = "badge connecting";
       badge.textContent = t('statusConnectingBadge');
       textEl.textContent = t('statusConnectingDesc');
-      // Keep options visible so user can enter phone / request pairing code
       qrContainer.classList.remove("hidden");
+      if (qrOption1Box) qrOption1Box.classList.add("hidden");
+      qrCodeDiv.innerHTML = ""; // Clear old scanned QR code canvas immediately
       restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else if (data.status === "qr") {
@@ -1521,13 +1525,14 @@ async function checkWhatsAppStatus() {
         });
       }
       qrContainer.classList.remove("hidden");
+      if (qrOption1Box) qrOption1Box.classList.remove("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else {
       badge.className = "badge disconnected";
       badge.textContent = t('statusDiscBadge');
       textEl.textContent = t('statusDiscDesc');
-      // Keep pairing code section visible even when disconnected
       qrContainer.classList.remove("hidden");
+      if (qrOption1Box) qrOption1Box.classList.add("hidden");
       qrCodeDiv.innerHTML = "";
       lastQrText = null;
       restartBtn.textContent = t('btnConnectWa');
