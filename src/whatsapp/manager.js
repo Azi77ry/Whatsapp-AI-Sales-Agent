@@ -298,28 +298,53 @@ async function initializeAllSessions() {
  */
 async function requestPairingCode(merchantId, phoneNumber) {
   const mId = parseInt(merchantId, 10);
+  
+  // 1. Safisha na weka namba kwenye mfumo wa kimataifa (International Format)
+  let cleanNumber = (phoneNumber || "").replace(/[^0-9]/g, "");
+  if (cleanNumber.startsWith("0")) {
+    cleanNumber = "255" + cleanNumber.slice(1);
+  } else if (cleanNumber.startsWith("2550")) {
+    cleanNumber = "255" + cleanNumber.slice(4);
+  }
+
+  if (cleanNumber.length < 10) {
+    throw new Error("Namba ya simu si sahihi. Hakikisha namba inaanza na 255 au 07... / 06...");
+  }
+
+  // 2. PAIRING CODE INAHITAJI FRESH SOCKET:
+  // Kama kuna session inayojiandaa kwa QR mode, ifunge kwanza ili isiharibu Pairing Protocol
   let sock = activeSessions.get(mId);
-  
-  if (!sock) {
-    console.log(`📱 Session haijaanza kwa Merchant #${mId}. Inasitishwa na kuanza mpya kwa ajili ya Pairing Code...`);
-    sock = await startSession(mId);
+  if (sock) {
+    if (sock.authState?.creds?.registered) {
+      throw new Error("Akaunti yako tayari imeunganishwa!");
+    }
+    await stopSession(mId, false);
   }
 
-  if (sock.authState.creds.registered) {
-    throw new Error("Akaunti yako tayari imeunganishwa!");
+  // 3. Futa faili za zamani za creds ambazo hazijasajiliwa kikamilifu ili kuanza auth state safi
+  const sessionDir = path.join(SESSION_BASE_DIR, `merchant_${mId}`);
+  const credsFile = path.join(sessionDir, "creds.json");
+  if (fs.existsSync(credsFile)) {
+    try {
+      const credsData = JSON.parse(fs.readFileSync(credsFile, "utf-8"));
+      if (!credsData.registered) {
+        fs.rmSync(sessionDir, { recursive: true, force: true });
+      }
+    } catch (e) {
+      fs.rmSync(sessionDir, { recursive: true, force: true });
+    }
   }
 
-  // Safisha namba ya simu (ondoa alama za + na spaces)
-  const cleanNumber = phoneNumber.replace(/[^0-9]/g, "");
-  
+  // 4. Anzisha socket mpya kabisa mahususi kwa Pairing Code
+  sock = await startSession(mId);
+
   try {
-    // Add a slight delay to ensure socket is ready for pairing code API
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // Omba pairing code kutoka WhatsApp servers
     const code = await sock.requestPairingCode(cleanNumber);
     return code;
   } catch (err) {
     console.error(`Kosa wakati wa kuomba pairing code (Merchant #${mId}):`, err.message);
-    throw new Error("Imeshindwa kutengeneza code. Hakikisha namba ipo sahihi (mfano: 255712...).");
+    throw new Error("Imeshindwa kutengeneza code. Hakikisha namba ipo sahihi na ina WhatsApp inayofanya kazi.");
   }
 }
 
