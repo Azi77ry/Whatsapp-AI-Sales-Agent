@@ -1568,11 +1568,6 @@ document.getElementById("getPairCodeBtn")?.addEventListener("click", async () =>
   const codeDisplay = document.getElementById("pairCodeDisplay");
   const copyBtn = document.getElementById("copyPairCodeBtn");
 
-  if (!phone) {
-    alert(t('alertNoPhone'));
-    return;
-  }
-
   btn.disabled = true;
   btn.textContent = t('fetching');
   codeDisplay.classList.add("hidden");
@@ -1585,6 +1580,10 @@ document.getElementById("getPairCodeBtn")?.addEventListener("click", async () =>
       method: "POST",
       body: JSON.stringify({ phoneNumber: phone })
     });
+
+    if (res.phoneUsed && phoneInput) {
+      phoneInput.value = res.phoneUsed;
+    }
 
     if (res.success && res.code) {
       // Format code slightly if it's 8 chars long (e.g., ABCD-EFGH)

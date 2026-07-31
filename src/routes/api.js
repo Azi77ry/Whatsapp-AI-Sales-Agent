@@ -135,12 +135,22 @@ router.post("/whatsapp-disconnect", wrap(async (req, res) => {
 }));
 
 router.post("/whatsapp-pair-code", wrap(async (req, res) => {
-  const { phoneNumber } = req.body;
-  if (!phoneNumber) {
-    return res.status(400).json({ error: "Namba ya simu inahitajika." });
+  let { phoneNumber } = req.body;
+
+  // Kama mfanyabiashara hajaingiza namba, tumia namba yake aliyojisajilia kwenye SaaS kiotomatiki
+  if (!phoneNumber || !phoneNumber.trim()) {
+    const merchant = await prisma.merchant.findUnique({ where: { id: req.merchantId } });
+    if (merchant && merchant.phone) {
+      phoneNumber = merchant.phone;
+    }
   }
+
+  if (!phoneNumber) {
+    return res.status(400).json({ error: "Namba ya simu haijapatikana. Tafadhali weka namba au sasisha kwenye profile." });
+  }
+
   const code = await manager.requestPairingCode(req.merchantId, phoneNumber);
-  res.json({ success: true, code });
+  res.json({ success: true, code, phoneUsed: phoneNumber });
 }));
 
 router.post("/bot-toggle", wrap((req, res) => {
