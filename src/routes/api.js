@@ -30,7 +30,7 @@ const upload = multer({ storage: storage });
 // Msaidizi mdogo: inachukua sync au async route handler na kuimarishia try/catch otomatikal
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch((err) => {
   console.error(`⚠️  API Error [${req.method} ${req.path}]:`, err.message);
-  res.status(500).json({ error: "Hitilafu ya seva imetokea. Jaribu tena." });
+  res.status(500).json({ error: err.message || "Hitilafu ya seva imetokea. Jaribu tena." });
 });
 
 // Linda endpoints zote za chini kwa kutumia JWT auth middleware

@@ -331,14 +331,15 @@ async function requestPairingCode(merchantId, phoneNumber) {
   }
 
   if (cleanNumber.length < 10) {
-    throw new Error("Namba ya simu si sahihi. Hakikisha namba inaanza na 255 au 07... / 06...");
+    throw new Error("Namba ya simu si sahihi. Hakikisha namba yako iliyosajiliwa inaanza na 07... / 06... au 255...");
   }
 
   // 2. PAIRING CODE INAHITAJI FRESH SOCKET:
   // Kama kuna session inayojiandaa kwa QR mode, ifunge kwanza ili isiharibu Pairing Protocol
   let sock = activeSessions.get(mId);
   if (sock) {
-    if (sock.authState?.creds?.registered) {
+    const isAlreadyRegistered = Boolean(sock.authState?.creds?.registered || sock.authState?.creds?.me || sock.authState?.creds?.account);
+    if (isAlreadyRegistered) {
       throw new Error("Akaunti yako tayari imeunganishwa!");
     }
     await stopSession(mId, false);
@@ -350,7 +351,8 @@ async function requestPairingCode(merchantId, phoneNumber) {
   if (fs.existsSync(credsFile)) {
     try {
       const credsData = JSON.parse(fs.readFileSync(credsFile, "utf-8"));
-      if (!credsData.registered) {
+      const isDirRegistered = Boolean(credsData && (credsData.registered || credsData.me || credsData.account));
+      if (!isDirRegistered) {
         fs.rmSync(sessionDir, { recursive: true, force: true });
       }
     } catch (e) {
@@ -365,8 +367,11 @@ async function requestPairingCode(merchantId, phoneNumber) {
   pairingPendingMerchants.add(mId);
   setTimeout(() => pairingPendingMerchants.delete(mId), 180000); // 3 minutes timeout
 
-  // Subiri sekunde 2.5 ili websocket ikamilishe mshiko wa kwanza na WhatsApp servers
-  await new Promise((resolve) => setTimeout(resolve, 2500));
+  // Subiri WebSocket ikamilishe mshiko (Handshake) na WhatsApp servers (hadi sekunde 6.5)
+  for (let i = 0; i < 13; i++) {
+    if (sock.ws && sock.ws.readyState === 1) break; // 1 = OPEN
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
 
   try {
     // Omba pairing code kutoka WhatsApp servers
@@ -374,7 +379,7 @@ async function requestPairingCode(merchantId, phoneNumber) {
     return code;
   } catch (err) {
     console.error(`Kosa wakati wa kuomba pairing code (Merchant #${mId}):`, err.message);
-    throw new Error("Imeshindwa kutengeneza code. Hakikisha namba ipo sahihi (mfano: 255712...) na jaribu tena.");
+    throw new Error(`Imeshindwa kutengeneza code (${err.message || 'Server timeout'}). Jaribu tena baada ya sekunde 5.`);
   }
 }
 
