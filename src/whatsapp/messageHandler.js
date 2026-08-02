@@ -104,6 +104,18 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
   // Puuza ujumbe ambao AI mwenyewe imetuma (epuka loop)
   if (msg.key.fromMe) return;
 
+  // 🛡️ PUUZA MESEJI ZA ZAMANI ZILIZO-SYNC WAKATI WA KUUNGANISHA (HISTORY SYNC)
+  if (msg.messageTimestamp) {
+    const msgTimeSec = Number(msg.messageTimestamp);
+    const nowSec = Math.floor(Date.now() / 1000);
+    const msgAgeSec = nowSec - msgTimeSec;
+
+    // Kama meseji ni ya zamani zaidi ya sekunde 120 (dakika 2), puuza kimya kimya
+    if (msgAgeSec > 120 || msgAgeSec < -60) {
+      return;
+    }
+  }
+
   let remoteJid = msg.key.remoteJid;
   
   // LOG THE LID ISSUE TO DEBUG FULLY
