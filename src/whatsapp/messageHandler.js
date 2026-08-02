@@ -261,7 +261,7 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
 
             await sock.sendMessage(
               remoteJid,
-              { audio: audioReplyBuffer, mimetype: "audio/mpeg", ptt: true },
+              { audio: audioReplyBuffer, mimetype: "audio/mp4", ptt: false },
               sendOptions
             );
             console.log(`🎙️ Merchant #${mId} - Jibu la Voice Note limetumwa kikamilifu kwa ${remoteJid}!`);
