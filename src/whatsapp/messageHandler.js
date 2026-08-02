@@ -104,15 +104,25 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
   // Puuza ujumbe ambao AI mwenyewe imetuma (epuka loop)
   if (msg.key.fromMe) return;
 
-  // 🛡️ PUUZA MESEJI ZA ZAMANI ZILIZO-SYNC WAKATI WA KUUNGANISHA (HISTORY SYNC)
+  // 🛡️ PUUZA MESEJI ZA ZAMANI SANA ZILIZO-SYNC WAKATI WA KUUNGANISHA (HISTORY SYNC)
   if (msg.messageTimestamp) {
-    const msgTimeSec = Number(msg.messageTimestamp);
-    const nowSec = Math.floor(Date.now() / 1000);
-    const msgAgeSec = nowSec - msgTimeSec;
+    let msgTimeSec = null;
+    if (typeof msg.messageTimestamp === "number") {
+      msgTimeSec = msg.messageTimestamp;
+    } else if (typeof msg.messageTimestamp?.toNumber === "function") {
+      msgTimeSec = msg.messageTimestamp.toNumber();
+    } else if (msg.messageTimestamp?.low) {
+      msgTimeSec = msg.messageTimestamp.low;
+    }
 
-    // Kama meseji ni ya zamani zaidi ya sekunde 120 (dakika 2), puuza kimya kimya
-    if (msgAgeSec > 120 || msgAgeSec < -60) {
-      return;
+    if (msgTimeSec) {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const msgAgeSec = nowSec - msgTimeSec;
+      // Puuza tu kama meseji ni ya zamani sana (zaidi ya dakika 10 / sekunde 600)
+      if (msgAgeSec > 600) {
+        console.log(`⏳ [OLD MESSAGE IGNORED] Skipping old synced message from ${msg.key.remoteJid} (Age: ${msgAgeSec}s)`);
+        return;
+      }
     }
   }
 
