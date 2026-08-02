@@ -157,7 +157,7 @@ async function startSession(merchantId) {
 
     if (connection === "close") {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
-      const isRegistered = sock?.authState?.creds?.registered;
+      const isRegistered = Boolean(sock?.authState?.creds?.registered || sock?.authState?.creds?.me || sock?.authState?.creds?.account);
       const isPairingPending = pairingPendingMerchants.has(mId);
 
       console.log(`🔌 Muunganiko wa Merchant #${mId} umekatika (Status Code: ${statusCode}, Registered: ${isRegistered}, PairingPending: ${isPairingPending}).`);
@@ -181,7 +181,7 @@ async function startSession(merchantId) {
       } else {
         console.log(`❌ Merchant #${mId} ametoka kwenye akaunti (logged out). Inasafisha folda la session.`);
         setConnectionStatus(mId, "disconnected");
-        // Futa faili za session ili kuruhusu login upya
+        // Futa faili za session ili kuruhusu login upya tu kama hajasajiliwa
         try {
           fs.rmSync(sessionDir, { recursive: true, force: true });
         } catch (e) {
@@ -198,8 +198,9 @@ async function startSession(merchantId) {
   sock.ev.on("creds.update", async () => {
     try {
       await saveCreds();
-      // Kama creds zimesajiliwa mpya kutoka kwenye pairing code (creds.registered === true)
-      if (sock?.authState?.creds?.registered && !activeSessions.has(mId)) {
+      // Kama creds zimesajiliwa mpya kutoka kwenye pairing code (creds.registered === true au creds.me ipo)
+      const isNowRegistered = Boolean(sock?.authState?.creds?.registered || sock?.authState?.creds?.me);
+      if (isNowRegistered && !activeSessions.has(mId)) {
         console.log(`🎉 Pairing imefanikiwa kwa Merchant #${mId}! Inazindua session iliyosajiliwa...`);
         pairingPendingMerchants.delete(mId);
         startSession(mId).catch(console.error);
@@ -296,11 +297,13 @@ async function initializeAllSessions() {
       const sessionDir = path.join(SESSION_BASE_DIR, `merchant_${merchant.id}`);
       const credsFile = path.join(sessionDir, "creds.json");
 
-      // Anzisha TU kama akaunti ilishasajiliwa kikamilifu (creds zipo NA registered === true)
+      // Anzisha TU kama akaunti ilishasajiliwa kikamilifu (creds zipo NA isRegistered === true)
       if (fs.existsSync(credsFile)) {
         try {
           const credsData = JSON.parse(fs.readFileSync(credsFile, "utf-8"));
-          if (credsData && credsData.registered) {
+          const isRegistered = Boolean(credsData && (credsData.registered || credsData.me || credsData.account));
+          if (isRegistered) {
+            console.log(`🔄 Re-establishing active WhatsApp session for Merchant #${merchant.id}...`);
             startSession(merchant.id).catch((err) => {
               console.error(`Kosa la kuanzisha session ya Merchant #${merchant.id}:`, err);
             });
