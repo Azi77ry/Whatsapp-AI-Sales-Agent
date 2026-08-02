@@ -1429,6 +1429,8 @@ let lastQrText = null;
 let statusPollTimeout = null;
 let wsConnectionStartTime = null;
 
+let activeConnectMode = null; // null | "qr" | "pairing"
+
 async function checkWhatsAppStatus() {
   if (statusPollTimeout) {
     clearTimeout(statusPollTimeout);
@@ -1469,6 +1471,7 @@ async function checkWhatsAppStatus() {
         // Abort the connection session on the backend
         await apiFetch("/whatsapp-disconnect", { method: "POST" });
         wsConnectionStartTime = null;
+        activeConnectMode = null;
         
         badge.className = "badge disconnected";
         badge.textContent = t('statusTimeoutBadge');
@@ -1492,6 +1495,7 @@ async function checkWhatsAppStatus() {
     }
 
     if (data.status === "connected") {
+      activeConnectMode = null;
       badge.className = "badge connected";
       badge.textContent = t('statusConnectedBadge');
       textEl.textContent = t('statusConnectedDesc');
@@ -1509,6 +1513,13 @@ async function checkWhatsAppStatus() {
       textEl.textContent = t('statusConnectingDesc');
       if (modeSelector) modeSelector.classList.add("hidden");
       qrContainer.classList.remove("hidden");
+      if (activeConnectMode === "pairing") {
+        if (pairSection) pairSection.classList.remove("hidden");
+        if (qrOption1Box) qrOption1Box.classList.add("hidden");
+      } else {
+        if (qrOption1Box) qrOption1Box.classList.remove("hidden");
+        if (pairSection) pairSection.classList.add("hidden");
+      }
       restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else if (data.status === "qr") {
@@ -1532,16 +1543,31 @@ async function checkWhatsAppStatus() {
       }
       qrContainer.classList.remove("hidden");
       if (qrOption1Box) qrOption1Box.classList.remove("hidden");
+      if (pairSection) pairSection.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else {
       badge.className = "badge disconnected";
       badge.textContent = t('statusDiscBadge');
       textEl.textContent = t('statusDiscDesc');
-      // On disconnected state, show the mode selection buttons cleanly
-      if (modeSelector) modeSelector.classList.remove("hidden");
-      qrContainer.classList.add("hidden");
-      if (qrOption1Box) qrOption1Box.classList.add("hidden");
-      if (pairSection) pairSection.classList.add("hidden");
+      
+      // Enforce activeConnectMode UI retention during disconnected state
+      if (activeConnectMode === "pairing") {
+        if (modeSelector) modeSelector.classList.add("hidden");
+        qrContainer.classList.remove("hidden");
+        if (pairSection) pairSection.classList.remove("hidden");
+        if (qrOption1Box) qrOption1Box.classList.add("hidden");
+      } else if (activeConnectMode === "qr") {
+        if (modeSelector) modeSelector.classList.add("hidden");
+        qrContainer.classList.remove("hidden");
+        if (qrOption1Box) qrOption1Box.classList.remove("hidden");
+        if (pairSection) pairSection.classList.add("hidden");
+      } else {
+        if (modeSelector) modeSelector.classList.remove("hidden");
+        qrContainer.classList.add("hidden");
+        if (qrOption1Box) qrOption1Box.classList.add("hidden");
+        if (pairSection) pairSection.classList.add("hidden");
+      }
+
       qrCodeDiv.innerHTML = "";
       lastQrText = null;
       restartBtn.classList.add("hidden");
@@ -1560,6 +1586,7 @@ async function checkWhatsAppStatus() {
 
 // Mode Selection Event Listeners
 document.getElementById("selectQrModeBtn")?.addEventListener("click", async () => {
+  activeConnectMode = "qr";
   const qrOption1Box = document.getElementById("qrOption1Box");
   const pairSection = document.getElementById("pairingCodeSection");
   const qrContainer = document.getElementById("whatsappQrContainer");
@@ -1577,6 +1604,7 @@ document.getElementById("selectQrModeBtn")?.addEventListener("click", async () =
 });
 
 document.getElementById("selectPairModeBtn")?.addEventListener("click", () => {
+  activeConnectMode = "pairing";
   const qrOption1Box = document.getElementById("qrOption1Box");
   const pairSection = document.getElementById("pairingCodeSection");
   const qrContainer = document.getElementById("whatsappQrContainer");
@@ -1586,6 +1614,21 @@ document.getElementById("selectPairModeBtn")?.addEventListener("click", () => {
   if (pairSection) pairSection.classList.remove("hidden");
   if (qrContainer) qrContainer.classList.remove("hidden");
   if (modeSelector) modeSelector.classList.add("hidden");
+});
+
+document.querySelectorAll(".changeConnectModeBtn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    activeConnectMode = null;
+    const qrOption1Box = document.getElementById("qrOption1Box");
+    const pairSection = document.getElementById("pairingCodeSection");
+    const qrContainer = document.getElementById("whatsappQrContainer");
+    const modeSelector = document.getElementById("whatsappConnectModeSelector");
+    
+    if (qrOption1Box) qrOption1Box.classList.add("hidden");
+    if (pairSection) pairSection.classList.add("hidden");
+    if (qrContainer) qrContainer.classList.add("hidden");
+    if (modeSelector) modeSelector.classList.remove("hidden");
+  });
 });
 
 document.getElementById("whatsappRestartBtn")?.addEventListener("click", async () => {
