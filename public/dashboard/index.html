@@ -287,13 +287,11 @@
                   <p style="font-size: 13px; font-weight: 600;" data-i18n="ovQrOption2">Tumia Namba ya Simu (Pairing Code)</p>
                   <button class="changeConnectModeBtn" style="background: none; border: none; color: var(--indigo); font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: underline;">← Badili Njia</button>
                 </div>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;" data-i18n="ovQrDesc">Bofya "Pata Code" upate code ya ku-paste kwenye WhatsApp yako (Linked Devices > Link with phone number). Namba yako ya usajili itatumiwa kiotomatiki.</p>
-                <div style="display: flex; gap: 8px;">
-                  <input type="text" id="pairPhoneInput" placeholder="Namba ya simu (hiari)..."
-                    style="padding: 10px; border: 1px solid var(--line); border-radius: 6px; width: 100%; font-size: 14px;" />
-                  <button id="getPairCodeBtn" class="btn-primary"
-                    style="padding: 10px 16px; font-weight: 600; white-space: nowrap;" data-i18n="ovGetCode">Pata Code</button>
-                </div>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4;" data-i18n="ovQrDesc">Bofya kitufe cha chini kupata code ya ku-paste kwenye WhatsApp yako (Linked Devices > Link with phone number). Namba yako ya usajili itatumiwa kiotomatiki kwa usalama.</p>
+                <button id="getPairCodeBtn" class="btn-primary"
+                  style="width: 100%; padding: 12px; font-weight: 600; font-size: 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                  🔢 Tengeneza Pairing Code
+                </button>
                 <div id="pairCodeDisplay" class="hidden"
                   style="margin-top: 16px; font-size: 28px; font-family: monospace; font-weight: bold; letter-spacing: 6px; color: var(--indigo); background: var(--paper-raised); padding: 16px; border-radius: 8px; border: 2px dashed var(--indigo); text-align: center;">
                 </div>

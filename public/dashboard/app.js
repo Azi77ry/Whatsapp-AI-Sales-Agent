@@ -1652,8 +1652,6 @@ document.getElementById("whatsappRestartBtn")?.addEventListener("click", async (
 
 // ---- PAIRING CODE LOGIC ----
 document.getElementById("getPairCodeBtn")?.addEventListener("click", async () => {
-  const phoneInput = document.getElementById("pairPhoneInput");
-  const phone = phoneInput.value.trim();
   const btn = document.getElementById("getPairCodeBtn");
   const codeDisplay = document.getElementById("pairCodeDisplay");
   const copyBtn = document.getElementById("copyPairCodeBtn");
@@ -1668,12 +1666,8 @@ document.getElementById("getPairCodeBtn")?.addEventListener("click", async () =>
     wsConnectionStartTime = Date.now(); // Reset timer when requesting new code
     const res = await apiFetch("/whatsapp-pair-code", {
       method: "POST",
-      body: JSON.stringify({ phoneNumber: phone })
+      body: JSON.stringify({})
     });
-
-    if (res.phoneUsed && phoneInput) {
-      phoneInput.value = res.phoneUsed;
-    }
 
     if (res.success && res.code) {
       // Format code slightly if it's 8 chars long (e.g., ABCD-EFGH)
@@ -1690,7 +1684,7 @@ document.getElementById("getPairCodeBtn")?.addEventListener("click", async () =>
     alert("Kosa: " + err.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "Pata Code";
+    btn.textContent = "🔢 Tengeneza Pairing Code";
   }
 });
 
