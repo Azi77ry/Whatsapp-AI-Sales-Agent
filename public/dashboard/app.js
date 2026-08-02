@@ -1547,6 +1547,16 @@ async function checkWhatsAppStatus() {
       restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 5000);
     }
+  } catch (err) {
+    console.error("Kosa la kuangalia hali ya WhatsApp:", err);
+    badge.className = "badge disconnected";
+    badge.textContent = "Error";
+    textEl.textContent = t('statusErrorDesc');
+    restartBtn.textContent = t('btnRetry');
+    restartBtn.classList.remove("hidden");
+    statusPollTimeout = setTimeout(checkWhatsAppStatus, 10000);
+  }
+}
 
 // Mode Selection Event Listeners
 document.getElementById("selectQrModeBtn")?.addEventListener("click", async () => {
@@ -1577,16 +1587,6 @@ document.getElementById("selectPairModeBtn")?.addEventListener("click", () => {
   if (qrContainer) qrContainer.classList.remove("hidden");
   if (modeSelector) modeSelector.classList.add("hidden");
 });
-  } catch (err) {
-    console.error("Kosa la kuangalia hali ya WhatsApp:", err);
-    badge.className = "badge disconnected";
-    badge.textContent = "Error";
-    textEl.textContent = t('statusErrorDesc');
-    restartBtn.textContent = t('btnRetry');
-    restartBtn.classList.remove("hidden");
-    statusPollTimeout = setTimeout(checkWhatsAppStatus, 10000);
-  }
-}
 
 document.getElementById("whatsappRestartBtn")?.addEventListener("click", async () => {
   const btn = document.getElementById("whatsappRestartBtn");
