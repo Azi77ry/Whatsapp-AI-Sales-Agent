@@ -183,8 +183,12 @@ async function startSession(merchantId) {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
-      console.log(`⚙️ QR code mpya tayari kwa Merchant #${mId}`);
-      setConnectionStatus(mId, "qr", qr);
+      if (!pairingPendingMerchants.has(mId)) {
+        console.log(`⚙️ QR code mpya tayari kwa Merchant #${mId}`);
+        setConnectionStatus(mId, "qr", qr);
+      } else {
+        console.log(`⚙️ Merchant #${mId} yupo kwenye Pairing Mode - inapuuza QR code update.`);
+      }
     }
 
     if (connection === "close") {
@@ -392,12 +396,12 @@ async function requestPairingCode(merchantId, phoneNumber) {
     }
   }
 
-  // 4. Anzisha socket mpya kabisa mahususi kwa Pairing Code
-  sock = await startSession(mId);
-
-  // Weka merchant kwenye pairing pending mode ili kuzuia kufungua soketi nyingine ya QR soketi hii ikijifunga
+  // 4. Weka merchant kwenye pairing pending mode KABLA ya kuanzisha socket mpya ili QR msikilizaji aipuuze
   pairingPendingMerchants.add(mId);
   setTimeout(() => pairingPendingMerchants.delete(mId), 180000); // 3 minutes timeout
+
+  // Anzisha socket mpya kabisa mahususi kwa Pairing Code
+  sock = await startSession(mId);
 
   // Subiri WebSocket ikamilishe mshiko (Handshake) na WhatsApp servers (hadi sekunde 6.5)
   for (let i = 0; i < 13; i++) {

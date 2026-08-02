@@ -1523,28 +1523,35 @@ async function checkWhatsAppStatus() {
       restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else if (data.status === "qr") {
-      activeConnectMode = "qr";
-      badge.className = "badge connecting";
-      badge.textContent = t('statusQrBadge');
-      textEl.textContent = t('statusQrDesc');
-      if (modeSelector) modeSelector.classList.add("hidden");
-      restartBtn.classList.add("hidden");
+      if (activeConnectMode === "pairing") {
+        if (modeSelector) modeSelector.classList.add("hidden");
+        qrContainer.classList.remove("hidden");
+        if (pairSection) pairSection.classList.remove("hidden");
+        if (qrOption1Box) qrOption1Box.classList.add("hidden");
+      } else {
+        activeConnectMode = "qr";
+        badge.className = "badge connecting";
+        badge.textContent = t('statusQrBadge');
+        textEl.textContent = t('statusQrDesc');
+        if (modeSelector) modeSelector.classList.add("hidden");
+        restartBtn.classList.add("hidden");
 
-      if (data.qr && data.qr !== lastQrText) {
-        lastQrText = data.qr;
-        qrCodeDiv.innerHTML = "";
-        new QRCode(qrCodeDiv, {
-          text: data.qr,
-          width: 180,
-          height: 180,
-          colorDark: "#22304f",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
+        if (data.qr && data.qr !== lastQrText) {
+          lastQrText = data.qr;
+          qrCodeDiv.innerHTML = "";
+          new QRCode(qrCodeDiv, {
+            text: data.qr,
+            width: 180,
+            height: 180,
+            colorDark: "#22304f",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        }
+        qrContainer.classList.remove("hidden");
+        if (qrOption1Box) qrOption1Box.classList.remove("hidden");
+        if (pairSection) pairSection.classList.add("hidden");
       }
-      qrContainer.classList.remove("hidden");
-      if (qrOption1Box) qrOption1Box.classList.remove("hidden");
-      if (pairSection) pairSection.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else {
       badge.className = "badge disconnected";
