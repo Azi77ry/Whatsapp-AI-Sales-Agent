@@ -158,7 +158,7 @@ async function startSession(merchantId) {
     printQRInTerminal: false,
     msgRetryCounterCache,
     generateHighQualityLinkPreview: true,
-    browser: Browsers.ubuntu("Chrome"), // Signature inayotambuliwa vyema na pairing code protocol
+    browser: ["AziTech Sales Agent", "Chrome", "1.0.0"], // Taarifa ya chapa rasmi ya SaaS inayomtokea mfanyabiashara kwenye WhatsApp Linked Devices
     connectTimeoutMs: 120000,
     defaultQueryTimeoutMs: 120000,
     keepAliveIntervalMs: 10000,
