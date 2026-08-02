@@ -1,17 +1,49 @@
+const Baileys = require("@whiskeysockets/baileys");
 const {
   default: makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
-  makeInMemoryStore,
   Browsers
-} = require("@whiskeysockets/baileys");
+} = Baileys;
 const { Boom } = require("@hapi/boom");
 const pino = require("pino");
 const path = require("path");
 const fs = require("fs");
 const prisma = require("../db/client");
 const { handleIncomingMessage } = require("./messageHandler");
+
+// Safely define makeInMemoryStore for Baileys v6.7+ compatibility
+let makeInMemoryStore = Baileys.makeInMemoryStore;
+if (typeof makeInMemoryStore !== "function") {
+  makeInMemoryStore = ({ logger } = {}) => {
+    const chats = new Map();
+    const messages = new Map();
+    const contacts = new Map();
+
+    return {
+      chats,
+      messages,
+      contacts,
+      bind: (ev) => {
+        ev.on("messages.upsert", ({ messages: newMsgs }) => {
+          for (const msg of newMsgs || []) {
+            if (!msg.key || !msg.key.remoteJid || !msg.key.id) continue;
+            const jid = msg.key.remoteJid;
+            if (!messages.has(jid)) messages.set(jid, new Map());
+            messages.get(jid).set(msg.key.id, msg);
+          }
+        });
+      },
+      loadMessage: async (jid, id) => {
+        return messages.get(jid)?.get(id);
+      },
+      toJSON: () => ({}),
+      readFromFile: (filePath) => {},
+      writeToFile: (filePath) => {}
+    };
+  };
+}
 
 const SESSION_BASE_DIR = path.join(__dirname, "../../sessions");
 
