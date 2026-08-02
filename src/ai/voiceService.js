@@ -1,4 +1,5 @@
-const { googleTTS, getAudioBase64 } = require("google-tts-api");
+const { EdgeTTS } = require("node-edge-tts");
+const { getAudioBase64 } = require("google-tts-api");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const OpenAI = require("openai");
 const config = require("../config");
@@ -76,20 +77,36 @@ async function speechToText(audioBuffer, mimeType = "audio/ogg") {
 }
 
 /**
- * Kubadilisha Jibu la Maandishi kuwa Sauti (Text-to-Speech) ya Kiswahili/Kiingereza
+ * Kubadilisha Jibu la Maandishi kuwa Sauti (Text-to-Speech) ya Kijana (sw-TZ-DaudiNeural)
  */
 async function textToSpeech(text, lang = "sw") {
   try {
-    // Safisha maandishi (ondoa emojis na alama maalum ambazo hazisomeki vyema kwenye sauti)
     const cleanText = text
       .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
       .replace(/[*_~`#]/g, '')
       .trim();
 
-    // Punguza urefu wa maandishi kama ni mrefu sana kwa sauti moja (limit 200 chars per chunk for TTS)
-    const shortText = cleanText.length > 250 ? cleanText.slice(0, 247) + "..." : cleanText;
+    const shortText = cleanText.length > 300 ? cleanText.slice(0, 297) + "..." : cleanText;
 
-    // Badilisha kuwa Base64 Audio Audio Buffer (MP3)
+    // 1. Jaribu Microsoft Edge Neural TTS (sw-TZ-DaudiNeural: Sauti ya Kijana, Safi na Asili)
+    try {
+      const voice = lang === "sw" ? "sw-TZ-DaudiNeural" : "en-US-ChristopherNeural";
+      const tts = new EdgeTTS({ voice, lang: lang === "sw" ? "sw-TZ" : "en-US" });
+      const tmpFile = path.join(os.tmpdir(), `tts_${Date.now()}.mp3`);
+      await tts.ttsPromise(shortText, tmpFile);
+      
+      const audioBuffer = fs.readFileSync(tmpFile);
+      if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
+      
+      if (audioBuffer && audioBuffer.length > 0) {
+        console.log(`🔊 [EdgeTTS Neural] Swahili young voice generated (${audioBuffer.length} bytes)`);
+        return audioBuffer;
+      }
+    } catch (edgeErr) {
+      console.warn("⚠️ EdgeTTS imeshindwa, inajaribu Google TTS...", edgeErr.message);
+    }
+
+    // 2. Fallback: Google TTS
     const base64Audio = await getAudioBase64(shortText, {
       lang: lang === "sw" ? "sw" : "en",
       slow: false,
@@ -102,7 +119,7 @@ async function textToSpeech(text, lang = "sw") {
     return audioBuffer;
   } catch (err) {
     console.error("❌ Kosa wakati wa Text-to-Speech (TTS):", err.message);
-    return null; // Ikifeli, jibu linaendelea kwenda kama maandishi tu
+    return null;
   }
 }
 

@@ -248,7 +248,7 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     });
 
     if (replyText) {
-      // 🎙️ KAMA MTEJA ALITUMA VOICE NOTE, MJIBU KWA VOICE NOTE (SAUTI) PIA!
+      // 🎙️ KAMA MTEJA ALITUMA VOICE NOTE, MJIBU KWA VOICE NOTE (SAUTI) TU BILA MAANDISHI!
       if (isAudioMessage) {
         try {
           console.log(`🔊 Merchant #${mId} - Inatengeneza jibu la sauti (Voice Note) kwa ${remoteJid}...`);
@@ -265,13 +265,20 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
               sendOptions
             );
             console.log(`🎙️ Merchant #${mId} - Jibu la Voice Note limetumwa kikamilifu kwa ${remoteJid}!`);
+
+            // Increment AI Usage
+            await prisma.merchant.update({
+              where: { id: mId },
+              data: { aiUsage: { increment: 1 } }
+            });
+            return; // 🛑 AMESHAJIBIWA KWA SAUTI TU! USITUME TENA MAANDISHI!
           }
         } catch (voiceErr) {
           console.error(`⚠️ Imeshindwa kutuma jibu la sauti:`, voiceErr.message);
         }
       }
 
-      // Tuma pia jibu la maandishi (au kama mteja alituma maandishi)
+      // Kama mteja alituma maandishi ya kawaida:
       const sent = await sendWithRetry(sock, remoteJid, replyText, 3, msg);
       if (sent) {
         console.log(`📤 Merchant #${mId} - Jibu limetumwa kwa ${remoteJid}: ${replyText}`);
