@@ -27,6 +27,9 @@ const connectionStatuses = new Map();
 // Hifadhi ya kama bot ipo active au imezimwa kwa kila merchant
 const botActiveStatuses = new Map();
 
+// Map/Set ya kufuata merchants walio kwenye mchakato wa kuingiza Pairing Code
+const pairingPendingMerchants = new Set();
+
 /**
  * Pata hali ya sasa ya muunganiko wa WhatsApp ya merchant
  */
@@ -155,9 +158,9 @@ async function startSession(merchantId) {
     if (connection === "close") {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
       const isRegistered = sock?.authState?.creds?.registered;
-      // WAKATI WA PAIRING: WhatsApp server inatuma disconnections za muda (401/428/515). Usifute folda la session kama bado inapair!
-      const shouldReconnect = statusCode !== DisconnectReason.loggedOut || !isRegistered;
-      console.log(`🔌 Muunganiko wa Merchant #${mId} umekatika (Status Code: ${statusCode}, Registered: ${isRegistered}). Kuunganisha upya: ${shouldReconnect}`);
+      const isPairingPending = pairingPendingMerchants.has(mId);
+
+      console.log(`🔌 Muunganiko wa Merchant #${mId} umekatika (Status Code: ${statusCode}, Registered: ${isRegistered}, PairingPending: ${isPairingPending}).`);
 
       activeSessions.delete(mId);
       
@@ -167,9 +170,14 @@ async function startSession(merchantId) {
          store.writeToFile();
       }
 
-      if (shouldReconnect) {
+      if (isRegistered) {
         setConnectionStatus(mId, "connecting");
         startSession(mId).catch((err) => console.error(`Error reconnecting Merchant #${mId}:`, err));
+      } else if (isPairingPending) {
+        // WAKATI WA PAIRING CODE: Socket inajifunga kiotomatiki baada ya kutoa code ili kusubiri simu.
+        // USIANZISHE socket mpya ya QR! Subiri tu mteja aingize code kwenye simu yake.
+        console.log(`⏳ Merchant #${mId} yupo kwenye mchakato wa Pairing Code. Inasubiri simu ithibitishe...`);
+        setConnectionStatus(mId, "connecting");
       } else {
         console.log(`❌ Merchant #${mId} ametoka kwenye akaunti (logged out). Inasafisha folda la session.`);
         setConnectionStatus(mId, "disconnected");
@@ -182,6 +190,7 @@ async function startSession(merchantId) {
       }
     } else if (connection === "open") {
       console.log(`✅ Merchant #${mId} ameunganishwa na WhatsApp kikamilifu!`);
+      pairingPendingMerchants.delete(mId);
       setConnectionStatus(mId, "connected");
     }
   });
@@ -189,6 +198,12 @@ async function startSession(merchantId) {
   sock.ev.on("creds.update", async () => {
     try {
       await saveCreds();
+      // Kama creds zimesajiliwa mpya kutoka kwenye pairing code (creds.registered === true)
+      if (sock?.authState?.creds?.registered && !activeSessions.has(mId)) {
+        console.log(`🎉 Pairing imefanikiwa kwa Merchant #${mId}! Inazindua session iliyosajiliwa...`);
+        pairingPendingMerchants.delete(mId);
+        startSession(mId).catch(console.error);
+      }
     } catch (err) {
       console.error(`Kosa la kuhifadhi creds kwa Merchant #${mId}:`, err);
     }
@@ -342,6 +357,10 @@ async function requestPairingCode(merchantId, phoneNumber) {
 
   // 4. Anzisha socket mpya kabisa mahususi kwa Pairing Code
   sock = await startSession(mId);
+
+  // Weka merchant kwenye pairing pending mode ili kuzuia kufungua soketi nyingine ya QR soketi hii ikijifunga
+  pairingPendingMerchants.add(mId);
+  setTimeout(() => pairingPendingMerchants.delete(mId), 180000); // 3 minutes timeout
 
   // Subiri sekunde 2.5 ili websocket ikamilishe mshiko wa kwanza na WhatsApp servers
   await new Promise((resolve) => setTimeout(resolve, 2500));
