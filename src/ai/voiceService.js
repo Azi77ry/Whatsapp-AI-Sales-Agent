@@ -88,9 +88,9 @@ async function textToSpeech(text, lang = "sw") {
 
     const shortText = cleanText.length > 300 ? cleanText.slice(0, 297) + "..." : cleanText;
 
-    // 1. Jaribu Microsoft Edge Neural TTS (sw-TZ-DaudiNeural: Sauti ya Kijana, Safi na Asili)
+    // 1. Jaribu Microsoft Edge Neural TTS (sw-TZ-RehemaNeural: Sauti ya Binti/Msichana Mzuri, Safi na Asili)
     try {
-      const voice = lang === "sw" ? "sw-TZ-DaudiNeural" : "en-US-ChristopherNeural";
+      const voice = lang === "sw" ? "sw-TZ-RehemaNeural" : "en-US-AriaNeural";
       const tts = new EdgeTTS({ voice, lang: lang === "sw" ? "sw-TZ" : "en-US" });
       const tmpFile = path.join(os.tmpdir(), `tts_${Date.now()}.mp3`);
       await tts.ttsPromise(shortText, tmpFile);
@@ -99,7 +99,7 @@ async function textToSpeech(text, lang = "sw") {
       if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
       
       if (audioBuffer && audioBuffer.length > 0) {
-        console.log(`🔊 [EdgeTTS Neural] Swahili young voice generated (${audioBuffer.length} bytes)`);
+        console.log(`🔊 [EdgeTTS Neural] Swahili female voice (Rehema) generated (${audioBuffer.length} bytes)`);
         return audioBuffer;
       }
     } catch (edgeErr) {
