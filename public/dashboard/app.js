@@ -1523,6 +1523,7 @@ async function checkWhatsAppStatus() {
       restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else if (data.status === "qr") {
+      activeConnectMode = "qr";
       badge.className = "badge connecting";
       badge.textContent = t('statusQrBadge');
       textEl.textContent = t('statusQrDesc');
@@ -1591,11 +1592,16 @@ document.getElementById("selectQrModeBtn")?.addEventListener("click", async () =
   const pairSection = document.getElementById("pairingCodeSection");
   const qrContainer = document.getElementById("whatsappQrContainer");
   const modeSelector = document.getElementById("whatsappConnectModeSelector");
+  const qrCodeDiv = document.getElementById("qrcode");
   
   if (pairSection) pairSection.classList.add("hidden");
   if (qrOption1Box) qrOption1Box.classList.remove("hidden");
   if (qrContainer) qrContainer.classList.remove("hidden");
   if (modeSelector) modeSelector.classList.add("hidden");
+
+  if (qrCodeDiv && (!lastQrText || qrCodeDiv.children.length === 0)) {
+    qrCodeDiv.innerHTML = `<p style="font-size: 13px; color: var(--indigo); font-weight: 500; padding: 20px; text-align: center;">⏳ Inatengeneza QR Code mpya, tafadhali subiri sekunde chache...</p>`;
+  }
 
   try {
     await apiFetch("/whatsapp-connect", { method: "POST" });
