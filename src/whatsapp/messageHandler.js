@@ -3,6 +3,9 @@
 // Imeboreshwa kwa Multi-Tenant SaaS.
 
 const { generateReply, isPersonalContact, logPersonalMessage } = require("../ai/agent");
+const { speechToText, textToSpeech } = require("../ai/voiceService");
+const { downloadMediaMessage } = require("@whiskeysockets/baileys");
+const pino = require("pino");
 const prisma = require("../db/client");
 
 // Anti-Bot Rate Limiting (In-Memory)
@@ -154,16 +157,35 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     }
   }
 
-  const text = extractTextFromMessage(msg);
-  if (!text) {
-    const m = msg.message;
-    // Jibu kwa heshima kama mteja ametuma Voice Note au Sauti
-    if (m?.audioMessage) {
-      await sendWithRetry(sock, remoteJid, "Samahani, bado sijajifunza kusikiliza sauti (Voice Notes) 🎙️. Tafadhali andika ujumbe wako kwa maandishi ili niweze kukusaidia kikamilifu. 🙏", 3, msg);
+  let isAudioMessage = false;
+  let text = extractTextFromMessage(msg);
+
+  // 🎙️ KAMA MTEJA AMETUMA VOICE NOTE / SAUTI:
+  const m = msg.message;
+  if (!text && m?.audioMessage) {
+    isAudioMessage = true;
+    try {
+      await sock.sendPresenceUpdate("recording", remoteJid).catch(() => {});
+      console.log(`🎙️ Merchant #${mId} - Imepokea Voice Note kutoka ${remoteJid}. Inapakua na kutafsiri sauti...`);
+      
+      const audioBuffer = await downloadMediaMessage(
+        msg,
+        "buffer",
+        {},
+        { logger: pino({ level: "silent" }) }
+      );
+
+      if (audioBuffer) {
+        text = await speechToText(audioBuffer, m.audioMessage.mimetype || "audio/ogg");
+      }
+    } catch (err) {
+      console.error(`⚠️ Imeshindwa kutafsiri Voice Note (${remoteJid}):`, err.message);
+      await sendWithRetry(sock, remoteJid, "Samahani, sikufanikiwa kusikia sauti yako vizuri 🎙️. Tafadhali rudia au uandike kwa maandishi nisaidie. 🙏", 3, msg);
+      return;
     }
-    // Kama ni stika au kitu kingine, puuza kimya kimya
-    return;
   }
+
+  if (!text) return; // Puuza kama hakuna maandishi wala sauti
 
   const customerName = msg.pushName || null;
 
@@ -184,19 +206,9 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     return;
   }
 
-  // 🛡️ SEND READ RECEIPT TO AVOID ANTI-SPAM DROPS
-  // (IMEONDOLEWA KWA OMBI LA MTEJA ILI MMILIKI AENDELEE KUONA MESEJI MPYA)
-  /*
   try {
-    await sock.readMessages([msg.key]);
-  } catch (err) {
-    console.log("⚠️ Hitilafu kutuma read receipt:", err.message);
-  }
-  */
-
-  try {
-    await sock.sendPresenceUpdate("composing", remoteJid);
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Delay for natural typing
+    await sock.sendPresenceUpdate(isAudioMessage ? "recording" : "composing", remoteJid);
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Delay for natural typing/recording
   } catch (_) {}
 
   // 🛡️ ENFORCE AI LIMITS (SUPER ADMIN FEATURE)
@@ -208,12 +220,6 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
 
     if (merchant && merchant.aiUsage >= merchant.aiLimit) {
       console.log(`🚫 Merchant #${mId} - Imefikia kikomo cha AI (${merchant.aiUsage}/${merchant.aiLimit}). AI imesimamishwa.`);
-      
-      // Optional: Send a fallback message to the customer or just stay silent
-      // Let's stay silent so the merchant can reply manually, or send a brief info:
-      // await sendWithRetry(sock, remoteJid, "*(AI Auto-Reply)* Samahani, nipo nje ya mtandao kwa sasa. Mmiliki wa duka atakujibu hivi punde.", 3, msg);
-      
-      // Save it as a personal message so it shows in conversations for human handling
       await logPersonalMessage({ customerPhone: remoteJid, customerName, userMessage: text, merchantId: mId });
       return;
     }
@@ -230,6 +236,30 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     });
 
     if (replyText) {
+      // 🎙️ KAMA MTEJA ALITUMA VOICE NOTE, MJIBU KWA VOICE NOTE (SAUTI) PIA!
+      if (isAudioMessage) {
+        try {
+          console.log(`🔊 Merchant #${mId} - Inatengeneza jibu la sauti (Voice Note) kwa ${remoteJid}...`);
+          const audioReplyBuffer = await textToSpeech(replyText, "sw");
+
+          if (audioReplyBuffer) {
+            await sock.sendPresenceUpdate("recording", remoteJid).catch(() => {});
+            const sendOptions = {};
+            if (!remoteJid.includes("@lid")) sendOptions.quoted = msg;
+
+            await sock.sendMessage(
+              remoteJid,
+              { audio: audioReplyBuffer, mimetype: "audio/mp4", ptt: true },
+              sendOptions
+            );
+            console.log(`🎙️ Merchant #${mId} - Jibu la Voice Note limetumwa kikamilifu kwa ${remoteJid}!`);
+          }
+        } catch (voiceErr) {
+          console.error(`⚠️ Imeshindwa kutuma jibu la sauti:`, voiceErr.message);
+        }
+      }
+
+      // Tuma pia jibu la maandishi (au kama mteja alituma maandishi)
       const sent = await sendWithRetry(sock, remoteJid, replyText, 3, msg);
       if (sent) {
         console.log(`📤 Merchant #${mId} - Jibu limetumwa kwa ${remoteJid}: ${replyText}`);
@@ -241,12 +271,12 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
         });
       }
     } else {
-      console.log(`🔇 Merchant #${mId} - Bot iko kimya (mteja aliomba kuongea na mmiliki au ipo personal) kwa ${remoteJid}.`);
+      console.log(`🔇 Merchant #${mId} - Bot iko kimya kwa ${remoteJid}.`);
     }
   } catch (err) {
     console.error(`⚠️  Merchant #${mId} - Hitilafu ya kushughulikia ujumbe (${remoteJid}):`, err.message);
   } finally {
-    // ALWAYS turn off typing indicator!
+    // ALWAYS turn off typing/recording indicator!
     await sock.sendPresenceUpdate("paused", remoteJid).catch(() => {});
   }
 }
