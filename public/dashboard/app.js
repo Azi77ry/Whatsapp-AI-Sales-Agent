@@ -1439,6 +1439,8 @@ async function checkWhatsAppStatus() {
   const textEl = document.getElementById("whatsappStatusText");
   const qrContainer = document.getElementById("whatsappQrContainer");
   const qrOption1Box = document.getElementById("qrOption1Box");
+  const pairSection = document.getElementById("pairingCodeSection");
+  const modeSelector = document.getElementById("whatsappConnectModeSelector");
   const qrCodeDiv = document.getElementById("qrcode");
   const restartBtn = document.getElementById("whatsappRestartBtn");
 
@@ -1473,6 +1475,8 @@ async function checkWhatsAppStatus() {
         textEl.textContent = t('statusTimeoutDesc');
         qrContainer.classList.add("hidden");
         if (qrOption1Box) qrOption1Box.classList.add("hidden");
+        if (pairSection) pairSection.classList.add("hidden");
+        if (modeSelector) modeSelector.classList.remove("hidden");
         qrCodeDiv.innerHTML = "";
         lastQrText = null;
         const pairDisplay = document.getElementById("pairCodeDisplay");
@@ -1491,8 +1495,10 @@ async function checkWhatsAppStatus() {
       badge.className = "badge connected";
       badge.textContent = t('statusConnectedBadge');
       textEl.textContent = t('statusConnectedDesc');
+      if (modeSelector) modeSelector.classList.add("hidden");
       qrContainer.classList.add("hidden");
       if (qrOption1Box) qrOption1Box.classList.add("hidden");
+      if (pairSection) pairSection.classList.add("hidden");
       qrCodeDiv.innerHTML = "";
       lastQrText = null;
       restartBtn.classList.add("hidden");
@@ -1501,15 +1507,15 @@ async function checkWhatsAppStatus() {
       badge.className = "badge connecting";
       badge.textContent = t('statusConnectingBadge');
       textEl.textContent = t('statusConnectingDesc');
+      if (modeSelector) modeSelector.classList.add("hidden");
       qrContainer.classList.remove("hidden");
-      if (qrOption1Box) qrOption1Box.classList.add("hidden");
-      qrCodeDiv.innerHTML = ""; // Clear old scanned QR code canvas immediately
       restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 3000);
     } else if (data.status === "qr") {
       badge.className = "badge connecting";
       badge.textContent = t('statusQrBadge');
       textEl.textContent = t('statusQrDesc');
+      if (modeSelector) modeSelector.classList.add("hidden");
       restartBtn.classList.add("hidden");
 
       if (data.qr && data.qr !== lastQrText) {
@@ -1531,14 +1537,46 @@ async function checkWhatsAppStatus() {
       badge.className = "badge disconnected";
       badge.textContent = t('statusDiscBadge');
       textEl.textContent = t('statusDiscDesc');
-      qrContainer.classList.remove("hidden");
+      // On disconnected state, show the mode selection buttons cleanly
+      if (modeSelector) modeSelector.classList.remove("hidden");
+      qrContainer.classList.add("hidden");
       if (qrOption1Box) qrOption1Box.classList.add("hidden");
+      if (pairSection) pairSection.classList.add("hidden");
       qrCodeDiv.innerHTML = "";
       lastQrText = null;
-      restartBtn.textContent = t('btnConnectWa');
-      restartBtn.classList.remove("hidden");
+      restartBtn.classList.add("hidden");
       statusPollTimeout = setTimeout(checkWhatsAppStatus, 5000);
     }
+
+// Mode Selection Event Listeners
+document.getElementById("selectQrModeBtn")?.addEventListener("click", async () => {
+  const qrOption1Box = document.getElementById("qrOption1Box");
+  const pairSection = document.getElementById("pairingCodeSection");
+  const qrContainer = document.getElementById("whatsappQrContainer");
+  const modeSelector = document.getElementById("whatsappConnectModeSelector");
+  
+  if (pairSection) pairSection.classList.add("hidden");
+  if (qrOption1Box) qrOption1Box.classList.remove("hidden");
+  if (qrContainer) qrContainer.classList.remove("hidden");
+  if (modeSelector) modeSelector.classList.add("hidden");
+
+  try {
+    await apiFetch("/whatsapp-connect", { method: "POST" });
+    checkWhatsAppStatus();
+  } catch (e) {}
+});
+
+document.getElementById("selectPairModeBtn")?.addEventListener("click", () => {
+  const qrOption1Box = document.getElementById("qrOption1Box");
+  const pairSection = document.getElementById("pairingCodeSection");
+  const qrContainer = document.getElementById("whatsappQrContainer");
+  const modeSelector = document.getElementById("whatsappConnectModeSelector");
+  
+  if (qrOption1Box) qrOption1Box.classList.add("hidden");
+  if (pairSection) pairSection.classList.remove("hidden");
+  if (qrContainer) qrContainer.classList.remove("hidden");
+  if (modeSelector) modeSelector.classList.add("hidden");
+});
   } catch (err) {
     console.error("Kosa la kuangalia hali ya WhatsApp:", err);
     badge.className = "badge disconnected";

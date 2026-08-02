@@ -259,17 +259,29 @@
           </div>
           <div class="ws-body" id="whatsappStatusBody">
             <p id="whatsappStatusText" data-i18n="ovConnected">Inatafuta hali ya WhatsApp...</p>
+            <div id="whatsappConnectModeSelector" class="hidden" style="margin-top: 16px; margin-bottom: 16px;">
+              <p style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--text);">Chagua njia ya kuunganisha WhatsApp:</p>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button id="selectQrModeBtn" class="btn-secondary" style="flex: 1; padding: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--indigo); border-radius: 8px; cursor: pointer; background: var(--paper-raised); color: var(--indigo);">
+                  📷 Scan QR Code
+                </button>
+                <button id="selectPairModeBtn" class="btn-secondary" style="flex: 1; padding: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--indigo); border-radius: 8px; cursor: pointer; background: var(--paper-raised); color: var(--indigo);">
+                  🔢 Tumia Pairing Code
+                </button>
+              </div>
+            </div>
+
             <div id="whatsappQrContainer" class="qr-container hidden">
-              <div id="qrOption1Box">
-                <p style="margin-bottom: 10px;" data-i18n="ovQrOption1">Chaguo 1: Scan QR code hii na WhatsApp ya simu yako:</p>
+              <div id="qrOption1Box" class="hidden">
+                <p style="margin-bottom: 10px;" data-i18n="ovQrOption1">Scan QR code hii na WhatsApp ya simu yako:</p>
                 <div id="qrcode" style="margin-top: 10px; margin-bottom: 20px; display: flex; justify-content: center;">
                 </div>
               </div>
 
-              <div class="pairing-code-section"
+              <div id="pairingCodeSection" class="pairing-code-section hidden"
                 style="border-top: 1px solid var(--line); padding-top: 20px; text-align: left;">
-                <p style="font-size: 13px; font-weight: 600; margin-bottom: 8px;" data-i18n="ovQrOption2">Chaguo 2: Tumia Namba ya Simu (Pairing Code)</p>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;" data-i18n="ovQrDesc">Kama hutaki ku-scan QR, bofya "Pata Code" upate code ya ku-paste kwenye WhatsApp (Linked Devices > Link with phone number). Namba yako ya usajili itatumiwa kiotomatiki.</p>
+                <p style="font-size: 13px; font-weight: 600; margin-bottom: 8px;" data-i18n="ovQrOption2">Tumia Namba ya Simu (Pairing Code)</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;" data-i18n="ovQrDesc">Bofya "Pata Code" upate code ya ku-paste kwenye WhatsApp yako (Linked Devices > Link with phone number). Namba yako ya usajili itatumiwa kiotomatiki.</p>
                 <div style="display: flex; gap: 8px;">
                   <input type="text" id="pairPhoneInput" placeholder="Namba ya simu (hiari)..."
                     style="padding: 10px; border: 1px solid var(--line); border-radius: 6px; width: 100%; font-size: 14px;" />
