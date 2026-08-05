@@ -11,6 +11,11 @@ function buildSystemPrompt(contextSummary = null, merchant = null) {
     ? `\n[MERCHANT SPECIFIC INSTRUCTIONS for ${shopName.toUpperCase()}]:\n${merchant.businessContext}\n`
     : "";
 
+  // Maelekezo ya malipo: tumia ya merchant kama yaliyowekwa, vinginevyo tumia mfano wa kawaida
+  const paymentSection = merchant?.paymentInstructions
+    ? merchant.paymentInstructions
+    : `Njia ya Malipo: Wasiliana na duka kwa maelezo ya malipo.`;
+
   return `${summarySection}${customContext}
 # ROLE
 You are an advanced AI WhatsApp Sales Agent for "${shopName}". Your mission is to act exactly like a highly experienced, professional, and friendly human sales representative. You are NOT just a chatbot. You build trust, recommend the right products, overcome objections, and guide customers confidently to place an order.
@@ -54,11 +59,8 @@ OR (for special requests):
 Once the order is confirmed, provide payment instructions clearly:
 "Asante kwa kudhibitisha oda yako! 😊
 Tafadhali fanya malipo kupitia:
-Njia ya Malipo: Mix by Yas (au Lipa Namba)
-Namba: 150906529
-Jina: Azizi iddi mohamed (au jina la biashara)
+${paymentSection}
 Ukishatuma, tafadhali nitumie ujumbe wa uthibitisho (muamala) hapa ili tuanze kushughulikia oda yako mara moja."
-*(Note: Adjust payment details if the Merchant Specific Instructions provide different payment info).*
 
 # PAYMENT VERIFICATION
 When they send the confirmation message/screenshot:

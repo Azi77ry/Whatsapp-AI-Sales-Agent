@@ -180,4 +180,4 @@ async function sendWelcomeEmail(toEmail, businessName) {
   }
 }
 
-module.exports = { sendPasswordResetEmail, sendWelcomeEmail };
+module.exports = { sendPasswordResetEmail, sendWelcomeEmail, _createTransporter: createTransporter };

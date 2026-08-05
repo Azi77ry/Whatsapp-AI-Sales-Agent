@@ -27,6 +27,8 @@ model Merchant {
   reEngagementStartHour     Int     @default(7)
   reEngagementEndHour       Int     @default(21)
   businessContext           String? // Maelezo ya duka/miongozo maalum ya duka
+  paymentInstructions       String? // Maelekezo ya malipo ya duka (itumika na AI kwa wateja)
+  notificationEmail         String? // Barua pepe ya kupokea taarifa za tatizo la WhatsApp session
   resetToken                String? // Msimbo wa OTP wa kureset password
   resetTokenExpires         DateTime? // Muda wa mwisho wa OTP (expiry)
 

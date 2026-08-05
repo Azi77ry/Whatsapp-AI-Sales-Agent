@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const rateLimit = require("express-rate-limit");
 const config = require("./config");
 const authRoutes = require("./routes/auth");
 const apiRoutes = require("./routes/api");
@@ -9,11 +10,25 @@ const superadminRoutes = require("./routes/superadmin");
 const { initializeAllSessions } = require("./whatsapp/manager");
 const { startReEngagementJob } = require("./jobs/reEngagement");
 const { startBackupJob } = require("./jobs/backupSession");
+const { startSessionHealthMonitor } = require("./jobs/sessionHealthMonitor");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// 🛡️ Global API rate limiter (kuzuia DDoS na abuse kwenye /api/*)
+const globalApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // Dakika 15
+  max: 200, // Maombi 200 tu kwa kila IP kwa dakika 15
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Maombi mengi sana. Tafadhali subiri dakika chache kisha jaribu tena." },
+  skip: (req) => {
+    // Acha static files na upload endpoints zipite bila kizuizi
+    return req.path.startsWith("/uploads") || req.method === "GET";
+  },
+});
 
 // Landing Page (Introduction Website)
 app.use(express.static(path.join(__dirname, "../public/landing")));
@@ -29,8 +44,8 @@ app.get("/superadmin", (req, res) => {
 });
 
 // API za Auth na Mipangilio ya SaaS
-app.use("/api/auth", authRoutes); // Usajili na Kuingia
-app.use("/api", apiRoutes);
+app.use("/api/auth", authRoutes); // Usajili na Kuingia (already has per-route rate limiters)
+app.use("/api", globalApiLimiter, apiRoutes);
 app.use("/api/insights", insightsRoutes);
 app.use("/api/superadmin", superadminRoutes);
 
@@ -44,8 +59,12 @@ app.listen(config.port, () => {
   // Anzisha backup cron job (kila siku saa 8 usiku)
   startBackupJob();
 
+  // Anzisha WhatsApp Session Health Monitor (inakagua kila dakika 5)
+  startSessionHealthMonitor();
+
   // Kwenye kuanza kwa server, anzisha WhatsApp sessions zote zilizounganishwa kabla
   initializeAllSessions().catch((err) => {
     console.error("Imeshindwa kuanzisha active sessions za WhatsApp kwenye startup:", err);
   });
 });
+

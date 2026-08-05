@@ -460,6 +460,8 @@ router.get("/settings", wrap(async (req, res) => {
     select: {
       businessName: true,
       businessContext: true,
+      paymentInstructions: true,
+      notificationEmail: true,
       reEngagementMinHours: true,
       reEngagementMaxHours: true,
       reEngagementCooldownHours: true,
@@ -476,6 +478,8 @@ router.post("/settings", wrap(async (req, res) => {
   const {
     businessName,
     businessContext,
+    paymentInstructions,
+    notificationEmail,
     reEngagementMinHours,
     reEngagementMaxHours,
     reEngagementCooldownHours,
@@ -513,6 +517,8 @@ router.post("/settings", wrap(async (req, res) => {
     data: {
       ...(businessName !== undefined && { businessName }),
       ...(businessContext !== undefined && { businessContext }),
+      ...(paymentInstructions !== undefined && { paymentInstructions }),
+      ...(notificationEmail !== undefined && { notificationEmail }),
       ...(reEngagementMinHours !== undefined && { reEngagementMinHours: parseInt(reEngagementMinHours, 10) }),
       ...(reEngagementMaxHours !== undefined && { reEngagementMaxHours: parseInt(reEngagementMaxHours, 10) }),
       ...(reEngagementCooldownHours !== undefined && { reEngagementCooldownHours: parseInt(reEngagementCooldownHours, 10) }),
