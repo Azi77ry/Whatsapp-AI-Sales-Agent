@@ -8,7 +8,9 @@ const jwt = require("jsonwebtoken");
 const config = require("../config");
 const superAdminAuth = require("../middleware/superAdminAuth");
 const { getSettings, saveSettings } = require("../utils/platformSettings");
-const { activeSessions, getConnectionStatus, stopSession } = require("../whatsapp/manager");
+const { activeSessions, getConnectionStatus, stopSession, setBotActive, isBotActive } = require("../whatsapp/manager");
+
+const serverStartTime = Date.now();
 
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch((err) => {
   console.error(`⚠️  SuperAdmin API Error [${req.method} ${req.path}]:`, err.message);
@@ -54,6 +56,65 @@ router.get("/stats", wrap(async (req, res) => {
   });
 }));
 
+// ── AFYA YA MFUMO (System Health) ────────────────────────────
+router.get("/health", wrap(async (req, res) => {
+  const uptimeSeconds = Math.floor((Date.now() - serverStartTime) / 1000);
+  const uptimeHours = Math.floor(uptimeSeconds / 3600);
+  const uptimeMinutes = Math.floor((uptimeSeconds % 3600) / 60);
+  const uptimeSecs = uptimeSeconds % 60;
+  const memUsage = process.memoryUsage();
+
+  // Count active WhatsApp sessions
+  const merchants = await prisma.merchant.findMany({
+    where: { role: "merchant" },
+    select: { id: true },
+  });
+
+  let connectedCount = 0;
+  let disconnectedCount = 0;
+  merchants.forEach(m => {
+    const s = getConnectionStatus(m.id);
+    if (s.status === "open" || s.status === "connected") connectedCount++;
+    else disconnectedCount++;
+  });
+
+  // DB ping
+  let dbStatus = "ok";
+  let dbPingMs = null;
+  try {
+    const t0 = Date.now();
+    await prisma.$queryRaw`SELECT 1`;
+    dbPingMs = Date.now() - t0;
+  } catch (e) {
+    dbStatus = "error";
+  }
+
+  res.json({
+    server: {
+      uptime: `${uptimeHours}h ${uptimeMinutes}m ${uptimeSecs}s`,
+      uptimeSeconds,
+      startedAt: new Date(serverStartTime).toISOString(),
+      nodeVersion: process.version,
+      platform: process.platform,
+    },
+    memory: {
+      heapUsedMB: (memUsage.heapUsed / 1024 / 1024).toFixed(1),
+      heapTotalMB: (memUsage.heapTotal / 1024 / 1024).toFixed(1),
+      rssMB: (memUsage.rss / 1024 / 1024).toFixed(1),
+    },
+    whatsapp: {
+      totalMerchants: merchants.length,
+      connected: connectedCount,
+      disconnected: disconnectedCount,
+    },
+    database: {
+      status: dbStatus,
+      pingMs: dbPingMs,
+    },
+  });
+}));
+
+
 // ── ORODHA YA WAFANYABIASHARA (Merchants List) ──────────────
 router.get("/merchants", wrap(async (req, res) => {
   const merchants = await prisma.merchant.findMany({
@@ -81,8 +142,20 @@ router.get("/merchants", wrap(async (req, res) => {
     },
   });
 
-  res.json({ merchants });
+  const now = new Date();
+  const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const merchantsWithFlags = merchants.map(m => ({
+    ...m,
+    expiringSoon: m.subscriptionEndDate
+      ? m.subscriptionEndDate > now && m.subscriptionEndDate <= sevenDaysLater
+      : false,
+    subscriptionExpired: m.subscriptionEndDate ? m.subscriptionEndDate < now : false,
+  }));
+
+  res.json({ merchants: merchantsWithFlags });
 }));
+
 
 // ── TAARIFA ZA MFANYABIASHARA MMOJA ─────────────────────────
 router.get("/merchants/:id", wrap(async (req, res) => {
@@ -201,6 +274,46 @@ router.put("/merchants/:id/ai-limit", wrap(async (req, res) => {
 
   res.json({ message: `Kikomo cha AI kimebadilishwa kuwa ${updated.aiLimit}.`, merchant: updated });
 }));
+
+// ── RESET AI USAGE ───────────────────────────────────────────
+router.put("/merchants/:id/reset-ai-usage", wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  const target = await prisma.merchant.findUnique({ where: { id } });
+  if (!target || target.role === "superadmin") {
+    return res.status(404).json({ error: "Mfanyabiashara hajapatikana." });
+  }
+
+  const updated = await prisma.merchant.update({
+    where: { id },
+    data: { aiUsage: 0 },
+    select: { id: true, businessName: true, aiUsage: true },
+  });
+
+  console.log(`🔄 Super-Admin: AI Usage ya "${target.businessName}" imesasishwa kuwa 0.`);
+  res.json({ message: `AI Usage ya "${updated.businessName}" imefutwa.`, merchant: updated });
+}));
+
+// ── TOGGLE BOT ACTIVE STATUS ─────────────────────────────────
+router.put("/merchants/:id/bot-status", wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { botActive } = req.body;
+
+  if (typeof botActive !== "boolean") {
+    return res.status(400).json({ error: "botActive lazima iwe true au false." });
+  }
+
+  const target = await prisma.merchant.findUnique({ where: { id } });
+  if (!target || target.role === "superadmin") {
+    return res.status(404).json({ error: "Mfanyabiashara hajapatikana." });
+  }
+
+  setBotActive(id, botActive);
+  const state = botActive ? "imewashwa" : "imezimwa";
+  console.log(`🤖 Super-Admin: Bot ya "${target.businessName}" ${state}.`);
+  res.json({ message: `Bot ya "${target.businessName}" ${state}.`, botActive });
+}));
+
 
 // ── FUTA MFANYABIASHARA KABISA (Delete Merchant) ────────────
 router.delete("/merchants/:id", wrap(async (req, res) => {

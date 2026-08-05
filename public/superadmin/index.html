@@ -44,6 +44,10 @@
           <span class="nav-icon">🟢</span>
           <span>WhatsApp Sessions</span>
         </button>
+        <button class="nav-item" data-view="health">
+          <span class="nav-icon">❤️</span>
+          <span>Afya ya Mfumo</span>
+        </button>
         <button class="nav-item" data-view="settings">
           <span class="nav-icon">⚙️</span>
           <span>Mipangilio Mikuu</span>
@@ -66,12 +70,16 @@
 
     <!-- MAIN CONTENT -->
     <main class="main">
+
       <!-- ═══ OVERVIEW VIEW ═══ -->
       <section id="view-overview" class="view active">
         <header class="view-header">
           <h2>Takwimu Kuu za Mfumo</h2>
           <p class="view-sub">Muhtasari wa utendaji wa wateja wote kwa muda halisi</p>
         </header>
+
+        <!-- Expiring Subscriptions Warning Banner -->
+        <div id="expiringBanner" class="expiring-banner hidden"></div>
 
         <div class="stat-grid" id="statsGrid">
           <div class="stat-card glow-gold">
@@ -124,6 +132,17 @@
             </div>
           </div>
         </div>
+
+        <!-- Recent Signups Feed -->
+        <div class="recent-signups-section">
+          <div class="section-title">
+            <span>🆕 Wasajili Wapya (Recent Signups)</span>
+            <span class="section-badge" id="recentSignupsBadge"></span>
+          </div>
+          <div id="recentSignupsList" class="recent-signups-list">
+            <div class="loading-text">Inapakia...</div>
+          </div>
+        </div>
       </section>
 
       <!-- ═══ MERCHANTS VIEW ═══ -->
@@ -143,9 +162,9 @@
                 <th>Duka</th>
                 <th>Mawasiliano</th>
                 <th>Hali (Status)</th>
-                <th>Oda</th>
-                <th>AI Limit</th>
-                <th>Kujisajili</th>
+                <th>Bidhaa / Mazungumzo / Oda</th>
+                <th>AI Matumizi</th>
+                <th>Usajili / Mwisho</th>
                 <th>Vitendo</th>
               </tr>
             </thead>
@@ -159,8 +178,14 @@
       <!-- ═══ WHATSAPP SESSIONS VIEW ═══ -->
       <section id="view-whatsapp" class="view">
         <header class="view-header">
-          <h2>WhatsApp Sessions Health</h2>
-          <p class="view-sub">Fuatilia na kudhibiti miunganisho ya WhatsApp kwa maduka yote</p>
+          <div>
+            <h2>WhatsApp Sessions Health</h2>
+            <p class="view-sub">Fuatilia na kudhibiti miunganisho ya WhatsApp kwa maduka yote</p>
+          </div>
+          <div class="header-actions">
+            <span id="sessionAutoRefreshBadge" class="auto-refresh-badge">🔄 Auto-refresh: 30s</span>
+            <button class="btn-outline btn-sm" id="refreshSessionsBtn" onclick="loadWhatsappSessions()">Refresh</button>
+          </div>
         </header>
 
         <div class="table-container">
@@ -170,13 +195,111 @@
                 <th>Duka</th>
                 <th>Namba Inayotumika</th>
                 <th>Hali (Status)</th>
+                <th>Bot</th>
                 <th>Vitendo</th>
               </tr>
             </thead>
             <tbody id="whatsappBody">
-              <tr><td colspan="4" style="text-align:center;">Inapakia...</td></tr>
+              <tr><td colspan="5" style="text-align:center;">Inapakia...</td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- ═══ HEALTH VIEW ═══ -->
+      <section id="view-health" class="view">
+        <header class="view-header">
+          <div>
+            <h2>❤️ Afya ya Mfumo (System Health)</h2>
+            <p class="view-sub">Hali ya seva, kumbukumbu, na muunganiko wa database kwa wakati halisi</p>
+          </div>
+          <div class="header-actions">
+            <span id="healthAutoRefreshBadge" class="auto-refresh-badge">🔄 Auto-refresh: 30s</span>
+            <button class="btn-outline btn-sm" id="refreshHealthBtn" onclick="loadHealth()">Refresh</button>
+          </div>
+        </header>
+
+        <div class="health-grid">
+          <!-- Server Card -->
+          <div class="health-card">
+            <div class="health-card-title">🖥️ Seva (Server)</div>
+            <div class="health-row">
+              <span class="health-label">Uptime</span>
+              <span class="health-value glow-green-text" id="hUptime">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-label">Ilianza Saa</span>
+              <span class="health-value" id="hStartedAt">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-label">Node.js Version</span>
+              <span class="health-value" id="hNodeVersion">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-label">Platform</span>
+              <span class="health-value" id="hPlatform">—</span>
+            </div>
+          </div>
+
+          <!-- Memory Card -->
+          <div class="health-card">
+            <div class="health-card-title">💾 Kumbukumbu (Memory)</div>
+            <div class="health-row">
+              <span class="health-label">Heap Used</span>
+              <span class="health-value" id="hHeapUsed">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-label">Heap Total</span>
+              <span class="health-value" id="hHeapTotal">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-label">RSS (Total Process)</span>
+              <span class="health-value" id="hRss">—</span>
+            </div>
+            <div class="health-row" style="margin-top:12px;">
+              <span class="health-label">Matumizi</span>
+              <div style="flex:1; margin-left:16px;">
+                <div class="memory-bar-bg">
+                  <div class="memory-bar-fill" id="hMemBar" style="width:0%"></div>
+                </div>
+                <span class="health-value" id="hMemPercent" style="font-size:12px; margin-top:4px; display:block;">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- WhatsApp Status Card -->
+          <div class="health-card">
+            <div class="health-card-title">📱 WhatsApp Sessions</div>
+            <div class="health-row">
+              <span class="health-label">Maduka Yote</span>
+              <span class="health-value" id="hWaTotalMerchants">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-label">Zilizounganika</span>
+              <span class="health-value glow-green-text" id="hWaConnected">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-label">Zilizojitenga</span>
+              <span class="health-value" id="hWaDisconnected" style="color:var(--sa-danger)">—</span>
+            </div>
+          </div>
+
+          <!-- Database Card -->
+          <div class="health-card">
+            <div class="health-card-title">🗄️ Database (PostgreSQL)</div>
+            <div class="health-row">
+              <span class="health-label">Hali</span>
+              <span class="health-value" id="hDbStatus">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-label">Ping (Kasi)</span>
+              <span class="health-value" id="hDbPing">—</span>
+            </div>
+            <div class="health-row" style="margin-top:12px;">
+              <span class="health-label">Mwisho wa Kuangalia</span>
+              <span class="health-value" id="hLastChecked" style="font-size:12px; color:var(--sa-text-muted)">—</span>
+            </div>
+          </div>
         </div>
       </section>
 
