@@ -1,6 +1,13 @@
 // SuperAdmin JS Logic — Premium Enterprise Version (English)
 const SA_BASE = "/api/superadmin";
 
+// ── Global State ──────────────────────────────────────────────────────────────
+let allMerchants = [];
+let autoRefreshInterval = null;
+let pendingAction = null;
+let limitTarget = null;
+let subTarget = null;
+
 // ── Toast Notifications ───────────────────────────────────────────────────────
 function showToast(message, type = "success") {
   const containerId = "toast-container";
@@ -140,7 +147,6 @@ function showApp() {
 if (localStorage.getItem("sa_token")) showApp();
 
 // ── Auto-refresh (every 30s for Health & Sessions) ────────────────────────────
-let autoRefreshInterval = null;
 function startAutoRefresh() {
   if (autoRefreshInterval) clearInterval(autoRefreshInterval);
   autoRefreshInterval = setInterval(() => {
@@ -166,8 +172,6 @@ async function loadStats() {
 }
 
 // ── Merchants ─────────────────────────────────────────────────────────────────
-let allMerchants = [];
-
 async function loadMerchants() {
   try {
     const data = await saFetch("/merchants");
@@ -300,7 +304,6 @@ async function resetAiUsage(id, name) {
 }
 
 // ── Action Modal ──────────────────────────────────────────────────────────────
-let pendingAction = null;
 const actionModal = document.getElementById("actionModal");
 
 function openActionModal(action, id, name) {
@@ -354,7 +357,6 @@ document.getElementById("actionModalBtn").onclick    = async () => {
 };
 
 // ── Limit Modal ───────────────────────────────────────────────────────────────
-let limitTarget = null;
 const limitModal = document.getElementById("limitModal");
 
 function openLimitModal(id, name, limit) {
@@ -381,7 +383,6 @@ document.getElementById("limitModalBtn").onclick    = async () => {
 };
 
 // ── Subscription Modal ────────────────────────────────────────────────────────
-let subTarget = null;
 const subModal = document.getElementById("subModal");
 
 function openSubModal(id, name) {
