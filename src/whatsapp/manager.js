@@ -193,7 +193,8 @@ async function startSession(merchantId) {
 
     if (connection === "close") {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
-      const isRegistered = Boolean(sock?.authState?.creds?.registered || sock?.authState?.creds?.me || sock?.authState?.creds?.account);
+      const isLoggedOut = statusCode === DisconnectReason.loggedOut;
+      const isRegistered = !isLoggedOut && Boolean(sock?.authState?.creds?.registered || sock?.authState?.creds?.me || sock?.authState?.creds?.account);
       const isPairingPending = pairingPendingMerchants.has(mId);
 
       console.log(`🔌 Muunganiko wa Merchant #${mId} umekatika (Status Code: ${statusCode}, Registered: ${isRegistered}, PairingPending: ${isPairingPending}).`);
