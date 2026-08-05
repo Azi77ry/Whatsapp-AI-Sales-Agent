@@ -1,5 +1,4 @@
-// SuperAdmin JS Logic — Enhanced Version
-// Improvements: Health Monitor, Recent Signups, Expiring Banner, Bot Toggle, Reset AI Usage, Auto-refresh
+// SuperAdmin JS Logic — Premium Enterprise Version (English)
 const SA_BASE = "/api/superadmin";
 
 // ── Toast Notifications ───────────────────────────────────────────────────────
@@ -15,8 +14,8 @@ function showToast(message, type = "success") {
 
   const toast = document.createElement("div");
   toast.className = "sa-toast";
-  const iconColor = type === "error" ? "var(--sa-danger)" : "var(--sa-success)";
-  const iconBg   = type === "error" ? "rgba(255,51,102,0.15)" : "rgba(0,220,130,0.15)";
+  const iconColor = type === "error" ? "var(--rose)" : "var(--emerald)";
+  const iconBg   = type === "error" ? "rgba(244,63,94,0.15)" : "rgba(16,185,129,0.15)";
   const iconSvg  = type === "error"
     ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
     : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
@@ -47,19 +46,19 @@ function formatNumber(n) {
 
 function formatDate(d) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("sw-TZ", { day:"2-digit", month:"short", year:"numeric" });
+  return new Date(d).toLocaleDateString("en-US", { day:"2-digit", month:"short", year:"numeric" });
 }
 
 function timeAgo(d) {
   if (!d) return "";
   const diff = Date.now() - new Date(d).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1)   return "Sasa hivi";
-  if (m < 60)  return `Dakika ${m} zilizopita`;
+  if (m < 1)   return "Just now";
+  if (m < 60)  return `${m} mins ago`;
   const h = Math.floor(m / 60);
-  if (h < 24)  return `Saa ${h} zilizopita`;
+  if (h < 24)  return `${h} hours ago`;
   const days = Math.floor(h / 24);
-  return `Siku ${days} zilizopita`;
+  return `${days} days ago`;
 }
 
 // ── API Helper ────────────────────────────────────────────────────────────────
@@ -76,7 +75,7 @@ async function saFetch(path, options = {}) {
   if (!res.ok) {
     if (res.status === 401 || res.status === 403) handleLogout();
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || "Hitilafu imetokea kwenye seva");
+    throw new Error(err.error || "A server error occurred");
   }
   return res.json();
 }
@@ -87,17 +86,25 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
   const password = document.getElementById("loginPassword").value;
   const errorEl  = document.getElementById("loginError");
   errorEl.textContent = "";
-  if (!email || !password) return (errorEl.textContent = "Tafadhali jaza taarifa zote.");
+  if (!email || !password) return (errorEl.textContent = "Please fill in all credentials.");
+  
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true;
+  btn.textContent = "Authenticating...";
+
   try {
     const res  = await fetch("/api/auth/login", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ email, password }) });
     const data = await res.json();
-    if (!res.ok) return (errorEl.textContent = data.error || "Imeshindwa kuingia.");
-    if (data.merchant.role !== "superadmin") return (errorEl.textContent = "⛔ Huna mamlaka ya SuperAdmin.");
+    if (!res.ok) return (errorEl.textContent = data.error || "Authentication failed.");
+    if (data.merchant.role !== "superadmin") return (errorEl.textContent = "⛔ Unauthorized: SuperAdmin privileges required.");
     localStorage.setItem("sa_token", data.token);
     showApp();
-    showToast("Karibu kwenye Control Tower, SuperAdmin!", "success");
+    showToast("Welcome to the Control Center!", "success");
   } catch {
-    errorEl.textContent = "Hitilafu ya mtandao.";
+    errorEl.textContent = "Network error occurred.";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Sign In to Control Center";
   }
 });
 
@@ -169,7 +176,7 @@ async function loadMerchants() {
     renderRecentSignups(allMerchants);
     renderExpiringBanner(allMerchants);
   } catch (err) {
-    document.getElementById("merchantsBody").innerHTML = `<tr><td colspan="7" style="color:var(--sa-danger)">${escapeHtml(err.message)}</td></tr>`;
+    document.getElementById("merchantsBody").innerHTML = `<tr><td colspan="7" style="color:var(--rose)">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -177,7 +184,7 @@ function renderMerchants(merchants) {
   const tbody = document.getElementById("merchantsBody");
   tbody.innerHTML = "";
   if (merchants.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Hakuna maduka yaliyopatikana</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 40px; color: var(--text-muted);">No merchants found.</td></tr>`;
     return;
   }
 
@@ -190,14 +197,14 @@ function renderMerchants(merchants) {
       ? `<span class="badge active">Active</span>`
       : `<span class="badge suspended">Suspended</span>`;
 
-    const subColor = m.subscriptionExpired ? "var(--sa-danger)" : m.expiringSoon ? "#ffb703" : "var(--sa-text-muted)";
-    const subLabel = m.subscriptionExpired ? "⚠ Expired" : m.expiringSoon ? "⏰ Inakwisha" : (m.subscriptionPlan || "—");
+    const subColor = m.subscriptionExpired ? "var(--rose)" : m.expiringSoon ? "var(--amber)" : "var(--text-muted)";
+    const subLabel = m.subscriptionExpired ? "⚠ Expired" : m.expiringSoon ? "⏰ Expiring Soon" : (m.subscriptionPlan || "—");
 
     tr.innerHTML = `
       <td><strong>${escapeHtml(m.businessName)}</strong></td>
       <td>
         <div style="font-size:13px">${escapeHtml(m.email)}</div>
-        <div style="font-size:12px;color:var(--sa-text-muted)">${escapeHtml(m.phone || "Hakuna Namba")}</div>
+        <div class="text-muted" style="font-size:12px; margin-top:2px;">${escapeHtml(m.phone || "No phone")}</div>
       </td>
       <td>${statusBadge}</td>
       <td style="font-size:13px;">
@@ -206,23 +213,33 @@ function renderMerchants(merchants) {
         📦 ${m._count?.orders ?? 0}
       </td>
       <td>
-        <span style="color:var(--sa-primary)">${formatNumber(m.aiUsage)}</span>
-        <span style="color:var(--sa-text-muted)"> / ${m.aiLimit}</span>
+        <span class="text-indigo" style="font-weight:600">${formatNumber(m.aiUsage)}</span>
+        <span class="text-muted"> / ${m.aiLimit}</span>
       </td>
       <td style="font-size:12px;">
         <div style="color:${subColor};font-weight:600;">${subLabel}</div>
-        <div style="color:var(--sa-text-muted);">${m.subscriptionEndDate ? formatDate(m.subscriptionEndDate) : "N/A"}</div>
-        <div style="color:var(--sa-text-muted);font-size:11px;">${timeAgo(m.createdAt)}</div>
+        <div class="text-muted" style="margin-top:2px;">${m.subscriptionEndDate ? formatDate(m.subscriptionEndDate) : "N/A"}</div>
+        <div class="text-muted" style="font-size:11px; margin-top:2px;">Joined ${timeAgo(m.createdAt)}</div>
       </td>
       <td class="action-btns">
-        <button class="btn-icon" title="Login As (Impersonate)" style="color:#00dc82" onclick="impersonateMerchant(${m.id})">🦸‍♂️</button>
-        <button class="btn-icon" title="Kifurushi (Subscription)" style="color:var(--sa-primary)" onclick="openSubModal(${m.id},'${escapeHtml(m.businessName)}')">📅</button>
-        <button class="btn-icon" title="Edit AI Limit" onclick="openLimitModal(${m.id},'${escapeHtml(m.businessName)}',${m.aiLimit})">⚡</button>
-        <button class="btn-icon" title="Reset AI Usage → 0" style="color:#00b4d8" onclick="resetAiUsage(${m.id},'${escapeHtml(m.businessName)}')">🔄</button>
+        <button class="btn-icon" title="Login As (Impersonate)" onclick="impersonateMerchant(${m.id})">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+        <button class="btn-icon" title="Manage Subscription" onclick="openSubModal(${m.id},'${escapeHtml(m.businessName)}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        </button>
+        <button class="btn-icon" title="Edit AI Limit" onclick="openLimitModal(${m.id},'${escapeHtml(m.businessName)}',${m.aiLimit})">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </button>
+        <button class="btn-icon" title="Reset AI Usage to 0" onclick="resetAiUsage(${m.id},'${escapeHtml(m.businessName)}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
         ${m.status === "active"
-          ? `<button class="btn-icon" style="color:var(--sa-danger)" title="Suspend" onclick="openActionModal('suspend',${m.id},'${escapeHtml(m.businessName)}')">⏸</button>`
-          : `<button class="btn-icon" style="color:var(--sa-success)" title="Activate" onclick="openActionModal('activate',${m.id},'${escapeHtml(m.businessName)}')">▶</button>`}
-        <button class="btn-icon" title="Delete" style="color:#ff3366" onclick="openActionModal('delete',${m.id},'${escapeHtml(m.businessName)}')">🗑</button>
+          ? `<button class="btn-icon" title="Suspend Account" onclick="openActionModal('suspend',${m.id},'${escapeHtml(m.businessName)}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="10" x2="10" y1="15" y2="9"/><line x1="14" x2="14" y1="15" y2="9"/></svg></button>`
+          : `<button class="btn-icon" title="Activate Account" onclick="openActionModal('activate',${m.id},'${escapeHtml(m.businessName)}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></button>`}
+        <button class="btn-icon" title="Delete Account" onclick="openActionModal('delete',${m.id},'${escapeHtml(m.businessName)}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        </button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -233,15 +250,15 @@ function renderRecentSignups(merchants) {
   const container = document.getElementById("recentSignupsList");
   const badge     = document.getElementById("recentSignupsBadge");
   const sorted    = [...merchants].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 6);
-  badge.textContent = `Wapya ${sorted.length}`;
+  badge.textContent = `${sorted.length} New`;
 
   if (sorted.length === 0) {
-    container.innerHTML = `<div class="loading-text">Hakuna wasajili bado.</div>`;
+    container.innerHTML = `<div class="loading-text">No recent signups.</div>`;
     return;
   }
   container.innerHTML = sorted.map(m => `
     <div class="signup-card">
-      <div class="signup-avatar">🏪</div>
+      <div class="signup-avatar">🏢</div>
       <div>
         <div class="signup-name">${escapeHtml(m.businessName)}</div>
         <div class="signup-meta">${escapeHtml(m.email)}</div>
@@ -257,7 +274,8 @@ function renderExpiringBanner(merchants) {
   const expiring = merchants.filter(m => m.expiringSoon);
   if (expiring.length === 0) { banner.classList.add("hidden"); return; }
   banner.classList.remove("hidden");
-  banner.innerHTML = `⏰ <strong>${expiring.length} duka</strong> lina/zina subscription inayokwisha ndani ya siku 7: 
+  banner.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <strong>${expiring.length} account(s)</strong> have a subscription expiring within 7 days: 
     ${expiring.map(m => `<strong>${escapeHtml(m.businessName)}</strong> (${formatDate(m.subscriptionEndDate)})`).join(", ")}`;
 }
 
@@ -271,10 +289,10 @@ document.getElementById("merchantSearch").addEventListener("input", e => {
 
 // ── Reset AI Usage ────────────────────────────────────────────────────────────
 async function resetAiUsage(id, name) {
-  if (!confirm(`Je, una uhakika unataka kufuta AI Usage ya "${name}" (kutoka 0)?`)) return;
+  if (!confirm(`Are you sure you want to reset AI Token Usage for "${name}" to 0?`)) return;
   try {
     await saFetch(`/merchants/${id}/reset-ai-usage`, { method: "PUT" });
-    showToast(`AI Usage ya ${name} imefutwa kuwa 0`, "success");
+    showToast(`AI Usage for ${name} reset to 0`, "success");
     loadMerchants();
   } catch (err) {
     showToast(err.message, "error");
@@ -290,14 +308,14 @@ function openActionModal(action, id, name) {
   const title = document.getElementById("actionModalTitle");
   const msg   = document.getElementById("actionModalMsg");
   if (action === "suspend") {
-    title.textContent = "Fungia Duka (Suspend)";
-    msg.textContent   = `Je, una uhakika unataka kusimamisha duka la "${name}"?`;
+    title.textContent = "Suspend Account";
+    msg.textContent   = `Are you sure you want to suspend "${name}"? They will lose access immediately.`;
   } else if (action === "activate") {
-    title.textContent = "Fungulia Duka (Activate)";
-    msg.textContent   = `Je, uruhusu duka la "${name}" kuendelea kutumia mfumo?`;
+    title.textContent = "Activate Account";
+    msg.textContent   = `Are you sure you want to reactivate "${name}"?`;
   } else if (action === "delete") {
-    title.textContent = "Futa Kabisa (Delete)";
-    msg.innerHTML     = `⚠️ Duka la "${name}" litafutwa pamoja na data zake zote.<br><b>Hii hatua hairudishwi nyuma!</b>`;
+    title.textContent = "Permanently Delete Account";
+    msg.innerHTML     = `⚠️ You are about to permanently delete "${name}" and all associated data (orders, messages, etc).<br><br><b>This action cannot be undone!</b>`;
   }
   actionModal.classList.add("active");
 }
@@ -307,23 +325,31 @@ document.getElementById("actionModalCancel").onclick = () => actionModal.classLi
 document.getElementById("actionModalBtn").onclick    = async () => {
   if (!pendingAction) return;
   const btn = document.getElementById("actionModalBtn");
-  btn.disabled = true; btn.textContent = "Tafadhali subiri...";
+  
+  if (pendingAction.action === "delete") {
+    btn.classList.add("btn-danger");
+    btn.classList.remove("btn-primary");
+  }
+  
+  btn.disabled = true; btn.textContent = "Processing...";
   try {
     const { action, id } = pendingAction;
     if (action === "suspend" || action === "activate") {
       const status = action === "suspend" ? "suspended" : "active";
       await saFetch(`/merchants/${id}/status`, { method:"PUT", body:JSON.stringify({ status }) });
-      showToast(`Duka sasa ni ${status}`, "success");
+      showToast(`Account successfully ${status}`, "success");
     } else if (action === "delete") {
       await saFetch(`/merchants/${id}`, { method:"DELETE" });
-      showToast("Duka limefutwa kabisa", "success");
+      showToast("Account permanently deleted", "success");
     }
     actionModal.classList.remove("active");
     loadMerchants(); loadStats();
   } catch (err) {
     showToast(err.message, "error");
   } finally {
-    btn.disabled = false; btn.textContent = "Thibitisha";
+    btn.disabled = false; btn.textContent = "Confirm Action";
+    btn.classList.remove("btn-danger");
+    btn.classList.add("btn-primary");
   }
 };
 
@@ -342,12 +368,12 @@ document.getElementById("limitModalCancel").onclick = () => limitModal.classList
 document.getElementById("limitModalBtn").onclick    = async () => {
   if (!limitTarget) return;
   const newLimit = parseInt(document.getElementById("limitInput").value, 10);
-  if (isNaN(newLimit) || newLimit < 0) return showToast("Weka namba sahihi", "error");
+  if (isNaN(newLimit) || newLimit < 0) return showToast("Enter a valid number", "error");
   const btn = document.getElementById("limitModalBtn");
   btn.disabled = true;
   try {
     await saFetch(`/merchants/${limitTarget.id}/ai-limit`, { method:"PUT", body:JSON.stringify({ aiLimit: newLimit }) });
-    showToast(`Limit mpya imehifadhiwa: ${newLimit}`, "success");
+    showToast(`New limit saved: ${newLimit} tokens`, "success");
     limitModal.classList.remove("active");
     loadMerchants();
   } catch (err) { showToast(err.message, "error"); }
@@ -371,16 +397,16 @@ document.getElementById("subModalBtn").onclick    = async () => {
   if (!subTarget) return;
   const monthsToAdd     = parseInt(document.getElementById("subMonths").value, 10);
   const plan            = document.getElementById("subPlan").value;
-  if (isNaN(monthsToAdd) || monthsToAdd < 0) return showToast("Weka miezi sahihi", "error");
+  if (isNaN(monthsToAdd) || monthsToAdd < 0) return showToast("Enter a valid number of months", "error");
   const btn = document.getElementById("subModalBtn");
-  btn.disabled = true; btn.textContent = "Inaongeza...";
+  btn.disabled = true; btn.textContent = "Updating...";
   try {
     await saFetch(`/merchants/${subTarget.id}/subscription`, { method:"PUT", body:JSON.stringify({ subscriptionPlan:plan, monthsToAdd }) });
-    showToast("Mteja ameongezewa kifurushi chake", "success");
+    showToast("Subscription updated successfully", "success");
     subModal.classList.remove("active");
     loadMerchants();
   } catch (err) { showToast(err.message, "error"); }
-  finally { btn.disabled = false; btn.textContent = "Hifadhi (Save)"; }
+  finally { btn.disabled = false; btn.textContent = "Apply Changes"; }
 };
 
 // ── Settings ──────────────────────────────────────────────────────────────────
@@ -395,36 +421,35 @@ async function loadSettings() {
 
 document.getElementById("saveBroadcastBtn").addEventListener("click", async () => {
   const btn = document.getElementById("saveBroadcastBtn");
-  btn.disabled = true; btn.textContent = "Inahifadhi...";
+  btn.disabled = true; btn.textContent = "Saving...";
   try {
     await saFetch("/settings", { method:"PUT", body:JSON.stringify({
       broadcastMessage: document.getElementById("broadcastMessage").value,
       broadcastActive:  document.getElementById("broadcastActive").checked,
     }) });
-    showToast("Tangazo limehifadhiwa", "success");
+    showToast("Announcement settings saved", "success");
   } catch (err) { showToast(err.message, "error"); }
-  finally { btn.disabled = false; btn.textContent = "Hifadhi Tangazo"; }
+  finally { btn.disabled = false; btn.textContent = "Save Announcement"; }
 });
 
 document.getElementById("saveLimitBtn").addEventListener("click", async () => {
   const btn = document.getElementById("saveLimitBtn");
-  btn.disabled = true; btn.textContent = "Inahifadhi...";
+  btn.disabled = true; btn.textContent = "Saving...";
   try {
     const defaultAiLimit = parseInt(document.getElementById("defaultAiLimit").value, 10);
-    if (isNaN(defaultAiLimit) || defaultAiLimit < 0) throw new Error("Weka namba sahihi.");
+    if (isNaN(defaultAiLimit) || defaultAiLimit < 0) throw new Error("Enter a valid number.");
     await saFetch("/settings", { method:"PUT", body:JSON.stringify({ defaultAiLimit }) });
-    showToast("Default Limit imehifadhiwa", "success");
+    showToast("Default limits saved", "success");
   } catch (err) { showToast(err.message, "error"); }
-  finally { btn.disabled = false; btn.textContent = "Hifadhi Limit"; }
+  finally { btn.disabled = false; btn.textContent = "Save Default Limit"; }
 });
 
 // ── Impersonate ───────────────────────────────────────────────────────────────
 async function impersonateMerchant(id) {
   try {
     const data = await saFetch(`/merchants/${id}/impersonate`, { method:"POST" });
-    showToast(`Inaandaa Dashboard ya ${data.merchant.businessName}...`, "success");
-    const saToken = localStorage.getItem("sa_token");
-    localStorage.setItem("token", data.token);
+    showToast(`Initiating dashboard for ${data.merchant.businessName}...`, "success");
+    localStorage.setItem("token", data.token); // merchant token
     window.open("/dashboard/", "_blank");
   } catch (err) { showToast(err.message, "error"); }
 }
@@ -435,7 +460,7 @@ async function loadWhatsappSessions() {
     const data = await saFetch("/whatsapp-sessions");
     renderWhatsappSessions(data.sessions);
   } catch (err) {
-    document.getElementById("whatsappBody").innerHTML = `<tr><td colspan="5" style="color:var(--sa-danger)">${escapeHtml(err.message)}</td></tr>`;
+    document.getElementById("whatsappBody").innerHTML = `<tr><td colspan="5" style="color:var(--rose)">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -443,7 +468,7 @@ function renderWhatsappSessions(sessions) {
   const tbody = document.getElementById("whatsappBody");
   tbody.innerHTML = "";
   if (sessions.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Hakuna sessions zilizopatikana</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--text-muted);">No active sessions found</td></tr>`;
     return;
   }
   sessions.forEach(s => {
@@ -452,9 +477,9 @@ function renderWhatsappSessions(sessions) {
     if (s.status === "connected" || s.status === "open")
       statusBadge = `<span class="badge active">Connected</span>`;
     else if (s.status === "connecting")
-      statusBadge = `<span class="badge" style="background:#ffb020;color:#000;">Connecting...</span>`;
+      statusBadge = `<span class="badge connecting">Connecting...</span>`;
     else if (s.status === "qr")
-      statusBadge = `<span class="badge" style="background:#00d2ff;color:#000;">Waiting QR</span>`;
+      statusBadge = `<span class="badge waiting">Waiting for QR</span>`;
     else
       statusBadge = `<span class="badge suspended">Disconnected</span>`;
 
@@ -462,16 +487,18 @@ function renderWhatsappSessions(sessions) {
 
     tr.innerHTML = `
       <td><strong>${escapeHtml(s.businessName)}</strong></td>
-      <td>${escapeHtml(s.phone || "N/A")}</td>
+      <td class="mono" style="font-size:13px">${escapeHtml(s.phone || "N/A")}</td>
       <td>${statusBadge}</td>
       <td>
-        <label class="bot-toggle" title="${s.botActive !== false ? "Bot: ON" : "Bot: OFF"}">
+        <label class="bot-toggle" title="${s.botActive !== false ? "Bot is ON" : "Bot is OFF"}">
           <input type="checkbox" ${botChecked} onchange="toggleBotStatus(${s.id}, this.checked, '${escapeHtml(s.businessName)}')">
           <span class="bot-toggle-slider"></span>
         </label>
       </td>
       <td class="action-btns">
-        <button class="btn-icon" style="color:var(--sa-danger)" title="Force Disconnect" onclick="disconnectWhatsappSession(${s.id},'${escapeHtml(s.businessName)}')">🔌</button>
+        <button class="btn-icon" style="color:var(--rose); border-color:rgba(244,63,94,0.3)" title="Force Disconnect Device" onclick="disconnectWhatsappSession(${s.id},'${escapeHtml(s.businessName)}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a4 4 0 0 0-8 0v8a4 4 0 0 0 8 0V8z"/><path d="M12 22v-2"/></svg>
+        </button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -481,7 +508,7 @@ function renderWhatsappSessions(sessions) {
 async function toggleBotStatus(id, active, name) {
   try {
     await saFetch(`/merchants/${id}/bot-status`, { method:"PUT", body:JSON.stringify({ botActive: active }) });
-    showToast(`Bot ya ${name} ${active ? "imewashwa ✅" : "imezimwa ⏸"}`, "success");
+    showToast(`Bot for ${name} is now ${active ? "ON ✅" : "OFF ⏸"}`, "success");
   } catch (err) {
     showToast(err.message, "error");
     loadWhatsappSessions(); // revert UI on error
@@ -489,10 +516,10 @@ async function toggleBotStatus(id, active, name) {
 }
 
 async function disconnectWhatsappSession(id, name) {
-  if (!confirm(`Je, una uhakika unataka kukata muunganiko wa WhatsApp wa "${name}"?`)) return;
+  if (!confirm(`Are you sure you want to force disconnect the WhatsApp session for "${name}"?\nThey will need to scan the QR code again.`)) return;
   try {
     await saFetch(`/whatsapp-sessions/${id}/disconnect`, { method:"POST" });
-    showToast(`WhatsApp Session ya ${name} imekatwa.`, "success");
+    showToast(`WhatsApp Session for ${name} has been disconnected.`, "success");
     loadWhatsappSessions();
   } catch (err) { showToast(err.message, "error"); }
 }
@@ -504,7 +531,7 @@ async function loadHealth() {
 
     // Server
     document.getElementById("hUptime").textContent    = data.server.uptime;
-    document.getElementById("hStartedAt").textContent = new Date(data.server.startedAt).toLocaleString("sw-TZ");
+    document.getElementById("hStartedAt").textContent = new Date(data.server.startedAt).toLocaleString("en-US");
     document.getElementById("hNodeVersion").textContent = data.server.nodeVersion;
     document.getElementById("hPlatform").textContent    = data.server.platform;
 
@@ -516,7 +543,7 @@ async function loadHealth() {
     document.getElementById("hHeapTotal").textContent = `${data.memory.heapTotalMB} MB`;
     document.getElementById("hRss").textContent       = `${data.memory.rssMB} MB`;
     document.getElementById("hMemBar").style.width    = `${pct}%`;
-    document.getElementById("hMemPercent").textContent = `${pct}% inatumika`;
+    document.getElementById("hMemPercent").textContent = `${pct}% used`;
 
     // WhatsApp
     document.getElementById("hWaTotalMerchants").textContent = data.whatsapp.totalMerchants;
@@ -526,14 +553,14 @@ async function loadHealth() {
     // Database
     const dbStatusEl = document.getElementById("hDbStatus");
     if (data.database.status === "ok") {
-      dbStatusEl.textContent  = "✅ Connected";
-      dbStatusEl.style.color  = "var(--sa-success)";
+      dbStatusEl.textContent  = "Operational";
+      dbStatusEl.className    = "health-value ok";
     } else {
-      dbStatusEl.textContent  = "❌ Error";
-      dbStatusEl.style.color  = "var(--sa-danger)";
+      dbStatusEl.textContent  = "Error";
+      dbStatusEl.className    = "health-value error";
     }
     document.getElementById("hDbPing").textContent        = data.database.pingMs !== null ? `${data.database.pingMs} ms` : "—";
-    document.getElementById("hLastChecked").textContent   = new Date().toLocaleTimeString("sw-TZ");
+    document.getElementById("hLastChecked").textContent   = new Date().toLocaleTimeString("en-US");
   } catch (err) {
     console.error("Health load failed:", err);
   }

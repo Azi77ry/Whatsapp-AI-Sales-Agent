@@ -1,382 +1,450 @@
 <!DOCTYPE html>
-<html lang="sw">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Super Admin — Premium Control Tower</title>
-  <meta name="description" content="SuperAdmin Control Panel for AI Sales Agent SaaS" />
+  <title>Control Center — Aziry Tech</title>
+  <meta name="description" content="SuperAdmin Control Center — AI Sales Agent SaaS Platform" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- LOGIN SCREEN -->
+
+  <!-- ══════════════════════════════════════════════════════
+       LOGIN SCREEN
+  ══════════════════════════════════════════════════════ -->
   <div id="loginScreen" class="login-screen">
     <div class="login-card">
-      <div class="login-icon">👑</div>
-      <h1>SuperAdmin</h1>
-      <p class="login-sub">Ingia kwenye ulimwengu wa udhibiti</p>
-      <input type="email" id="loginEmail" placeholder="Barua pepe (Email)" />
-      <input type="password" id="loginPassword" placeholder="Neno la siri (Password)" />
-      <button id="loginBtn" class="btn-primary">Ingia Sasa</button>
+      <div class="login-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Aziry Tech — SuperAdmin
+      </div>
+      <h1>Control Center</h1>
+      <p class="login-sub">Restricted access — Authorized personnel only</p>
+
+      <div class="field-wrapper">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        <input type="email" id="loginEmail" placeholder="admin@aziry.tech" autocomplete="email" />
+      </div>
+
+      <div class="field-wrapper">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <input type="password" id="loginPassword" placeholder="••••••••••••" autocomplete="current-password" />
+      </div>
+
+      <button id="loginBtn" class="btn-primary">
+        Sign In to Control Center
+      </button>
       <p id="loginError" class="error-text"></p>
     </div>
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- ══════════════════════════════════════════════════════
+       MAIN APPLICATION
+  ══════════════════════════════════════════════════════ -->
   <div id="app" class="app hidden">
-    <!-- SIDEBAR -->
+
+    <!-- ─── Sidebar ──────────────────────────────────────── -->
     <aside class="sidebar">
       <div class="sidebar-brand">
-        <span class="brand-icon">👑</span>
-        <span class="brand-text">Control<br />Tower</span>
+        <div class="brand-logo">⚡</div>
+        <div class="brand-info">
+          <div class="brand-name">Control Center</div>
+          <div class="brand-version">AZIRY TECH · SUPERADMIN</div>
+        </div>
       </div>
+
+      <div class="sidebar-section-label">Main Menu</div>
       <nav class="sidebar-nav">
         <button class="nav-item active" data-view="overview">
           <span class="nav-icon">📊</span>
-          <span>Takwimu Kuu</span>
+          <span>Overview</span>
         </button>
         <button class="nav-item" data-view="merchants">
           <span class="nav-icon">🏢</span>
-          <span>Wateja (Maduka)</span>
+          <span>Merchants</span>
         </button>
         <button class="nav-item" data-view="whatsapp">
-          <span class="nav-icon">🟢</span>
+          <span class="nav-icon">📱</span>
           <span>WhatsApp Sessions</span>
         </button>
         <button class="nav-item" data-view="health">
           <span class="nav-icon">❤️</span>
-          <span>Afya ya Mfumo</span>
+          <span>System Health</span>
         </button>
         <button class="nav-item" data-view="settings">
           <span class="nav-icon">⚙️</span>
-          <span>Mipangilio Mikuu</span>
+          <span>Platform Settings</span>
         </button>
       </nav>
+
       <div class="sidebar-footer">
-        <div class="admin-info">
+        <div class="admin-card">
           <div class="admin-avatar">👑</div>
           <div>
             <div class="admin-name" id="adminName">Aziry Tech</div>
-            <div class="admin-role">Super Admin</div>
+            <div class="admin-role">Super Administrator</div>
           </div>
         </div>
         <button id="logoutBtn" class="nav-item logout-btn">
           <span class="nav-icon">🚪</span>
-          <span>Toka (Logout)</span>
+          <span>Sign Out</span>
         </button>
       </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
+    <!-- ─── Main Content ──────────────────────────────────── -->
     <main class="main">
 
-      <!-- ═══ OVERVIEW VIEW ═══ -->
+      <!-- ══ OVERVIEW ══════════════════════════════════════ -->
       <section id="view-overview" class="view active">
-        <header class="view-header">
-          <h2>Takwimu Kuu za Mfumo</h2>
-          <p class="view-sub">Muhtasari wa utendaji wa wateja wote kwa muda halisi</p>
-        </header>
+        <div class="view-header">
+          <div>
+            <h2>Platform Overview</h2>
+            <p class="view-sub">Real-time performance metrics across all merchant accounts</p>
+          </div>
+        </div>
 
-        <!-- Expiring Subscriptions Warning Banner -->
+        <!-- Expiring Subscriptions Warning -->
         <div id="expiringBanner" class="expiring-banner hidden"></div>
 
+        <!-- KPI Stats -->
         <div class="stat-grid" id="statsGrid">
-          <div class="stat-card glow-gold">
-            <div class="stat-icon">🏢</div>
-            <div class="stat-info">
+          <div class="stat-card c-indigo">
+            <div class="stat-icon-wrap">🏢</div>
+            <div>
               <div class="stat-value" id="statTotalMerchants">—</div>
-              <div class="stat-label">Maduka Yote</div>
+              <div class="stat-label">Total Merchants</div>
             </div>
           </div>
-          <div class="stat-card glow-green">
-            <div class="stat-icon">✅</div>
-            <div class="stat-info">
+          <div class="stat-card c-emerald">
+            <div class="stat-icon-wrap">✅</div>
+            <div>
               <div class="stat-value" id="statActiveMerchants">—</div>
-              <div class="stat-label">Maduka Hai</div>
+              <div class="stat-label">Active Accounts</div>
             </div>
           </div>
-          <div class="stat-card glow-red">
-            <div class="stat-icon">🚫</div>
-            <div class="stat-info">
+          <div class="stat-card c-rose">
+            <div class="stat-icon-wrap">🚫</div>
+            <div>
               <div class="stat-value" id="statSuspendedMerchants">—</div>
-              <div class="stat-label">Yaliyofungiwa</div>
+              <div class="stat-label">Suspended</div>
             </div>
           </div>
-          <div class="stat-card glow-blue">
-            <div class="stat-icon">💬</div>
-            <div class="stat-info">
+          <div class="stat-card c-sky">
+            <div class="stat-icon-wrap">💬</div>
+            <div>
               <div class="stat-value" id="statTotalConversations">—</div>
-              <div class="stat-label">Mazungumzo Yote</div>
+              <div class="stat-label">Total Conversations</div>
             </div>
           </div>
-          <div class="stat-card glow-gold">
-            <div class="stat-icon">📦</div>
-            <div class="stat-info">
+          <div class="stat-card c-amber">
+            <div class="stat-icon-wrap">📦</div>
+            <div>
               <div class="stat-value" id="statTotalOrders">—</div>
-              <div class="stat-label">Oda Zote</div>
+              <div class="stat-label">Total Orders</div>
             </div>
           </div>
-          <div class="stat-card glow-blue">
-            <div class="stat-icon">🤖</div>
-            <div class="stat-info">
+          <div class="stat-card c-indigo">
+            <div class="stat-icon-wrap">🤖</div>
+            <div>
               <div class="stat-value" id="statTotalAiUsage">—</div>
-              <div class="stat-label">Ujumbe wa AI (Tokens)</div>
+              <div class="stat-label">AI Tokens Used</div>
             </div>
           </div>
-          <div class="stat-card glow-green">
-            <div class="stat-icon">📨</div>
-            <div class="stat-info">
+          <div class="stat-card c-emerald">
+            <div class="stat-icon-wrap">📨</div>
+            <div>
               <div class="stat-value" id="statTotalMessages">—</div>
-              <div class="stat-label">Meseji Zote Zilizotumwa</div>
+              <div class="stat-label">Messages Processed</div>
             </div>
           </div>
         </div>
 
-        <!-- Recent Signups Feed -->
+        <!-- Recent Signups -->
         <div class="recent-signups-section">
-          <div class="section-title">
-            <span>🆕 Wasajili Wapya (Recent Signups)</span>
-            <span class="section-badge" id="recentSignupsBadge"></span>
+          <div class="section-header">
+            <div class="section-title">
+              🆕 Recent Signups
+              <span class="pill-badge pill-indigo" id="recentSignupsBadge"></span>
+            </div>
           </div>
           <div id="recentSignupsList" class="recent-signups-list">
-            <div class="loading-text">Inapakia...</div>
+            <div class="loading-text">Loading...</div>
           </div>
         </div>
       </section>
 
-      <!-- ═══ MERCHANTS VIEW ═══ -->
+      <!-- ══ MERCHANTS ══════════════════════════════════════ -->
       <section id="view-merchants" class="view">
-        <header class="view-header">
-          <h2>Usimamizi wa Wateja</h2>
-          <p class="view-sub">Dhibiti maduka yote yanayotumia mfumo huu.</p>
-        </header>
+        <div class="view-header">
+          <div>
+            <h2>Merchant Management</h2>
+            <p class="view-sub">Manage all business accounts registered on the platform</p>
+          </div>
+        </div>
 
         <div class="table-container">
-          <div class="table-header">
-            <input type="text" class="search-box" id="merchantSearch" placeholder="🔍 Tafuta duka au email..." />
+          <div class="table-toolbar">
+            <input type="text" class="search-box" id="merchantSearch" placeholder="Search by name or email..." />
           </div>
           <table class="data-table" id="merchantsTable">
             <thead>
               <tr>
-                <th>Duka</th>
-                <th>Mawasiliano</th>
-                <th>Hali (Status)</th>
-                <th>Bidhaa / Mazungumzo / Oda</th>
-                <th>AI Matumizi</th>
-                <th>Usajili / Mwisho</th>
-                <th>Vitendo</th>
+                <th>Business</th>
+                <th>Contact</th>
+                <th>Status</th>
+                <th>Activity</th>
+                <th>AI Usage</th>
+                <th>Subscription</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="merchantsBody">
-              <tr><td colspan="7" style="text-align:center;">Inapakia...</td></tr>
+              <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:40px;">Loading merchants...</td></tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      <!-- ═══ WHATSAPP SESSIONS VIEW ═══ -->
+      <!-- ══ WHATSAPP SESSIONS ══════════════════════════════ -->
       <section id="view-whatsapp" class="view">
-        <header class="view-header">
+        <div class="view-header">
           <div>
-            <h2>WhatsApp Sessions Health</h2>
-            <p class="view-sub">Fuatilia na kudhibiti miunganisho ya WhatsApp kwa maduka yote</p>
+            <h2>WhatsApp Session Monitor</h2>
+            <p class="view-sub">Live connection status for all merchant WhatsApp instances</p>
           </div>
           <div class="header-actions">
-            <span id="sessionAutoRefreshBadge" class="auto-refresh-badge">🔄 Auto-refresh: 30s</span>
-            <button class="btn-outline btn-sm" id="refreshSessionsBtn" onclick="loadWhatsappSessions()">Refresh</button>
+            <span class="auto-refresh-badge">🔄 Auto-refreshing every 30s</span>
+            <button class="btn-outline btn-sm" onclick="loadWhatsappSessions()">Refresh Now</button>
           </div>
-        </header>
+        </div>
 
         <div class="table-container">
           <table class="data-table" id="whatsappTable">
             <thead>
               <tr>
-                <th>Duka</th>
-                <th>Namba Inayotumika</th>
-                <th>Hali (Status)</th>
-                <th>Bot</th>
-                <th>Vitendo</th>
+                <th>Merchant</th>
+                <th>WhatsApp Number</th>
+                <th>Connection Status</th>
+                <th>AI Bot</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="whatsappBody">
-              <tr><td colspan="5" style="text-align:center;">Inapakia...</td></tr>
+              <tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:40px;">Loading sessions...</td></tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      <!-- ═══ HEALTH VIEW ═══ -->
+      <!-- ══ SYSTEM HEALTH ══════════════════════════════════ -->
       <section id="view-health" class="view">
-        <header class="view-header">
+        <div class="view-header">
           <div>
-            <h2>❤️ Afya ya Mfumo (System Health)</h2>
-            <p class="view-sub">Hali ya seva, kumbukumbu, na muunganiko wa database kwa wakati halisi</p>
+            <h2>System Health</h2>
+            <p class="view-sub">Real-time server diagnostics, memory usage, and infrastructure status</p>
           </div>
           <div class="header-actions">
-            <span id="healthAutoRefreshBadge" class="auto-refresh-badge">🔄 Auto-refresh: 30s</span>
-            <button class="btn-outline btn-sm" id="refreshHealthBtn" onclick="loadHealth()">Refresh</button>
+            <span class="auto-refresh-badge">🔄 Auto-refreshing every 30s</span>
+            <button class="btn-outline btn-sm" onclick="loadHealth()">Refresh Now</button>
           </div>
-        </header>
+        </div>
 
         <div class="health-grid">
-          <!-- Server Card -->
+
+          <!-- Server -->
           <div class="health-card">
-            <div class="health-card-title">🖥️ Seva (Server)</div>
+            <div class="health-card-header">
+              <div class="health-icon" style="background:var(--indigo-glow);">🖥️</div>
+              <div class="health-card-title">Server Runtime</div>
+            </div>
             <div class="health-row">
               <span class="health-label">Uptime</span>
-              <span class="health-value glow-green-text" id="hUptime">—</span>
+              <span class="health-value ok" id="hUptime">—</span>
             </div>
             <div class="health-row">
-              <span class="health-label">Ilianza Saa</span>
-              <span class="health-value" id="hStartedAt">—</span>
+              <span class="health-label">Started at</span>
+              <span class="health-value mono" id="hStartedAt">—</span>
             </div>
             <div class="health-row">
-              <span class="health-label">Node.js Version</span>
-              <span class="health-value" id="hNodeVersion">—</span>
+              <span class="health-label">Node.js</span>
+              <span class="health-value mono" id="hNodeVersion">—</span>
             </div>
             <div class="health-row">
               <span class="health-label">Platform</span>
-              <span class="health-value" id="hPlatform">—</span>
+              <span class="health-value mono" id="hPlatform">—</span>
             </div>
           </div>
 
-          <!-- Memory Card -->
+          <!-- Memory -->
           <div class="health-card">
-            <div class="health-card-title">💾 Kumbukumbu (Memory)</div>
+            <div class="health-card-header">
+              <div class="health-icon" style="background:var(--sky-glow);">💾</div>
+              <div class="health-card-title">Memory Usage</div>
+            </div>
             <div class="health-row">
               <span class="health-label">Heap Used</span>
               <span class="health-value" id="hHeapUsed">—</span>
             </div>
             <div class="health-row">
-              <span class="health-label">Heap Total</span>
+              <span class="health-label">Heap Allocated</span>
               <span class="health-value" id="hHeapTotal">—</span>
             </div>
             <div class="health-row">
-              <span class="health-label">RSS (Total Process)</span>
+              <span class="health-label">RSS (Process)</span>
               <span class="health-value" id="hRss">—</span>
             </div>
-            <div class="health-row" style="margin-top:12px;">
-              <span class="health-label">Matumizi</span>
-              <div style="flex:1; margin-left:16px;">
-                <div class="memory-bar-bg">
-                  <div class="memory-bar-fill" id="hMemBar" style="width:0%"></div>
-                </div>
-                <span class="health-value" id="hMemPercent" style="font-size:12px; margin-top:4px; display:block;">—</span>
+            <div class="health-row" style="align-items:center; gap:12px;">
+              <span class="health-label" style="white-space:nowrap;">Utilization</span>
+              <div class="memory-bar-bg">
+                <div class="memory-bar-fill" id="hMemBar" style="width:0%"></div>
               </div>
+              <span class="health-value mono" id="hMemPercent" style="font-size:12px; white-space:nowrap;">—</span>
             </div>
           </div>
 
-          <!-- WhatsApp Status Card -->
+          <!-- WhatsApp -->
           <div class="health-card">
-            <div class="health-card-title">📱 WhatsApp Sessions</div>
+            <div class="health-card-header">
+              <div class="health-icon" style="background:var(--emerald-glow);">📱</div>
+              <div class="health-card-title">WhatsApp Connections</div>
+            </div>
             <div class="health-row">
-              <span class="health-label">Maduka Yote</span>
+              <span class="health-label">Total Merchants</span>
               <span class="health-value" id="hWaTotalMerchants">—</span>
             </div>
             <div class="health-row">
-              <span class="health-label">Zilizounganika</span>
-              <span class="health-value glow-green-text" id="hWaConnected">—</span>
+              <span class="health-label">Connected</span>
+              <span class="health-value ok" id="hWaConnected">—</span>
             </div>
             <div class="health-row">
-              <span class="health-label">Zilizojitenga</span>
-              <span class="health-value" id="hWaDisconnected" style="color:var(--sa-danger)">—</span>
+              <span class="health-label">Disconnected</span>
+              <span class="health-value error" id="hWaDisconnected">—</span>
             </div>
           </div>
 
-          <!-- Database Card -->
+          <!-- Database -->
           <div class="health-card">
-            <div class="health-card-title">🗄️ Database (PostgreSQL)</div>
+            <div class="health-card-header">
+              <div class="health-icon" style="background:var(--amber-glow);">🗄️</div>
+              <div class="health-card-title">Database (PostgreSQL)</div>
+            </div>
             <div class="health-row">
-              <span class="health-label">Hali</span>
+              <span class="health-label">Connection</span>
               <span class="health-value" id="hDbStatus">—</span>
             </div>
             <div class="health-row">
-              <span class="health-label">Ping (Kasi)</span>
-              <span class="health-value" id="hDbPing">—</span>
+              <span class="health-label">Ping Latency</span>
+              <span class="health-value mono" id="hDbPing">—</span>
             </div>
-            <div class="health-row" style="margin-top:12px;">
-              <span class="health-label">Mwisho wa Kuangalia</span>
-              <span class="health-value" id="hLastChecked" style="font-size:12px; color:var(--sa-text-muted)">—</span>
+            <div class="health-row" style="margin-top:8px;">
+              <span class="health-label">Last checked</span>
+              <span class="health-value mono text-muted" id="hLastChecked" style="font-size:12px;">—</span>
             </div>
           </div>
+
         </div>
       </section>
 
-      <!-- ═══ SETTINGS VIEW ═══ -->
+      <!-- ══ PLATFORM SETTINGS ══════════════════════════════ -->
       <section id="view-settings" class="view">
-        <header class="view-header">
-          <h2>Mipangilio ya Mfumo (Platform Settings)</h2>
-          <p class="view-sub">Dhibiti matangazo na default limits kwa wateja wote</p>
-        </header>
-
-        <div class="stat-grid" style="grid-template-columns: 1fr 1fr;">
-          <!-- Broadcast Settings -->
-          <div class="stat-card" style="flex-direction: column; align-items: stretch; gap:16px;">
-            <h3 style="margin:0; font-family:'Space Grotesk',sans-serif; color:var(--sa-primary)">📢 Tangazo la Mfumo (Broadcast)</h3>
-            <p style="font-size:13px; color:var(--sa-text-muted)">Ujumbe utakaotokea juu kwa wafanyabiashara wote</p>
-            
-            <div class="form-group" style="margin:0;">
-              <textarea id="broadcastMessage" style="width:100%; height:80px; background:var(--sa-bg); border:1px solid var(--sa-border); color:white; padding:12px; border-radius:8px; outline:none;" placeholder="Andika tangazo hapa..."></textarea>
-            </div>
-            
-            <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
-              <input type="checkbox" id="broadcastActive" style="width:18px; height:18px; accent-color:var(--sa-primary);" />
-              <label for="broadcastActive" style="font-size:14px;">Washa Tangazo hili (Make Active)</label>
-            </div>
-            <button class="btn-primary" id="saveBroadcastBtn" style="margin-top:auto;">Hifadhi Tangazo</button>
-          </div>
-
-          <!-- Limits Settings -->
-          <div class="stat-card" style="flex-direction: column; align-items: stretch; gap:16px;">
-            <h3 style="margin:0; font-family:'Space Grotesk',sans-serif; color:var(--sa-primary)">⚙️ Defaults za Usajili (Signups)</h3>
-            <p style="font-size:13px; color:var(--sa-text-muted)">Weka AI Limit wanayopewa wateja wapya wakijisajili</p>
-            
-            <div class="form-group" style="margin:0;">
-              <label>Default AI Limit (Tokens)</label>
-              <input type="number" id="defaultAiLimit" min="0" placeholder="Mfano: 50" style="width:100%; background:var(--sa-bg); border:1px solid var(--sa-border); color:white; padding:12px; border-radius:8px; outline:none;" />
-            </div>
-            <button class="btn-primary" id="saveLimitBtn" style="margin-top:auto;">Hifadhi Limit</button>
+        <div class="view-header">
+          <div>
+            <h2>Platform Settings</h2>
+            <p class="view-sub">Configure system-wide defaults, announcements, and platform behavior</p>
           </div>
         </div>
+
+        <div class="settings-grid">
+
+          <!-- Broadcast Card -->
+          <div class="settings-card">
+            <div class="settings-card-title">
+              <div class="title-icon">📢</div>
+              Platform Announcement
+            </div>
+            <p style="font-size:13px; color:var(--text-muted); margin-top:-6px;">
+              This message appears as a banner on all merchant dashboards when active.
+            </p>
+            <div class="form-group">
+              <label>Announcement Message</label>
+              <textarea id="broadcastMessage" rows="4" placeholder="Write your platform-wide announcement here..."></textarea>
+            </div>
+            <div class="toggle-row">
+              <div class="label-group">
+                <span class="label-title">Activate Announcement</span>
+                <span class="label-desc">Toggle visibility across all dashboards</span>
+              </div>
+              <label class="checkbox-toggle">
+                <input type="checkbox" id="broadcastActive" />
+                <span class="checkbox-toggle-slider"></span>
+              </label>
+            </div>
+            <button class="btn-primary" id="saveBroadcastBtn">Save Announcement</button>
+          </div>
+
+          <!-- Limits Card -->
+          <div class="settings-card">
+            <div class="settings-card-title">
+              <div class="title-icon">⚡</div>
+              New Account Defaults
+            </div>
+            <p style="font-size:13px; color:var(--text-muted); margin-top:-6px;">
+              Default AI token limit assigned to new merchants upon registration.
+            </p>
+            <div class="form-group">
+              <label>Default AI Token Limit</label>
+              <input type="number" id="defaultAiLimit" min="0" placeholder="e.g. 500" />
+            </div>
+            <button class="btn-primary" id="saveLimitBtn" style="margin-top:auto;">Save Default Limit</button>
+          </div>
+
+        </div>
       </section>
+
     </main>
   </div>
 
-  <!-- Action Modal (Suspend/Activate/Delete) -->
+  <!-- ══════════════════════════════════════════════════════
+       MODALS
+  ══════════════════════════════════════════════════════ -->
+
+  <!-- Confirm Action Modal -->
   <div id="actionModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="actionModalTitle">Thibitisha Hatua</h3>
+        <h3 id="actionModalTitle">Confirm Action</h3>
         <button class="btn-close" id="actionModalClose">×</button>
       </div>
       <div class="modal-body">
-        <p id="actionModalMsg">Je, una uhakika unataka kufanya hivi?</p>
+        <p id="actionModalMsg">Are you sure you want to proceed?</p>
       </div>
       <div class="modal-footer">
-        <button class="btn-outline" id="actionModalCancel">Ghairi</button>
-        <button class="btn-primary" id="actionModalBtn" style="width:auto;">Thibitisha</button>
+        <button class="btn-outline" id="actionModalCancel">Cancel</button>
+        <button class="btn-primary" id="actionModalBtn" style="width:auto; padding:10px 22px;">Confirm</button>
       </div>
     </div>
   </div>
 
-  <!-- Edit Limit Modal -->
+  <!-- Edit AI Limit Modal -->
   <div id="limitModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Badili Kikomo cha AI (Tokens)</h3>
+        <h3>Edit AI Token Limit</h3>
         <button class="btn-close" id="limitModalClose">×</button>
       </div>
       <div class="modal-body">
-        <p id="limitModalName" style="color:var(--sa-primary); margin-bottom: 12px; font-weight:600;"></p>
+        <p id="limitModalName" style="color:var(--indigo-bright); margin-bottom:18px; font-weight:700; font-size:15px;"></p>
         <div class="form-group">
-          <label>Kikomo (Limit)</label>
-          <input type="number" id="limitInput" min="0" placeholder="Mfano: 1000" />
+          <label>Token Limit</label>
+          <input type="number" id="limitInput" min="0" placeholder="e.g. 1000" />
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-outline" id="limitModalCancel">Ghairi</button>
-        <button class="btn-primary" id="limitModalBtn" style="width:auto;">Hifadhi</button>
+        <button class="btn-outline" id="limitModalCancel">Cancel</button>
+        <button class="btn-primary" id="limitModalBtn" style="width:auto; padding:10px 22px;">Save Changes</button>
       </div>
     </div>
   </div>
@@ -385,32 +453,33 @@
   <div id="subModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Ongeza Kifurushi (Subscription)</h3>
+        <h3>Manage Subscription</h3>
         <button class="btn-close" id="subModalClose">×</button>
       </div>
       <div class="modal-body">
-        <p id="subModalName" style="color:var(--sa-primary); margin-bottom: 12px; font-weight:600;"></p>
+        <p id="subModalName" style="color:var(--indigo-bright); margin-bottom:18px; font-weight:700; font-size:15px;"></p>
         <div class="form-group">
-          <label>Aina ya Kifurushi</label>
+          <label>Subscription Plan</label>
           <select id="subPlan">
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
             <option value="free_trial">Free Trial</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Ongeza Miezi Mingapi?</label>
-          <input type="number" id="subMonths" min="0" value="1" />
+        <div class="form-group" style="margin-top:14px;">
+          <label>Extend by (months)</label>
+          <input type="number" id="subMonths" min="0" value="1" placeholder="Number of months to add" />
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-outline" id="subModalCancel">Ghairi</button>
-        <button class="btn-primary" id="subModalBtn" style="width:auto;">Hifadhi (Save)</button>
+        <button class="btn-outline" id="subModalCancel">Cancel</button>
+        <button class="btn-primary" id="subModalBtn" style="width:auto; padding:10px 22px;">Apply Changes</button>
       </div>
     </div>
   </div>
 
-  <!-- Scripts -->
+  <div id="toast-container"></div>
+
   <script src="app.js"></script>
 </body>
 </html>
