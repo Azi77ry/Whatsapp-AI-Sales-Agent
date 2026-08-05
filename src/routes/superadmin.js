@@ -371,6 +371,23 @@ router.post("/merchants/:id/impersonate", wrap(async (req, res) => {
   res.json({ token, merchant: { id: merchant.id, businessName: merchant.businessName, email: merchant.email } });
 }));
 
+// ── PLATFORM SETTINGS ───────────────────────────────────────
+router.get("/settings", wrap(async (req, res) => {
+  const settings = getSettings();
+  res.json(settings);
+}));
+
+router.put("/settings", wrap(async (req, res) => {
+  const { broadcastMessage, broadcastActive, defaultAiLimit } = req.body;
+  const updates = {};
+  if (broadcastMessage !== undefined) updates.broadcastMessage = broadcastMessage;
+  if (broadcastActive !== undefined) updates.broadcastActive = broadcastActive;
+  if (defaultAiLimit !== undefined) updates.defaultAiLimit = defaultAiLimit;
+  
+  const updated = saveSettings(updates);
+  res.json({ message: "Mipangilio imehifadhiwa kikamilifu.", settings: updated });
+}));
+
 // ── WHATSAPP SESSIONS MANAGEMENT ─────────────────────────
 router.get("/whatsapp-sessions", wrap(async (req, res) => {
   // Pata wafanyabiashara wote
