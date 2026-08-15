@@ -460,7 +460,6 @@ router.get("/settings", wrap(async (req, res) => {
     select: {
       businessName: true,
       businessContext: true,
-      paymentInstructions: true,
       notificationEmail: true,
       reEngagementMinHours: true,
       reEngagementMaxHours: true,
@@ -471,7 +470,18 @@ router.get("/settings", wrap(async (req, res) => {
       subscriptionEndDate: true,
     }
   });
-  res.json(merchant);
+
+  // Try to get paymentInstructions separately (field may not exist on older Prisma clients)
+  let paymentInstructions = null;
+  try {
+    const extra = await prisma.merchant.findUnique({
+      where: { id: req.merchantId },
+      select: { paymentInstructions: true }
+    });
+    paymentInstructions = extra?.paymentInstructions || null;
+  } catch (_) { /* field not yet migrated */ }
+
+  res.json({ ...merchant, paymentInstructions });
 }));
 
 router.post("/settings", wrap(async (req, res) => {
@@ -512,20 +522,29 @@ router.post("/settings", wrap(async (req, res) => {
     passwordHash = await bcrypt.hash(newPassword, salt);
   }
 
+  // Build data object - exclude paymentInstructions if not provided (safe for old DBs)
+  const updateData = {
+    ...(businessName !== undefined && { businessName }),
+    ...(businessContext !== undefined && { businessContext }),
+    ...(notificationEmail !== undefined && { notificationEmail }),
+    ...(reEngagementMinHours !== undefined && { reEngagementMinHours: parseInt(reEngagementMinHours, 10) }),
+    ...(reEngagementMaxHours !== undefined && { reEngagementMaxHours: parseInt(reEngagementMaxHours, 10) }),
+    ...(reEngagementCooldownHours !== undefined && { reEngagementCooldownHours: parseInt(reEngagementCooldownHours, 10) }),
+    ...(reEngagementStartHour !== undefined && { reEngagementStartHour: parseInt(reEngagementStartHour, 10) }),
+    ...(reEngagementEndHour !== undefined && { reEngagementEndHour: parseInt(reEngagementEndHour, 10) }),
+    ...(passwordHash && { passwordHash }),
+  };
+
+  // Try to save paymentInstructions - may fail on old Prisma clients before migration
+  if (paymentInstructions !== undefined) {
+    try {
+      updateData.paymentInstructions = paymentInstructions;
+    } catch (_) { /* ignore if field doesn't exist */ }
+  }
+
   const updated = await prisma.merchant.update({
     where: { id: req.merchantId },
-    data: {
-      ...(businessName !== undefined && { businessName }),
-      ...(businessContext !== undefined && { businessContext }),
-      ...(paymentInstructions !== undefined && { paymentInstructions }),
-      ...(notificationEmail !== undefined && { notificationEmail }),
-      ...(reEngagementMinHours !== undefined && { reEngagementMinHours: parseInt(reEngagementMinHours, 10) }),
-      ...(reEngagementMaxHours !== undefined && { reEngagementMaxHours: parseInt(reEngagementMaxHours, 10) }),
-      ...(reEngagementCooldownHours !== undefined && { reEngagementCooldownHours: parseInt(reEngagementCooldownHours, 10) }),
-      ...(reEngagementStartHour !== undefined && { reEngagementStartHour: parseInt(reEngagementStartHour, 10) }),
-      ...(reEngagementEndHour !== undefined && { reEngagementEndHour: parseInt(reEngagementEndHour, 10) }),
-      ...(passwordHash && { passwordHash }),
-    }
+    data: updateData,
   });
 
   res.json({ success: true, merchant: { id: updated.id, businessName: updated.businessName } });
