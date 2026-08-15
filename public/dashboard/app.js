@@ -165,10 +165,10 @@ document.getElementById("srSaveBtn")?.addEventListener("click", async () => {
   await saveSpecialRequest();
 });
 
-document.getElementById("settingsForm")?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  await saveSettings();
-});
+// document.getElementById("settingsForm")?.addEventListener("submit", async (e) => {
+//   e.preventDefault();
+//   await saveSettings();
+// });
 
 async function handleLogin() {
   const email = document.getElementById("loginEmail").value.trim();
