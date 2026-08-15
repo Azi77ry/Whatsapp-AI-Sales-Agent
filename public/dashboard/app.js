@@ -1790,37 +1790,45 @@ document.getElementById("botToggleBtn")?.addEventListener("click", async () => {
 
 // ---- 7. MERCHANT SETTINGS PANEL ----
 async function loadSettings() {
-  const form = document.getElementById("settingsForm");
-  const statusEl = document.getElementById("settingsSaveStatus");
+  const billingPlanEl = document.getElementById("currentPlanDisplay");
+  const billingExpiryEl = document.getElementById("planExpiryDisplay");
 
-  statusEl.style.display = "block";
-  statusEl.style.color = "var(--text-muted)";
-  statusEl.textContent = t('loadingSettings');
+  if (billingPlanEl) billingPlanEl.textContent = "Inapakia...";
 
   try {
     const settings = await apiFetch("/settings");
 
-    document.getElementById("setBusinessName").value = settings.businessName || "";
-    document.getElementById("setBusinessContext").value = settings.businessContext || "";
-    document.getElementById("setPaymentInstructions").value = settings.paymentInstructions || "";
-    document.getElementById("setNudgeMin").value = settings.reEngagementMinHours ?? 12;
-    document.getElementById("setNudgeMax").value = settings.reEngagementMaxHours ?? 24;
-    document.getElementById("setNudgeCooldown").value = settings.reEngagementCooldownHours ?? 48;
-    document.getElementById("setNudgeStartHour").value = settings.reEngagementStartHour ?? 7;
-    document.getElementById("setNudgeEndHour").value = settings.reEngagementEndHour ?? 21;
+    // Business details
+    const bizNameEl = document.getElementById("setBusinessName");
+    const bizContextEl = document.getElementById("setBusinessContext");
+    const bizPaymentEl = document.getElementById("setPaymentInstructions");
+    if (bizNameEl) bizNameEl.value = settings.businessName || "";
+    if (bizContextEl) bizContextEl.value = settings.businessContext || "";
+    if (bizPaymentEl) bizPaymentEl.value = settings.paymentInstructions || "";
 
-    // Load local settings
-    const savedTheme = localStorage.getItem("merchant_theme") || "light";
-    const savedLang = localStorage.getItem("merchant_lang") || "sw";
-    document.getElementById("setTheme").value = savedTheme;
-    document.getElementById("setLanguage").value = savedLang;
-    
+    // Nudge settings
+    const nudgeMin = document.getElementById("setNudgeMin");
+    const nudgeMax = document.getElementById("setNudgeMax");
+    const nudgeCooldown = document.getElementById("setNudgeCooldown");
+    const nudgeStart = document.getElementById("setNudgeStartHour");
+    const nudgeEnd = document.getElementById("setNudgeEndHour");
+    if (nudgeMin) nudgeMin.value = settings.reEngagementMinHours ?? 12;
+    if (nudgeMax) nudgeMax.value = settings.reEngagementMaxHours ?? 24;
+    if (nudgeCooldown) nudgeCooldown.value = settings.reEngagementCooldownHours ?? 48;
+    if (nudgeStart) nudgeStart.value = settings.reEngagementStartHour ?? 7;
+    if (nudgeEnd) nudgeEnd.value = settings.reEngagementEndHour ?? 21;
+
     // Reset password section
-    document.getElementById("togglePasswordChangeBtn").checked = false;
-    document.getElementById("passwordChangeSection").classList.add("hidden");
-    document.getElementById("setVerifyPhone").value = "";
-    document.getElementById("setOldPassword").value = "";
-    document.getElementById("setNewPassword").value = "";
+    const togglePwBtn = document.getElementById("togglePasswordChangeBtn");
+    const pwSection = document.getElementById("passwordChangeSection");
+    if (togglePwBtn) togglePwBtn.checked = false;
+    if (pwSection) pwSection.classList.add("hidden");
+    const verifyPhoneEl = document.getElementById("setVerifyPhone");
+    const oldPwEl = document.getElementById("setOldPassword");
+    const newPwEl = document.getElementById("setNewPassword");
+    if (verifyPhoneEl) verifyPhoneEl.value = "";
+    if (oldPwEl) oldPwEl.value = "";
+    if (newPwEl) newPwEl.value = "";
 
     // Load Billing Info
     const planMap = {
@@ -1829,7 +1837,7 @@ async function loadSettings() {
       "yearly": "Kila Mwaka"
     };
     const currentPlanStr = settings.subscriptionPlan ? (planMap[settings.subscriptionPlan] || settings.subscriptionPlan) : "Majaribio Bure";
-    document.getElementById("currentPlanDisplay").textContent = currentPlanStr;
+    if (billingPlanEl) billingPlanEl.textContent = currentPlanStr;
     
     if (settings.subscriptionEndDate) {
       const expiryDate = new Date(settings.subscriptionEndDate);
@@ -1837,19 +1845,18 @@ async function loadSettings() {
       let dateStr = expiryDate.toLocaleDateString('sw-TZ', options);
       if (expiryDate < new Date()) {
         dateStr += " (Imeisha Muda!)";
-        document.getElementById("planExpiryDisplay").style.color = "var(--danger)";
+        if (billingExpiryEl) billingExpiryEl.style.color = "var(--danger)";
       } else {
-        document.getElementById("planExpiryDisplay").style.color = "var(--primary)";
+        if (billingExpiryEl) billingExpiryEl.style.color = "var(--primary)";
       }
-      document.getElementById("planExpiryDisplay").textContent = dateStr;
+      if (billingExpiryEl) billingExpiryEl.textContent = dateStr;
     } else {
-      document.getElementById("planExpiryDisplay").textContent = "--";
+      if (billingExpiryEl) billingExpiryEl.textContent = "Haijawekwa";
     }
 
-    statusEl.style.display = "none";
   } catch (err) {
-    statusEl.style.color = "var(--danger)";
-    statusEl.textContent = "⚠️ Kosa la kupakia: " + err.message;
+    console.error("loadSettings error:", err);
+    if (billingPlanEl) billingPlanEl.textContent = "Kosa la kupakia";
   }
 }
 
