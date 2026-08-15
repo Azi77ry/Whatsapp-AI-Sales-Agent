@@ -168,6 +168,12 @@ async function loadStats() {
     document.getElementById("statTotalOrders").textContent        = formatNumber(data.totalOrders);
     document.getElementById("statTotalAiUsage").textContent       = formatNumber(data.totalAiUsage);
     document.getElementById("statTotalMessages").textContent      = formatNumber(data.totalMessages);
+    if (document.getElementById("statWhatsappConnected")) {
+      document.getElementById("statWhatsappConnected").textContent = formatNumber(data.whatsappConnected || 0);
+    }
+    if (document.getElementById("statWhatsappDisconnected")) {
+      document.getElementById("statWhatsappDisconnected").textContent = formatNumber(data.whatsappDisconnected || 0);
+    }
   } catch (err) { console.error(err); }
 }
 
@@ -210,7 +216,14 @@ function renderMerchants(merchants) {
         <div style="font-size:13px">${escapeHtml(m.email)}</div>
         <div class="text-muted" style="font-size:12px; margin-top:2px;">${escapeHtml(m.phone || "No phone")}</div>
       </td>
-      <td>${statusBadge}</td>
+      <td>
+        <div style="margin-bottom: 4px;">${statusBadge}</div>
+        <div>
+          ${m.whatsappStatus === 'connected' 
+            ? '<span class="badge" style="background: rgba(16,185,129,0.1); color: var(--emerald); border-color: rgba(16,185,129,0.2);">📱 WA: Connected</span>' 
+            : '<span class="badge" style="background: rgba(245,158,11,0.1); color: var(--amber); border-color: rgba(245,158,11,0.2);">🔌 WA: Disconnected</span>'}
+        </div>
+      </td>
       <td style="font-size:13px;">
         🛍 ${m._count?.products ?? 0} &nbsp;
         💬 ${m._count?.conversations ?? 0} &nbsp;

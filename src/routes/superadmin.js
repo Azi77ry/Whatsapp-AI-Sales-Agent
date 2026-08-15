@@ -45,6 +45,20 @@ router.get("/stats", wrap(async (req, res) => {
     where: merchantFilter,
   });
 
+  // Calculate WhatsApp connection status
+  const merchants = await prisma.merchant.findMany({ where: { role: "merchant" }, select: { id: true } });
+  let whatsappConnected = 0;
+  let whatsappDisconnected = 0;
+  
+  for (const m of merchants) {
+    const status = getConnectionStatus(m.id);
+    if (status === "connected") {
+      whatsappConnected++;
+    } else {
+      whatsappDisconnected++;
+    }
+  }
+
   res.json({
     totalMerchants,
     activeMerchants,
@@ -53,6 +67,8 @@ router.get("/stats", wrap(async (req, res) => {
     totalOrders,
     totalMessages,
     totalAiUsage: aiUsageAgg._sum.aiUsage || 0,
+    whatsappConnected,
+    whatsappDisconnected,
   });
 }));
 
@@ -151,6 +167,7 @@ router.get("/merchants", wrap(async (req, res) => {
       ? m.subscriptionEndDate > now && m.subscriptionEndDate <= sevenDaysLater
       : false,
     subscriptionExpired: m.subscriptionEndDate ? m.subscriptionEndDate < now : false,
+    whatsappStatus: getConnectionStatus(m.id) === "connected" ? "connected" : "disconnected",
   }));
 
   res.json({ merchants: merchantsWithFlags });
