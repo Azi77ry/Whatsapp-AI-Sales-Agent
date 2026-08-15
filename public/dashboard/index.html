@@ -569,7 +569,7 @@
           <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--indigo); display: flex; align-items: center; gap: 8px;">
             🏢 <span data-i18n="setBizContextTitle">Business Context & Rules</span></h3>
           <p class="login-sub" style="margin-bottom: 20px;" data-i18n="setBizContextDesc">Mpe AI maelezo ya kina kuhusu duka lako, sheria, na jinsi ya kujibu.</p>
-          <form id="settingsForm">
+          <form id="bizSettingsForm">
             <div style="margin-bottom: 15px;">
               <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;" data-i18n="setBizNameLabel">Jina la Duka/Biashara</label>
               <input type="text" id="setBusinessName" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size: 14px;" />
@@ -578,11 +578,17 @@
               <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;" data-i18n="setBizInfoLabel">Maelezo ya Biashara (Context & Sheria)</label>
               <textarea id="setBusinessContext" rows="8" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size: 14px;" placeholder="Mfano: Sisi ni duka la nguo. Tunauza suti na viatu. Usafiri Dar ni bure..."></textarea>
             </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+              <span id="bizSaveStatus" style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
+              <button type="submit" class="btn-primary" style="padding: 10px 20px; font-weight: 600; border-radius: 6px; cursor: pointer;">💾 Hifadhi Maelezo</button>
+            </div>
+          </form>
 
-            <!-- SECURITY SECTION -->
-            <h3 style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
+          <!-- SECURITY SECTION -->
+          <h3 style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
               <span>🔒</span> Usalama wa Akaunti (Security)
             </h3>
+          <form id="securitySettingsForm">
             <div style="margin-bottom: 16px;">
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <input type="checkbox" id="togglePasswordChangeBtn" style="width: 18px; height: 18px; accent-color: var(--primary);" />
@@ -600,13 +606,18 @@
                   <input type="password" id="setOldPassword" placeholder="Neno siri unalotumia sasa" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px;" />
                 </div>
               </div>
-              <div class="form-group">
+              <div class="form-group" style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 500; margin-bottom: 8px;">Neno Jipya la Siri (New Password)</label>
                 <input type="password" id="setNewPassword" placeholder="Weka password mpya" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px;" />
               </div>
+              <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+                <span id="securitySaveStatus" style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
+                <button type="submit" class="btn-primary" style="padding: 10px 20px; font-weight: 600; border-radius: 6px; cursor: pointer;">💾 Badili Password</button>
+              </div>
             </div>
+          </form>
 
-            <!-- BROWSER NOTIFICATIONS -->
+          <!-- BROWSER NOTIFICATIONS -->
             <h3 style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
               <span>🔔</span> Taarifa (Push Notifications)
             </h3>
@@ -618,9 +629,10 @@
               <button type="button" id="enableNotificationsBtn" class="btn-primary" style="padding: 8px 16px;" data-i18n="supPushBtn">Washa Notifications</button>
             </div>
 
-            <h3 style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
-              <span>⏰</span> Ratiba ya Nudge (Abandoned Cart Nudging)
-            </h3>
+          <h3 style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <span>⏰</span> Ratiba ya Nudge (Abandoned Cart Nudging)
+          </h3>
+          <form id="nudgeSettingsForm">
             <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
               <div>
                 <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Muda wa chini (Masaa)</label>
@@ -652,8 +664,8 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center; margin-top: 20px;">
-              <span id="settingsSaveStatus" style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
-              <button type="submit" class="btn-primary" style="padding: 12px 24px; font-weight: 600; border-radius: 6px; cursor: pointer;" data-i18n="setSaveBtn">💾 Hifadhi Mipangilio</button>
+              <span id="nudgeSaveStatus" style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
+              <button type="submit" class="btn-primary" style="padding: 10px 20px; font-weight: 600; border-radius: 6px; cursor: pointer;">💾 Hifadhi Ratiba</button>
             </div>
           </form>
 

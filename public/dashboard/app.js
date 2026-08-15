@@ -1864,34 +1864,107 @@ document.getElementById("togglePasswordChangeBtn")?.addEventListener("change", (
   }
 });
 
-document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+document.getElementById("bizSettingsForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
-
-  const statusEl = document.getElementById("settingsSaveStatus");
+  const statusEl = document.getElementById("bizSaveStatus");
   const submitBtn = e.target.querySelector("button[type='submit']");
-
   statusEl.style.display = "block";
   statusEl.style.color = "var(--text-muted)";
-  statusEl.textContent = "⏳ Inahifadhi mipangilio...";
+  statusEl.textContent = "⏳ Inahifadhi maelezo...";
   submitBtn.disabled = true;
 
   const payload = {
     businessName: document.getElementById("setBusinessName").value.trim(),
     businessContext: document.getElementById("setBusinessContext").value.trim(),
-    reEngagementMinHours: parseInt(document.getElementById("setNudgeMin").value, 10),
-    reEngagementMaxHours: parseInt(document.getElementById("setNudgeMax").value, 10),
-    reEngagementCooldownHours: parseInt(document.getElementById("setNudgeCooldown").value, 10),
-    reEngagementStartHour: parseInt(document.getElementById("setNudgeStartHour").value, 10),
-    reEngagementEndHour: parseInt(document.getElementById("setNudgeEndHour").value, 10),
+  };
+
+  try {
+    const res = await apiFetch("/settings", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    if (res.success) {
+      document.getElementById("merchantBrandName").textContent = payload.businessName;
+      const infoRaw = localStorage.getItem("merchant_info");
+      if (infoRaw) {
+        const info = JSON.parse(infoRaw);
+        info.businessName = payload.businessName;
+        localStorage.setItem("merchant_info", JSON.stringify(info));
+      }
+      statusEl.style.color = "var(--success)";
+      statusEl.textContent = "✅ Maelezo yamehifadhiwa!";
+      setTimeout(() => { if (statusEl.textContent.includes("✅")) statusEl.style.display = "none"; }, 3000);
+    }
+  } catch (err) {
+    statusEl.style.color = "var(--danger)";
+    statusEl.textContent = "❌ Imetokea hitilafu.";
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+document.getElementById("securitySettingsForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const statusEl = document.getElementById("securitySaveStatus");
+  const submitBtn = e.target.querySelector("button[type='submit']");
+  statusEl.style.display = "block";
+  statusEl.style.color = "var(--text-muted)";
+  statusEl.textContent = "⏳ Inabadili password...";
+  submitBtn.disabled = true;
+
+  const payload = {
     oldPassword: document.getElementById("setOldPassword").value,
     verifyPhone: document.getElementById("setVerifyPhone").value,
     newPassword: document.getElementById("setNewPassword").value,
   };
 
-  const selectedTheme = document.getElementById("setTheme").value;
-  const selectedLang = document.getElementById("setLanguage").value;
+  if (!payload.oldPassword || !payload.verifyPhone || !payload.newPassword) {
+    statusEl.style.color = "var(--danger)";
+    statusEl.textContent = "⚠️ Jaza taarifa zote za usalama.";
+    submitBtn.disabled = false;
+    return;
+  }
 
-  // Validation
+  try {
+    const res = await apiFetch("/settings", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    if (res.success) {
+      document.getElementById("setOldPassword").value = "";
+      document.getElementById("setVerifyPhone").value = "";
+      document.getElementById("setNewPassword").value = "";
+      statusEl.style.color = "var(--success)";
+      statusEl.textContent = "✅ Password imebadilishwa!";
+      setTimeout(() => { if (statusEl.textContent.includes("✅")) statusEl.style.display = "none"; }, 3000);
+    }
+  } catch (err) {
+    statusEl.style.color = "var(--danger)";
+    statusEl.textContent = "❌ " + (err.message || "Imetokea hitilafu.");
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+document.getElementById("nudgeSettingsForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const statusEl = document.getElementById("nudgeSaveStatus");
+  const submitBtn = e.target.querySelector("button[type='submit']");
+  statusEl.style.display = "block";
+  statusEl.style.color = "var(--text-muted)";
+  statusEl.textContent = "⏳ Inahifadhi ratiba...";
+  submitBtn.disabled = true;
+
+  const payload = {
+    reEngagementMinHours: parseInt(document.getElementById("setNudgeMin").value, 10),
+    reEngagementMaxHours: parseInt(document.getElementById("setNudgeMax").value, 10),
+    reEngagementCooldownHours: parseInt(document.getElementById("setNudgeCooldown").value, 10),
+    reEngagementStartHour: parseInt(document.getElementById("setNudgeStartHour").value, 10),
+    reEngagementEndHour: parseInt(document.getElementById("setNudgeEndHour").value, 10),
+  };
+
   if (payload.reEngagementMinHours >= payload.reEngagementMaxHours) {
     statusEl.style.color = "var(--danger)";
     statusEl.textContent = "⚠️ Muda wa chini lazima uwe mdogo kuliko muda wa juu!";
@@ -1906,46 +1979,13 @@ document.getElementById("settingsForm").addEventListener("submit", async (e) => 
     });
 
     if (res.success) {
-      // Sasisha jina la chapa kwenye UI
-      document.getElementById("merchantBrandName").textContent = payload.businessName;
-
-      // Sasisha pia localStorage
-      const infoRaw = localStorage.getItem("merchant_info");
-      if (infoRaw) {
-        const info = JSON.parse(infoRaw);
-        info.businessName = payload.businessName;
-        localStorage.setItem("merchant_info", JSON.stringify(info));
-      }
-
-      // Save Theme and Language
-      localStorage.setItem("merchant_theme", selectedTheme);
-      localStorage.setItem("merchant_lang", selectedLang);
-
-      if (selectedTheme === "dark") {
-        document.body.classList.add("dark-theme");
-      } else {
-        document.body.classList.remove("dark-theme");
-      }
-
-      // Clear password fields
-      document.getElementById("setOldPassword").value = "";
-      document.getElementById("setVerifyPhone").value = "";
-      document.getElementById("setNewPassword").value = "";
-
       statusEl.style.color = "var(--success)";
-      statusEl.textContent = "✅ Mipangilio imehifadhiwa kwa mafanikio!";
-      setTimeout(() => {
-        if (statusEl.textContent.includes("✅")) {
-          statusEl.style.display = "none";
-        }
-      }, 3000);
-    } else {
-      statusEl.style.color = "var(--danger)";
-      statusEl.textContent = "⚠️ Imeshindwa kuhifadhi.";
+      statusEl.textContent = "✅ Ratiba imehifadhiwa!";
+      setTimeout(() => { if (statusEl.textContent.includes("✅")) statusEl.style.display = "none"; }, 3000);
     }
   } catch (err) {
     statusEl.style.color = "var(--danger)";
-    statusEl.textContent = "⚠️ Hitilafu: " + err.message;
+    statusEl.textContent = "❌ Imetokea hitilafu.";
   } finally {
     submitBtn.disabled = false;
   }
