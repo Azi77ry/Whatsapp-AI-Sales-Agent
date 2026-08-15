@@ -461,6 +461,7 @@ router.get("/settings", wrap(async (req, res) => {
       businessName: true,
       businessContext: true,
       notificationEmail: true,
+      createdAt: true,
       reEngagementMinHours: true,
       reEngagementMaxHours: true,
       reEngagementCooldownHours: true,

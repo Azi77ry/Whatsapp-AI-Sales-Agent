@@ -1832,26 +1832,36 @@ async function loadSettings() {
 
     // Load Billing Info
     const planMap = {
-      "free_trial": "Majaribio Bure (Siku 7)",
-      "monthly": "Kila Mwezi",
-      "yearly": "Kila Mwaka"
+      "free_trial": "🆓 Majaribio Bure (Siku 7)",
+      "monthly": "📆 Kila Mwezi",
+      "yearly": "🗓️ Kila Mwaka"
     };
-    const currentPlanStr = settings.subscriptionPlan ? (planMap[settings.subscriptionPlan] || settings.subscriptionPlan) : "Majaribio Bure";
+    const currentPlanStr = settings.subscriptionPlan
+      ? (planMap[settings.subscriptionPlan] || settings.subscriptionPlan)
+      : "🆓 Majaribio Bure";
     if (billingPlanEl) billingPlanEl.textContent = currentPlanStr;
-    
+
+    // Join date
+    const joinDateEl = document.getElementById("planJoinDateDisplay");
+    if (joinDateEl && settings.createdAt) {
+      const joinDate = new Date(settings.createdAt);
+      joinDateEl.textContent = joinDate.toLocaleDateString('sw-TZ', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    // Expiry date
     if (settings.subscriptionEndDate) {
       const expiryDate = new Date(settings.subscriptionEndDate);
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      let dateStr = expiryDate.toLocaleDateString('sw-TZ', options);
-      if (expiryDate < new Date()) {
-        dateStr += " (Imeisha Muda!)";
-        if (billingExpiryEl) billingExpiryEl.style.color = "var(--danger)";
-      } else {
-        if (billingExpiryEl) billingExpiryEl.style.color = "var(--primary)";
+      const isExpired = expiryDate < new Date();
+      const dateStr = expiryDate.toLocaleDateString('sw-TZ', { year: 'numeric', month: 'long', day: 'numeric' });
+      if (billingExpiryEl) {
+        billingExpiryEl.textContent = isExpired ? `${dateStr} ⚠️ Imeisha!` : dateStr;
+        billingExpiryEl.style.color = isExpired ? "var(--danger)" : "var(--primary)";
       }
-      if (billingExpiryEl) billingExpiryEl.textContent = dateStr;
     } else {
-      if (billingExpiryEl) billingExpiryEl.textContent = "Haijawekwa";
+      if (billingExpiryEl) {
+        billingExpiryEl.textContent = "Majaribio — Haijawekwa";
+        billingExpiryEl.style.color = "var(--text-muted)";
+      }
     }
 
   } catch (err) {

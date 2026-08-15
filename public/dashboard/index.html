@@ -680,11 +680,40 @@
               <span>💳</span> Bili na Kifurushi (Subscription)
             </h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-              <div class="stat-card" style="background: var(--bg); border: 1px solid var(--primary); display: block;">
-                <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Kifurushi Chako Sasa</div>
-                <div id="currentPlanDisplay" style="font-size: 24px; font-weight: 700; color: var(--text-main); text-transform: capitalize;">Inapakia...</div>
-                <div style="margin-top: 12px; font-size: 13px;">Kinaisha: <strong id="planExpiryDisplay" style="color: var(--primary);">--</strong></div>
+
+              <!-- Plan Details Card -->
+              <div class="stat-card" style="background: var(--bg); border: 1px solid var(--primary); display: block; padding: 24px;">
+                <div style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 16px;">Maelezo ya Akaunti</div>
+
+                <!-- Plan Type -->
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line);">
+                  <span style="font-size: 22px;">📦</span>
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">Aina ya Kifurushi</div>
+                    <div id="currentPlanDisplay" style="font-size: 18px; font-weight: 700; color: var(--primary);">Inapakia...</div>
+                  </div>
+                </div>
+
+                <!-- Join Date -->
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line);">
+                  <span style="font-size: 22px;">📅</span>
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">Siku ya Kujiunga</div>
+                    <div id="planJoinDateDisplay" style="font-size: 15px; font-weight: 600; color: var(--text-main);">--</div>
+                  </div>
+                </div>
+
+                <!-- Expiry Date -->
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0;">
+                  <span style="font-size: 22px;">⏳</span>
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">Kifurushi Kinaisha</div>
+                    <div id="planExpiryDisplay" style="font-size: 15px; font-weight: 600; color: var(--primary);">--</div>
+                  </div>
+                </div>
               </div>
+
+              <!-- Payment instructions card -->
               <div class="stat-card" style="background: var(--bg-color); display: block;">
                 <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Jinsi ya Kuongeza Muda / Kifurushi</div>
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">Tafadhali lipia kupitia namba zifuatazo kisha utume ujumbe WhatsApp wenye Jina la Duka lako ili kifurushi chako kiwashwe:</p>
