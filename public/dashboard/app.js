@@ -1802,6 +1802,7 @@ async function loadSettings() {
 
     document.getElementById("setBusinessName").value = settings.businessName || "";
     document.getElementById("setBusinessContext").value = settings.businessContext || "";
+    document.getElementById("setPaymentInstructions").value = settings.paymentInstructions || "";
     document.getElementById("setNudgeMin").value = settings.reEngagementMinHours ?? 12;
     document.getElementById("setNudgeMax").value = settings.reEngagementMaxHours ?? 24;
     document.getElementById("setNudgeCooldown").value = settings.reEngagementCooldownHours ?? 48;
@@ -1876,6 +1877,7 @@ document.getElementById("bizSettingsForm")?.addEventListener("submit", async (e)
   const payload = {
     businessName: document.getElementById("setBusinessName").value.trim(),
     businessContext: document.getElementById("setBusinessContext").value.trim(),
+    paymentInstructions: document.getElementById("setPaymentInstructions").value.trim(),
   };
 
   try {
