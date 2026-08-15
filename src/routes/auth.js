@@ -37,6 +37,15 @@ const forgotPasswordLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// 🛡️ Ulinzi: Rate Limiting kwa Reset Password (Kuzuia OTP Brute-force)
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // Dakika 15
+  max: 5, // Majaribio 5 tu ndani ya dakika 15 kwa kila IP
+  message: { error: "Umejaribu msimbo mara nyingi sana. Tafadhali subiri dakika 15." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Usajili (Register)
 router.post("/register", registerLimiter, async (req, res) => {
   const { businessName, email, phone, password } = req.body;
@@ -83,7 +92,7 @@ router.post("/register", registerLimiter, async (req, res) => {
     const token = jwt.sign(
       { merchantId: merchant.id, email: merchant.email, role: "merchant" },
       config.jwtSecret,
-      { expiresIn: "30d" }
+      { expiresIn: "7d" } // Imepunguzwa kutoka 30d kwa usalama zaidi
     );
 
     res.status(201).json({
@@ -133,7 +142,7 @@ router.post("/login", loginLimiter, async (req, res) => {
     const token = jwt.sign(
       { merchantId: merchant.id, email: merchant.email, role: merchant.role || "merchant" },
       config.jwtSecret,
-      { expiresIn: "30d" }
+      { expiresIn: "7d" } // Imepunguzwa kutoka 30d kwa usalama zaidi
     );
 
     res.json({
@@ -229,7 +238,7 @@ router.post("/forgot-password", forgotPasswordLimiter, async (req, res) => {
 });
 
 // ── SUBMIT CODE AND NEW PASSWORD (Reset Password) ─────────────────────────
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password", resetPasswordLimiter, async (req, res) => {
   const { emailOrPhone, otp, newPassword } = req.body;
 
   if (!emailOrPhone || !otp || !newPassword) {

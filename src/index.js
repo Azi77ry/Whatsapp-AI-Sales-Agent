@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const path = require("path");
 const rateLimit = require("express-rate-limit");
 const config = require("./config");
@@ -14,7 +15,20 @@ const { startSessionHealthMonitor } = require("./jobs/sessionHealthMonitor");
 
 const app = express();
 
-app.use(cors());
+// 🛡️ Security Headers
+app.use(helmet({
+  contentSecurityPolicy: false, // Tunazima CSP kwa muda ili isizuie scripts/styles za frontend yetu (inaweza kusanidiwa vizuri baadaye)
+  crossOriginEmbedderPolicy: false, // Ili kuruhusu picha kutoka nje kama zipo
+}));
+
+// 🛡️ CORS Control - Ruhusu tu domains zinazohitajika
+// Kwa sasa tunaruhusu zote (au unaweza kuweka domain yako halisi)
+app.use(cors({
+  origin: "*", // Badilisha hii kuwa ['https://yoursaas.com'] kwenye production
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json());
 
 // 🛡️ Global API rate limiter (kuzuia DDoS na abuse kwenye /api/*)
