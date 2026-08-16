@@ -2120,39 +2120,38 @@ function startNotificationPolling() {
   notificationPollInterval = setInterval(pollNotifications, 15000); // Check every 15s
 }
  
- / /   A z a m P a y   C h e c k o u t   L o g i c  
- d o c u m e n t . g e t E l e m e n t B y I d ( ' a z a m P a y C h e c k o u t F o r m ' ) ? . a d d E v e n t L i s t e n e r ( ' s u b m i t ' ,   a s y n c   ( e )   = >   {  
-     e . p r e v e n t D e f a u l t ( ) ;  
-     c o n s t   p r o v i d e r   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' c h e c k o u t P r o v i d e r ' ) . v a l u e ;  
-     c o n s t   p h o n e   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' c h e c k o u t P h o n e ' ) . v a l u e ;  
-     c o n s t   s t a t u s D i v   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' c h e c k o u t S t a t u s ' ) ;  
-     c o n s t   b t n   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' c h e c k o u t B t n ' ) ;  
-      
-     b t n . d i s a b l e d   =   t r u e ;  
-     b t n . t e x t C o n t e n t   =   ' I n a t u m a   o m b i . . . ' ;  
-     s t a t u s D i v . s t y l e . d i s p l a y   =   ' b l o c k ' ;  
-     s t a t u s D i v . t e x t C o n t e n t   =   ' T a f a d h a l i   s u b i r i . . . ' ;  
-     s t a t u s D i v . s t y l e . c o l o r   =   ' v a r ( - - t e x t - m a i n ) ' ;  
-      
-     t r y   {  
-         c o n s t   r e s   =   a w a i t   f e t c h ( ' / a p i / b i l l i n g / c h e c k o u t ' ,   {  
-             m e t h o d :   ' P O S T ' ,  
-             h e a d e r s :   {   ' C o n t e n t - T y p e ' :   ' a p p l i c a t i o n / j s o n ' ,   ' A u t h o r i z a t i o n ' :   ' B e a r e r   '   +   l o c a l S t o r a g e . g e t I t e m ( ' t o k e n ' )   } ,  
-             b o d y :   J S O N . s t r i n g i f y ( {   p h o n e N u m b e r :   p h o n e ,   p r o v i d e r :   p r o v i d e r   } )  
-         } ) ;  
-         c o n s t   d a t a   =   a w a i t   r e s . j s o n ( ) ;  
-         i f   ( r e s . o k )   {  
-             s t a t u s D i v . t e x t C o n t e n t   =   d a t a . m e s s a g e   | |   ' A n g a l i a   s i m u   y a k o   k u w e k a   P I N . ' ;  
-             s t a t u s D i v . s t y l e . c o l o r   =   ' v a r ( - - p r i m a r y ) ' ;  
-             b t n . t e x t C o n t e n t   =   ' I n a s u b i r i   M a l i p o . . . ' ;  
-         }   e l s e   {  
-             t h r o w   n e w   E r r o r ( d a t a . e r r o r   | |   ' M a l i p o   y a m e s h i n d i k a n a ' ) ;  
-         }  
-     }   c a t c h   ( e r r o r )   {  
-         s t a t u s D i v . t e x t C o n t e n t   =   e r r o r . m e s s a g e ;  
-         s t a t u s D i v . s t y l e . c o l o r   =   ' v a r ( - - d a n g e r ) ' ;  
-         b t n . d i s a b l e d   =   f a l s e ;  
-         b t n . t e x t C o n t e n t   =   ' J a r i b u   T e n a ' ;  
-     }  
- } ) ;  
- 
+// AzamPay Checkout Logic
+document.getElementById('azamPayCheckoutForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const provider = document.getElementById('checkoutProvider').value;
+  const phone = document.getElementById('checkoutPhone').value;
+  const statusDiv = document.getElementById('checkoutStatus');
+  const btn = document.getElementById('checkoutBtn');
+  
+  btn.disabled = true;
+  btn.textContent = 'Inatuma ombi...';
+  statusDiv.style.display = 'block';
+  statusDiv.textContent = 'Tafadhali subiri...';
+  statusDiv.style.color = 'var(--text-main)';
+  
+  try {
+    const res = await fetch('/api/billing/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+      body: JSON.stringify({ phoneNumber: phone, provider: provider })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      statusDiv.textContent = data.message || 'Angalia simu yako kuweka PIN.';
+      statusDiv.style.color = 'var(--primary)';
+      btn.textContent = 'Inasubiri Malipo...';
+    } else {
+      throw new Error(data.error || 'Malipo yameshindikana');
+    }
+  } catch (error) {
+    statusDiv.textContent = error.message;
+    statusDiv.style.color = 'var(--danger)';
+    btn.disabled = false;
+    btn.textContent = 'Jaribu Tena';
+  }
+});
