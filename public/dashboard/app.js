@@ -2137,7 +2137,7 @@ document.getElementById('azamPayCheckoutForm')?.addEventListener('submit', async
   try {
     const res = await fetch('/api/billing/checkout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('merchant_token') },
       body: JSON.stringify({ phoneNumber: phone, provider: provider })
     });
     const data = await res.json();
