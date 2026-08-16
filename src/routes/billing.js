@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../db/client");
 const azampay = require("../services/azampay");
-const { merchantAuth } = require("../middleware/auth");
+const authMiddleware = require("../middleware/auth");
 
 // Msaidizi mdogo wa try/catch
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -11,9 +11,9 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
  * 1. INITIATE CHECKOUT (Mfanyabiashara anaanza malipo)
  * Inahitaji Merchant Auth Token
  */
-router.post("/checkout", merchantAuth, wrap(async (req, res) => {
+router.post("/checkout", authMiddleware, wrap(async (req, res) => {
   const { phoneNumber, provider } = req.body;
-  const merchantId = req.merchant.id;
+  const merchantId = req.merchantId;
 
   if (!phoneNumber || !provider) {
     return res.status(400).json({ error: "Namba ya simu na mtandao vinahitajika." });
