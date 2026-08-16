@@ -2119,7 +2119,7 @@ function startNotificationPolling() {
   lastNotificationCheck = new Date(); // reset time to now
   notificationPollInterval = setInterval(pollNotifications, 15000); // Check every 15s
 }
- 
+
 // AzamPay Checkout Logic
 document.getElementById('azamPayCheckoutForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
