@@ -20,6 +20,11 @@ class AzamPayService {
    * Pata Bearer Token kwa ajili ya kufanya miamala
    */
   async getAuthToken() {
+    // Kama AzamPay wamekupa 'Token' ya moja kwa moja, itumie hiyo badala ya kuomba mpya.
+    if (process.env.AZAMPAY_TOKEN) {
+      return process.env.AZAMPAY_TOKEN;
+    }
+
     if (!this.clientId || !this.clientSecret) {
       throw new Error("AzamPay credentials hazijawekwa kwenye .env");
     }
