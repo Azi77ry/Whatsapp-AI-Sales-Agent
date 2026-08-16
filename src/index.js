@@ -8,6 +8,7 @@ const authRoutes = require("./routes/auth");
 const apiRoutes = require("./routes/api");
 const insightsRoutes = require("./routes/insights");
 const superadminRoutes = require("./routes/superadmin");
+const billingRoutes = require("./routes/billing");
 const { initializeAllSessions } = require("./whatsapp/manager");
 const { startReEngagementJob } = require("./jobs/reEngagement");
 const { startBackupJob } = require("./jobs/backupSession");
@@ -62,6 +63,7 @@ app.use("/api/auth", authRoutes); // Usajili na Kuingia (already has per-route r
 app.use("/api", globalApiLimiter, apiRoutes);
 app.use("/api/insights", insightsRoutes);
 app.use("/api/superadmin", superadminRoutes);
+app.use("/api/billing", billingRoutes); // Njia mpya ya malipo ya AzamPay
 
 app.listen(config.port, () => {
   console.log(`\n🌐 SaaS Admin dashboard: http://localhost:${config.port}`);

@@ -41,10 +41,11 @@ model Merchant {
   subscriptionEndDate DateTime? // Tarehe ya mwisho ya kifurushi
   isTrialUsed         Boolean   @default(false)       // Ikiwa ametumia ofa ya siku 7
 
-  products        Product[]
-  conversations   Conversation[]
-  orders          Order[]
-  specialRequests SpecialRequest[]
+  products            Product[]
+  conversations       Conversation[]
+  orders              Order[]
+  specialRequests     SpecialRequest[]
+  subscriptionPayments SubscriptionPayment[]
 
   @@map("merchants")
 }
@@ -156,4 +157,22 @@ model SpecialRequest {
   updatedAt      DateTime     @updatedAt
 
   @@map("special_requests")
+}
+
+// AzamPay Payments - Kutunza kumbukumbu za malipo ya wafanyabiashara
+model SubscriptionPayment {
+  id            Int      @id @default(autoincrement())
+  merchantId    Int
+  merchant      Merchant @relation(fields: [merchantId], references: [id])
+  amount        Float
+  phoneNumber   String
+  provider      String   // Mpesa, Tigo, Airtel, Halopesa
+  referenceId   String   @unique // Hii ndio tunaituma AzamPay (External ID)
+  azampayRef    String?  // Reference inayorudi kutoka AzamPay ikishalipwa
+  status        String   @default("pending") // pending, success, failed
+  message       String?  // Ujumbe wa makosa kama yapo
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("subscription_payments")
 }
