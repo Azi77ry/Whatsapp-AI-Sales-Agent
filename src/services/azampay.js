@@ -86,10 +86,17 @@ class AzamPayService {
         body: JSON.stringify(payload)
       });
 
-      const responseData = await response.json();
+      const responseText = await response.text();
+      let responseData;
+      try {
+        responseData = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        console.error("AzamPay Checkout Non-JSON Response:", responseText);
+        throw new Error("AzamPay imeshindwa kufanya malipo (Non-JSON response)");
+      }
 
       if (!response.ok) {
-        console.error("AzamPay Checkout Failed:", responseData);
+        console.error("AzamPay Checkout Failed:", responseData || responseText);
         throw new Error(responseData.message || "Malipo yameshindikana kwa mtandao");
       }
 
