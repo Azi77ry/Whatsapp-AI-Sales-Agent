@@ -2120,38 +2120,4 @@ function startNotificationPolling() {
   notificationPollInterval = setInterval(pollNotifications, 15000); // Check every 15s
 }
 
-// AzamPay Checkout Logic
-document.getElementById('azamPayCheckoutForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const provider = document.getElementById('checkoutProvider').value;
-  const phone = document.getElementById('checkoutPhone').value;
-  const statusDiv = document.getElementById('checkoutStatus');
-  const btn = document.getElementById('checkoutBtn');
-  
-  btn.disabled = true;
-  btn.textContent = 'Inatuma ombi...';
-  statusDiv.style.display = 'block';
-  statusDiv.textContent = 'Tafadhali subiri...';
-  statusDiv.style.color = 'var(--text-main)';
-  
-  try {
-    const res = await fetch('/api/billing/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('merchant_token') },
-      body: JSON.stringify({ phoneNumber: phone, provider: provider })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      statusDiv.textContent = data.message || 'Angalia simu yako kuweka PIN.';
-      statusDiv.style.color = 'var(--primary)';
-      btn.textContent = 'Inasubiri Malipo...';
-    } else {
-      throw new Error(data.error || 'Malipo yameshindikana');
-    }
-  } catch (error) {
-    statusDiv.textContent = error.message;
-    statusDiv.style.color = 'var(--danger)';
-    btn.disabled = false;
-    btn.textContent = 'Jaribu Tena';
-  }
-});
+

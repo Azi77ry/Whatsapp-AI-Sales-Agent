@@ -713,33 +713,21 @@
                 </div>
               </div>
 
-              <!-- AzamPay Checkout Card -->
+              <!-- Payment instructions card -->
               <div class="stat-card" style="background: var(--bg-color); display: block;">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                  <span style="color: var(--primary);">⚡</span> Lipia Kiotomatiki (AzamPay)
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Jinsi ya Kuongeza Muda / Kifurushi</div>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">Tafadhali lipia kupitia namba zifuatazo kisha utume ujumbe WhatsApp wenye Jina la Duka lako ili kifurushi chako kiwashwe:</p>
+                <div style="background: var(--surface); padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 16px;">
+                  <div style="margin-bottom: 8px;">
+                    <strong>Tigo Pesa:</strong> 0655 XXX XXX<br>
+                    <small>AZIZI IDDI MOHAMED</small>
+                  </div>
+                  <div style="margin-bottom: 8px;">
+                    <strong>M-Pesa:</strong> 0755 XXX XXX<br>
+                    <small>AZIZI IDDI MOHAMED</small>
+                  </div>
+                  <img src="/dashboard/images/mixx-qr.jpg" alt="Lipa kwa Kuscan" style="max-width: 160px; border-radius: 8px; border: 2px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
                 </div>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
-                  Tafadhali chagua mtandao na weka namba yako ya simu. Utaombwa kuweka PIN kwenye simu yako kulipia TZS 30,000 / mwezi.
-                </p>
-                <form id="azamPayCheckoutForm">
-                  <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px;">Mtandao (Provider)</label>
-                    <select id="checkoutProvider" required style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; background: var(--bg); color: var(--text);">
-                      <option value="Airtel">Airtel Money</option>
-                      <option value="Mpesa">M-Pesa</option>
-                      <option value="Tigo">Tigo Pesa</option>
-                      <option value="Halopesa">HaloPesa</option>
-                    </select>
-                  </div>
-                  <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px;">Namba ya Simu (Mfano: 075XXXXXXX)</label>
-                    <input type="text" id="checkoutPhone" required placeholder="075..." style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px;" />
-                  </div>
-                  <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <button type="submit" id="checkoutBtn" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 600; font-size: 14px;">Lipia TZS 30,000 Sasa</button>
-                    <div id="checkoutStatus" style="font-size: 13px; font-weight: 500; text-align: center; display: none;"></div>
-                  </div>
-                </form>
               </div>
             </div>
           </div>
