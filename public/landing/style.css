@@ -1,44 +1,43 @@
 /* Premium SaaS Landing Page Styles (2026 Edition) */
 
 :root {
-  /* Color Palette */
-  --bg-dark: #FFFFFF;
-  --bg-darker: #F8FAFC;
+  /* Color Palette - Modern SaaS Light Theme */
+  --bg-main: #FFFFFF;
+  --bg-light-green: #ECFDF5;
+  --bg-light-gray: #F8FAFC;
   
-  --surface: rgba(255, 255, 255, 0.8);
-  --surface-light: #F1F5F9;
-  --surface-dark: #E2E8F0;
+  --surface: #FFFFFF;
+  --surface-light: #F8FAFC;
+  --surface-dark: #F1F5F9;
   
-  --primary: #10B981; /* Vibrant modern green */
+  --primary: #10B981; /* Primary Green */
   --primary-hover: #059669;
-  --primary-light: rgba(16, 185, 129, 0.15);
+  --primary-light: #ECFDF5;
   
-  --accent: #14B8A6; /* Optional teal accent */
+  --text-main: #0F172A; /* Dark Navy for headings/main text */
+  --text-muted: #475569; /* Gray for small text, easily readable */
+
+  --glass-border: #E2E8F0; /* Light Gray borders */
+  --glass-border-hover: #CBD5E1;
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Lighter shadow */
   
   --success: #10B981;
-  --success-light: rgba(16, 185, 129, 0.15);
+  --success-light: #ECFDF5;
   
   --warning: #F59E0B;
-  --warning-light: rgba(245, 158, 11, 0.15);
+  --warning-light: #FEF3C7;
   
   --danger: #EF4444;
-  --danger-light: rgba(239, 68, 68, 0.15);
+  --danger-light: #FEE2E2;
   
   --info: #0EA5E9;
-  --info-light: rgba(14, 165, 233, 0.15);
+  --info-light: #E0F2FE;
   
   --purple: #8B5CF6;
-  --purple-light: rgba(139, 92, 246, 0.15);
+  --purple-light: #EDE9FE;
 
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-
-  --glass-border: rgba(0, 0, 0, 0.1);
-  --glass-border-hover: rgba(0, 0, 0, 0.2);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
-  
   --font-sans: 'Inter', sans-serif;
-  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Inter', sans-serif; /* Simplified to just Inter */
 }
 
 /* Reset & Base */
@@ -1014,22 +1013,20 @@ ul {
   padding: 3rem;
 }
 
-/* Scroll Animations */
+/* Scroll Animations - Disabled for faster perceived performance */
 .reveal-up {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+  opacity: 1;
+  transform: none;
 }
 
 .reveal-left {
-  opacity: 0;
-  transform: translateX(30px);
-  transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+  opacity: 1;
+  transform: none;
 }
 
 .reveal-up.active, .reveal-left.active {
   opacity: 1;
-  transform: translate(0);
+  transform: none;
 }
 
 .delay-100 { transition-delay: 0.1s; }
@@ -1060,3 +1057,5 @@ ul {
   mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
 }
+
+@media (max-width: 768px) { .btn { width: 100%; justify-content: center; } .hero-cta-group { flex-direction: column; } }
