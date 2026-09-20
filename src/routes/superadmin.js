@@ -135,7 +135,7 @@ router.get("/health", wrap(async (req, res) => {
 router.get("/merchants", wrap(async (req, res) => {
   const merchants = await prisma.merchant.findMany({
     where: { role: "merchant" },
-    orderBy: { createdAt: "desc" },
+    orderBy: { updatedAt: "desc" },
     select: {
       id: true,
       businessName: true,
