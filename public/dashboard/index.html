@@ -660,43 +660,88 @@
               <button type="button" id="enableNotificationsBtn" class="btn-primary" style="padding: 8px 16px;" data-i18n="supPushBtn">Washa Notifications</button>
             </div>
 
-          <h3 style="margin-top: 32px; margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
-            <span>⏰</span> Ratiba ya Nudge (Abandoned Cart Nudging)
+          <h3 style="margin-top: 32px; margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <span>🔔</span> Ukumbusho wa Wateja (Abandoned Cart Reminders)
           </h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6;">
+            Wakati mteja anaongea na AI lakini <strong>hajakamilisha ununuzi</strong>, AI itamtumia ujumbe wa ukumbusho baadaye ili kumrejesha. Weka muda unaofaa kwa biashara yako hapa chini.
+          </p>
+
+          <!-- Visual flow diagram -->
+          <div style="background: var(--bg-color); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 24px; display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: center;">
+            <div style="text-align: center; padding: 10px;">
+              <div style="font-size: 22px;">💬</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Mazungumzo<br>Yanaisha</div>
+            </div>
+            <div style="color: var(--text-muted); font-size: 20px; padding: 0 4px;">→</div>
+            <div style="text-align: center; background: var(--primary); color: #fff; border-radius: 8px; padding: 10px 14px; min-width: 90px;">
+              <div style="font-size: 13px; font-weight: 700;">⏳ Subiri</div>
+              <div style="font-size: 11px; margin-top: 2px; opacity: 0.85;">Masaa 12–24</div>
+            </div>
+            <div style="color: var(--text-muted); font-size: 20px; padding: 0 4px;">→</div>
+            <div style="text-align: center; padding: 10px;">
+              <div style="font-size: 22px;">📨</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Tuma<br>Ukumbusho</div>
+            </div>
+            <div style="color: var(--text-muted); font-size: 20px; padding: 0 4px;">→</div>
+            <div style="text-align: center; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; min-width: 90px;">
+              <div style="font-size: 13px; font-weight: 700;">🚫 Pumzika</div>
+              <div style="font-size: 11px; margin-top: 2px; color: var(--text-muted);">Masaa 48</div>
+            </div>
+            <div style="color: var(--text-muted); font-size: 20px; padding: 0 4px;">→</div>
+            <div style="text-align: center; padding: 10px;">
+              <div style="font-size: 22px;">🔁</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Rudia tena<br>kama bado</div>
+            </div>
+          </div>
+
           <form id="nudgeSettingsForm">
-            <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Muda wa chini (Masaa)</label>
-                <input type="number" id="setNudgeMin" min="1" required style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kusubiri kabla ya kumtumia mteja nudge (default: 12)</p>
+            <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+              <div style="background: var(--bg-color); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+                <label style="display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; color: var(--text-main);">
+                  ⏱️ Subiri angalau (Masaa)
+                </label>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px;">Muda wa chini kabla ya kutuma ukumbusho wa kwanza. <em>Kawaida: 12 masaa</em></p>
+                <input type="number" id="setNudgeMin" min="1" required style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" placeholder="12" />
               </div>
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Muda wa juu (Masaa)</label>
-                <input type="number" id="setNudgeMax" min="2" required style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kutopitiza masaa haya tangu chat ya mwisho (default: 24)</p>
+              <div style="background: var(--bg-color); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+                <label style="display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; color: var(--text-main);">
+                  ⏰ Subiri hadi (Masaa)
+                </label>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px;">Muda wa juu kabla ya kutuma ukumbusho. Kama hakuna jibu ndani ya muda huu, AI itatuma. <em>Kawaida: 24 masaa</em></p>
+                <input type="number" id="setNudgeMax" min="2" required style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" placeholder="24" />
               </div>
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Nudge Cooldown (Masaa)</label>
-                <input type="number" id="setNudgeCooldown" min="12" required style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kusubiri kabla ya kutuma nudge nyingine tena (default: 48)</p>
+              <div style="background: var(--bg-color); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+                <label style="display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; color: var(--text-main);">
+                  🚫 Pumzika kati ya ukumbusho (Masaa)
+                </label>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px;">Baada ya kutuma ukumbusho mmoja, subiri muda huu kabla ya kutuma mwingine. Hii inazuia spam. <em>Kawaida: 48 masaa</em></p>
+                <input type="number" id="setNudgeCooldown" min="12" required style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" placeholder="48" />
               </div>
             </div>
-            <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Saa ya kuanza kutuma (EAT)</label>
-                <input type="number" id="setNudgeStartHour" min="0" max="23" required style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">AI haitatuma usiku kabla ya saa hii (default: 7)</p>
-              </div>
-              <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px;">Saa ya mwisho kutuma (EAT)</label>
-                <input type="number" id="setNudgeEndHour" min="0" max="23" required style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px;" />
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">AI haitatuma baada ya saa hii (default: 21)</p>
+
+            <div style="background: var(--bg-color); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px;">
+              <label style="display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; color: var(--text-main);">
+                🌙 Muda wa Kutuma Ukumbusho (Saa za Kufanya Kazi)
+              </label>
+              <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 12px;">AI haitatuma ukumbusho usiku au mapema sana — bainisha saa zinazofaa kwa wateja wako. <em>Kawaida: 7:00 asubuhi hadi 21:00 jioni</em></p>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">🌅 Anza kutuma (Saa)</label>
+                  <input type="number" id="setNudgeStartHour" min="0" max="23" required style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" placeholder="7" />
+                  <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Weka namba kati ya 0–23. Mfano: 7 = saa 7 asubuhi</p>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">🌙 Simama kutuma (Saa)</label>
+                  <input type="number" id="setNudgeEndHour" min="0" max="23" required style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" placeholder="21" />
+                  <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Weka namba kati ya 0–23. Mfano: 21 = saa 9 jioni</p>
+                </div>
               </div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center; margin-top: 20px;">
               <span id="nudgeSaveStatus" style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
-              <button type="submit" class="btn-primary" style="padding: 10px 20px; font-weight: 600; border-radius: 6px; cursor: pointer;">💾 Hifadhi Ratiba</button>
+              <button type="submit" class="btn-primary" style="padding: 10px 20px; font-weight: 600; border-radius: 6px; cursor: pointer;">💾 Hifadhi Mipangilio ya Ukumbusho</button>
             </div>
           </form>
 
