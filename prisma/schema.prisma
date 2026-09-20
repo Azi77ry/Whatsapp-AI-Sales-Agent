@@ -167,7 +167,7 @@ model SpecialRequest {
 model SubscriptionPayment {
   id            Int      @id @default(autoincrement())
   merchantId    Int
-  merchant      Merchant @relation(fields: [merchantId], references: [id])
+  merchant      Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   amount        Float
   phoneNumber   String
   provider      String   // Mpesa, Tigo, Airtel, Halopesa
