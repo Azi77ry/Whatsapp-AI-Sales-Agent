@@ -47,6 +47,15 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
   res.status(500).json({ error: err.message || "Hitilafu ya seva imetokea. Jaribu tena." });
 });
 
+// ── PLATFORM BROADCAST (Public / Unprotected) ────────────
+router.get("/platform/broadcast", wrap(async (req, res) => {
+  const settings = getSettings();
+  res.json({
+    active: settings.broadcastActive,
+    message: settings.broadcastMessage
+  });
+}));
+
 // Linda endpoints zote za chini kwa kutumia JWT auth middleware
 router.use(authMiddleware);
 
@@ -605,15 +614,6 @@ router.delete("/settings/account", wrap(async (req, res) => {
   await prisma.merchant.delete({ where: { id: req.merchantId } });
   
   res.json({ success: true, message: "Akaunti imefutwa kikamilifu." });
-}));
-
-// ── PLATFORM BROADCAST ──────────────────────────────────
-router.get("/platform/broadcast", wrap(async (req, res) => {
-  const settings = getSettings();
-  res.json({
-    active: settings.broadcastActive,
-    message: settings.broadcastMessage
-  });
 }));
 
 module.exports = router;

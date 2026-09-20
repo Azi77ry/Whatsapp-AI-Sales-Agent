@@ -489,9 +489,15 @@ async function fetchPlatformBroadcast() {
     const res = await fetch("/api/platform/broadcast");
     if(res.ok) {
       const data = await res.json();
-      if(data.active && data.message) {
-        document.getElementById("sysBroadcastText").textContent = data.message;
-        document.getElementById("sysBroadcastBanner").style.display = "flex";
+      const banner = document.getElementById("sysBroadcastBanner");
+      const bannerText = document.getElementById("sysBroadcastText");
+      if(banner && bannerText) {
+        if(data.active && data.message && data.message.trim()) {
+          bannerText.textContent = data.message;
+          banner.style.display = "flex";
+        } else {
+          banner.style.display = "none";
+        }
       }
     }
   } catch(err) {
