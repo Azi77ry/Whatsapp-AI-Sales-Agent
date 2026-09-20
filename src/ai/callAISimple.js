@@ -37,6 +37,14 @@ async function callAISimple(prompt, { max_tokens = 1024, temperature = 0.4 } = {
           apiKey = config.qwenApiKey;
           baseURL = config.qwenBaseUrl;
           model = config.qwenModel;
+        } else if (provider.name === "deepseek") {
+          apiKey = config.deepseekApiKey;
+          baseURL = "https://api.deepseek.com";
+          model = config.deepseekModel || "deepseek-chat";
+        } else if (provider.name === "together") {
+          apiKey = config.togetherApiKey;
+          baseURL = "https://api.together.xyz/v1";
+          model = config.togetherModel;
         } else {
           continue;
         }
