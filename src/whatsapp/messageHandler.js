@@ -42,19 +42,25 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
     // Check if it's a local upload (handles both relative "/uploads/..." and full "http://domain/uploads/...")
     const uploadsIndex = rawImg.indexOf("/uploads/");
     if (uploadsIndex !== -1) {
-      const uploadRelPath = rawImg.substring(uploadsIndex);
+      const uploadRelPath = rawImg.substring(uploadsIndex); // e.g. /uploads/products/30/1234.jpg
       const path = require("path");
       const fs = require("fs");
-      const localPath = path.join(__dirname, "../../public", uploadRelPath);
+      // Tumia process.cwd() (root ya project) badala ya __dirname ili kuepuka tatizo la relative path
+      const localPath = path.resolve(process.cwd(), "public", uploadRelPath.replace(/^\//, ""));
+      console.log(`[IMG DEBUG] Inatafuta picha kwenye: ${localPath}`);
       if (fs.existsSync(localPath)) {
-        imageUrl = fs.readFileSync(localPath); // Baileys requires Buffer for local files!
+        imageUrl = fs.readFileSync(localPath); // Baileys inahitaji Buffer kwa faili za ndani!
+        console.log(`[IMG DEBUG] Picha imepatikana! Kutuma kama Buffer (${imageUrl.length} bytes)`);
       } else {
+        console.warn(`[IMG DEBUG] ⚠️ Picha haikupatikana kwenye: ${localPath} — inatumia URL badala yake`);
         imageUrl = { url: rawImg };
       }
     } else {
+      console.log(`[IMG DEBUG] URL ya nje inatumiwa: ${rawImg}`);
       imageUrl = { url: rawImg };
     }
   }
+
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {

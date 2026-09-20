@@ -442,17 +442,6 @@ router.post("/merchants/:id/reset-password", wrap(async (req, res) => {
   res.json({ message: `Password for "${target.businessName}" has been reset successfully.` });
 }));
 
-// ── Mipangilio ya Mfumo (Platform Settings) ──────────────────
-router.get("/settings", wrap(async (req, res) => {
-  res.json(getSettings());
-}));
-
-router.put("/settings", wrap(async (req, res) => {
-  const updated = saveSettings(req.body);
-  console.log(`⚙️ Super-Admin: Mipangilio imesasishwa.`);
-  res.json({ message: "Mipangilio imehifadhiwa.", settings: updated });
-}));
-
 // ── IMPERSONATE (LOGIN AS MERCHANT) ─────────────────────────
 router.post("/merchants/:id/impersonate", wrap(async (req, res) => {
   const id = parseInt(req.params.id, 10);
