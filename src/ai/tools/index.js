@@ -35,24 +35,25 @@ const toolDefinitions = [
   {
     name: "create_order",
     description:
-      "Tengeneza oda mpya kwa bidhaa ILIYOPO kwenye database (ina stock). Tumia hii tu kama search_products ilirudisha bidhaa yenye inStock: true. Kama bidhaa haipo DB au haina stock, tumia badala yake 'create_special_request'.",
+      "Tengeneza oda mpya kwa bidhaa/vifurushi/bando. Inafanya kazi kwa bidhaa zilizopo kwenye database AU huduma/bando za mtandao zilizoelezwa kwenye [MERCHANT SPECIFIC INSTRUCTIONS].",
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
         customerName: { type: SchemaType.STRING, description: "Jina la mteja" },
-        productName: { type: SchemaType.STRING, description: "Jina la bidhaa anayonunua" },
+        productName: { type: SchemaType.STRING, description: "Jina la bidhaa au kifurushi/bando analonunua" },
         quantity: { type: SchemaType.INTEGER, description: "Idadi anayotaka, default 1" },
+        unitPrice: { type: SchemaType.NUMBER, description: "Bei ya bidhaa/kifurushi kwa TZS (mfano: 5000, 10000)" },
         color: { type: SchemaType.STRING, description: "Rangi aliyochagua, kama ipo" },
         size: { type: SchemaType.STRING, description: "Size aliyochagua, kama ipo" },
         deliveryType: {
           type: SchemaType.STRING,
           format: "enum",
-          enum: ["delivery", "pickup"],
-          description: "Je, mteja anataka delivery au pickup",
+          enum: ["delivery", "pickup", "digital"],
+          description: "Aina ya oda: 'digital' kwa bando za mtandao/huduma za mtandaoni, 'delivery' kwa kuletewa mzigo, au 'pickup' kwa kuchukua dukani",
         },
         address: {
           type: SchemaType.STRING,
-          description: "Anuani ya delivery - lazima ijazwe kama deliveryType ni 'delivery'",
+          description: "Anuani ya delivery (kwa bidhaa za physical) AU namba ya simu ya kupokea bando (kwa huduma za kidijitali)",
         },
       },
       required: ["customerName", "productName", "deliveryType"],
@@ -129,7 +130,7 @@ async function searchProducts({ query, merchantId = 1 }) {
   if (products.length === 0) {
     return {
       found: false,
-      message: `Hakuna bidhaa inayofanana na "${query}" kwenye stock yetu. Tumia create_special_request kukusanya ombi la mteja.`,
+      message: `Hakuna bidhaa inayofanana na "${query}" kwenye database. Kama huduma au bando za aina hii zimeorodheshwa kwenye [MERCHANT SPECIFIC INSTRUCTIONS], zitaje na uzipendekeze kwa mteja moja kwa moja.`,
     };
   }
 
@@ -164,9 +165,10 @@ async function createOrder({
   customerName,
   productName,
   quantity = 1,
+  unitPrice,
   color,
   size,
-  deliveryType,
+  deliveryType = "digital",
   address,
   conversationId,
   customerPhone,
@@ -195,12 +197,12 @@ async function createOrder({
     };
   }
 
-  // Tafuta product kwenye DB
+  // Tafuta product kwenye DB (kama ipo)
   const product = await prisma.product.findFirst({
     where: { merchantId: mId, name: { contains: productName }, isActive: true },
   });
 
-  if (product && product.stock < quantity) {
+  if (product && product.stock > 0 && product.stock < quantity) {
     return {
       success: false,
       message: `Stock ya "${product.name}" imebaki ${product.stock} tu. Fikiria kutumia create_special_request badala yake.`,
@@ -210,9 +212,11 @@ async function createOrder({
   if (deliveryType === "delivery" && !address) {
     return {
       success: false,
-      message: "Address inahitajika kwa delivery. Muulize mteja anuani yake kwanza.",
+      message: "Address inahitajika kwa delivery ya mzigo wa kushikika. Kama ni huduma/bando la kidijitali tumia deliveryType: 'digital'.",
     };
   }
+
+  const finalUnitPrice = product ? product.price : (unitPrice ? parseFloat(unitPrice) : null);
 
   const order = await prisma.order.create({
     data: {
@@ -222,18 +226,18 @@ async function createOrder({
       customerPhone,
       productId: product ? product.id : null,
       productName: product ? product.name : productName,
-      quantity,
+      quantity: parseInt(quantity, 10) || 1,
       color: color || null,
       size: size || null,
-      deliveryType,
-      address: address || null,
-      unitPrice: product ? product.price : null,
+      deliveryType: deliveryType || "digital",
+      address: address || (deliveryType === "digital" ? "Huduma ya Kidijitali / Bando" : null),
+      unitPrice: finalUnitPrice,
       status: "pending",
     },
   });
 
-  // Punguza stock kama product ipo
-  if (product) {
+  // Punguza stock kama product ipo DB
+  if (product && product.stock > 0) {
     await prisma.product.update({
       where: { id: product.id },
       data: { stock: { decrement: quantity } },
@@ -253,7 +257,7 @@ async function createOrder({
   return {
     success: true,
     orderId: order.id,
-    message: `Oda #${order.id} imehifadhiwa kikamilifu.`,
+    message: `Oda #${order.id} ya "${order.productName}" imehifadhiwa kikamilifu. Mpe mteja maelezo ya malipo.`,
   };
 }
 
@@ -263,7 +267,7 @@ async function createSpecialRequest({
   quantity = 1,
   color,
   size,
-  deliveryType,
+  deliveryType = "digital",
   address,
   notes,
   estimatedPrice,
@@ -276,7 +280,7 @@ async function createSpecialRequest({
   if (deliveryType === "delivery" && !address) {
     return {
       success: false,
-      message: "Address inahitajika kwa delivery. Muulize mteja anuani yake kwanza.",
+      message: "Address inahitajika kwa delivery. Kama ni huduma au digital weka deliveryType: 'digital'.",
     };
   }
 

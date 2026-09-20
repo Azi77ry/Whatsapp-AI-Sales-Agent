@@ -1116,7 +1116,7 @@ async function loadOrders() {
       <td>${escapeHtml(o.customerName)}</td>
       <td>${escapeHtml(o.productName)}</td>
       <td class="mono">${o.quantity}</td>
-      <td>${o.deliveryType === "delivery" ? "Delivery" : "Pickup"} ${o.address ? "— " + escapeHtml(o.address) : ""}</td>
+      <td>${o.deliveryType === "delivery" ? "🚚 Delivery" : (o.deliveryType === "digital" ? "🌐 Digital/Bando" : "🏪 Pickup")} ${o.address ? "— " + escapeHtml(o.address) : ""}</td>
       <td>
         <select onchange="updateOrderStatus(${o.id}, this.value)" class="badge badge-${o.status}">
           <option value="pending" ${o.status === "pending" ? "selected" : ""}>${t('optPending')}</option>
