@@ -242,6 +242,9 @@ function renderMerchants(merchants) {
         <button class="btn-icon" title="Login As (Impersonate)" onclick="impersonateMerchant(${m.id})">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
+        <button class="btn-icon" title="Edit Profile Details" onclick="openEditDetailsModal(${m.id},'${escapeHtml(m.businessName)}','${escapeHtml(m.email)}','${escapeHtml(m.phone || '')}')" style="color: var(--sky-bright, #38bdf8);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
         <button class="btn-icon" title="Reset Password" onclick="openResetPasswordModal(${m.id},'${escapeHtml(m.businessName)}','${escapeHtml(m.email)}')" style="color: var(--indigo);">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </button>
@@ -445,6 +448,42 @@ document.getElementById("subModalBtn").onclick    = async () => {
     loadMerchants();
   } catch (err) { showToast(err.message, "error"); }
   finally { btn.disabled = false; btn.textContent = "Apply Changes"; }
+};
+
+// ── Edit Details Modal ───────────────────────────────────────────────────────
+const editDetailsModal = document.getElementById("editDetailsModal");
+let editDetailsTarget = null;
+
+function openEditDetailsModal(id, name, email, phone) {
+  editDetailsTarget = { id };
+  document.getElementById("editBusinessNameInput").value = name || "";
+  document.getElementById("editEmailInput").value = email || "";
+  document.getElementById("editPhoneInput").value = phone || "";
+  editDetailsModal.classList.add("active");
+}
+document.getElementById("editDetailsModalClose").onclick  = () => editDetailsModal.classList.remove("active");
+document.getElementById("editDetailsModalCancel").onclick = () => editDetailsModal.classList.remove("active");
+document.getElementById("editDetailsModalBtn").onclick    = async () => {
+  if (!editDetailsTarget) return;
+  const businessName = document.getElementById("editBusinessNameInput").value.trim();
+  const email        = document.getElementById("editEmailInput").value.trim();
+  const phone        = document.getElementById("editPhoneInput").value.trim();
+
+  if (!businessName || businessName.length < 2) return showToast("Business name must be at least 2 characters", "error");
+  if (!email || !email.includes("@")) return showToast("Enter a valid email address", "error");
+
+  const btn = document.getElementById("editDetailsModalBtn");
+  btn.disabled = true; btn.textContent = "Saving...";
+  try {
+    await saFetch(`/merchants/${editDetailsTarget.id}/details`, {
+      method: "PUT",
+      body: JSON.stringify({ businessName, email, phone })
+    });
+    showToast(`Profile details for "${businessName}" updated successfully`, "success");
+    editDetailsModal.classList.remove("active");
+    loadMerchants();
+  } catch (err) { showToast(err.message, "error"); }
+  finally { btn.disabled = false; btn.textContent = "Save Changes"; }
 };
 
 // ── Reset Password Modal ──────────────────────────────────────────────────────

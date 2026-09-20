@@ -274,6 +274,64 @@ router.put("/merchants/:id/subscription", wrap(async (req, res) => {
   });
 }));
 
+// ── EDIT MERCHANT DETAILS (Business Name, Email, Phone) ─────
+router.put("/merchants/:id/details", wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { businessName, email, phone } = req.body;
+
+  const target = await prisma.merchant.findUnique({ where: { id } });
+  if (!target) {
+    return res.status(404).json({ error: "Mfanyabiashara hajapatikana." });
+  }
+
+  if (!businessName || businessName.trim().length < 2) {
+    return res.status(400).json({ error: "Jina la biashara ni lazima liwe na angalau herufi 2." });
+  }
+
+  if (!email || !email.includes("@")) {
+    return res.status(400).json({ error: "Barua pepe si sahihi." });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanPhone = phone && phone.trim() ? phone.trim() : null;
+
+  // Check email uniqueness
+  const existingEmail = await prisma.merchant.findFirst({
+    where: {
+      email: cleanEmail,
+      NOT: { id }
+    }
+  });
+  if (existingEmail) {
+    return res.status(400).json({ error: "Barua pepe hii tayari inatumiwa na mfanyabiashara mwingine." });
+  }
+
+  // Check phone uniqueness
+  if (cleanPhone) {
+    const existingPhone = await prisma.merchant.findFirst({
+      where: {
+        phone: cleanPhone,
+        NOT: { id }
+      }
+    });
+    if (existingPhone) {
+      return res.status(400).json({ error: "Namba hii ya simu tayari inatumiwa na mfanyabiashara mwingine." });
+    }
+  }
+
+  const updated = await prisma.merchant.update({
+    where: { id },
+    data: {
+      businessName: businessName.trim(),
+      email: cleanEmail,
+      phone: cleanPhone
+    }
+  });
+
+  console.log(`✏️ Super-Admin: Taarifa za akaunti #${id} ("${updated.businessName}") zimesasishwa.`);
+  res.json({ message: "Taarifa zimesasishwa kikamilifu.", merchant: updated });
+}));
+
 // ── BADILISHA KIKOMO CHA AI (AI Limit) ──────────────────────
 router.put("/merchants/:id/ai-limit", wrap(async (req, res) => {
   const id = parseInt(req.params.id, 10);
