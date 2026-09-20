@@ -36,21 +36,23 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
   let cleanText = replyText;
   const imageMatch = replyText.match(/\[IMAGE:\s*(.+?)\]/i);
   if (imageMatch) {
-    imageUrl = imageMatch[1].trim();
+    const rawImg = imageMatch[1].trim();
     cleanText = replyText.replace(imageMatch[0], "").trim();
     
-    // Check if it's a local upload
-    if (imageUrl.startsWith("/uploads/")) {
+    // Check if it's a local upload (handles both relative "/uploads/..." and full "http://domain/uploads/...")
+    const uploadsIndex = rawImg.indexOf("/uploads/");
+    if (uploadsIndex !== -1) {
+      const uploadRelPath = rawImg.substring(uploadsIndex);
       const path = require("path");
       const fs = require("fs");
-      const localPath = path.join(__dirname, "../../public", imageUrl);
+      const localPath = path.join(__dirname, "../../public", uploadRelPath);
       if (fs.existsSync(localPath)) {
-        imageUrl = { url: localPath }; // Baileys reads from local path
+        imageUrl = { url: localPath }; // Baileys reads directly from local file!
       } else {
-        imageUrl = { url: imageUrl };
+        imageUrl = { url: rawImg };
       }
     } else {
-      imageUrl = { url: imageUrl };
+      imageUrl = { url: rawImg };
     }
   }
 
