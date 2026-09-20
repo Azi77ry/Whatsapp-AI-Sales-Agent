@@ -51,8 +51,8 @@ router.get("/stats", wrap(async (req, res) => {
   let whatsappDisconnected = 0;
   
   for (const m of merchants) {
-    const status = getConnectionStatus(m.id);
-    if (status === "connected") {
+    const connObj = getConnectionStatus(m.id);
+    if (connObj?.status === "connected" || connObj?.status === "open") {
       whatsappConnected++;
     } else {
       whatsappDisconnected++;
@@ -161,14 +161,18 @@ router.get("/merchants", wrap(async (req, res) => {
   const now = new Date();
   const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  const merchantsWithFlags = merchants.map(m => ({
-    ...m,
-    expiringSoon: m.subscriptionEndDate
-      ? m.subscriptionEndDate > now && m.subscriptionEndDate <= sevenDaysLater
-      : false,
-    subscriptionExpired: m.subscriptionEndDate ? m.subscriptionEndDate < now : false,
-    whatsappStatus: getConnectionStatus(m.id) === "connected" ? "connected" : "disconnected",
-  }));
+  const merchantsWithFlags = merchants.map(m => {
+    const connObj = getConnectionStatus(m.id);
+    const isConn = connObj?.status === "connected" || connObj?.status === "open";
+    return {
+      ...m,
+      expiringSoon: m.subscriptionEndDate
+        ? m.subscriptionEndDate > now && m.subscriptionEndDate <= sevenDaysLater
+        : false,
+      subscriptionExpired: m.subscriptionEndDate ? m.subscriptionEndDate < now : false,
+      whatsappStatus: isConn ? "connected" : "disconnected",
+    };
+  });
 
   res.json({ merchants: merchantsWithFlags });
 }));

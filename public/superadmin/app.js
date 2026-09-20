@@ -599,8 +599,8 @@ document.getElementById("saveLimitBtn").addEventListener("click", async () => {
 async function impersonateMerchant(id) {
   try {
     const data = await saFetch(`/merchants/${id}/impersonate`, { method:"POST" });
-    showToast(`Initiating dashboard for ${data.merchant.businessName}...`, "success");
-    localStorage.setItem("token", data.token); // merchant token
+    showToast(`Opening merchant dashboard for "${data.merchant.businessName}"...`, "success");
+    localStorage.setItem("merchant_token", data.token);
     window.open("/dashboard/", "_blank");
   } catch (err) { showToast(err.message, "error"); }
 }
