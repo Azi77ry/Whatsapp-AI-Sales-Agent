@@ -333,8 +333,24 @@ function openActionModal(action, id, name) {
     title.textContent = "Activate Account";
     msg.textContent   = `Are you sure you want to reactivate "${name}"?`;
   } else if (action === "delete") {
-    title.textContent = "Permanently Delete Account";
-    msg.innerHTML     = `⚠️ You are about to permanently delete "${name}" and all associated data (orders, messages, etc).<br><br><b>This action cannot be undone!</b>`;
+    title.textContent = "⚠️ Permanently Delete Account";
+    msg.innerHTML = `
+      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+        <p style="font-size: 13px; font-weight: 600; color: var(--rose); margin: 0 0 8px 0;">The following will be permanently deleted for <strong>"${name}"</strong>:</p>
+        <ul style="margin: 0; padding-left: 18px; font-size: 13px; line-height: 2; color: var(--text-muted);">
+          <li>All <strong>products</strong> and images</li>
+          <li>All <strong>orders</strong> and payment records</li>
+          <li>All <strong>conversations</strong> and messages</li>
+          <li>Their <strong>WhatsApp session</strong></li>
+          <li>The <strong>account</strong> entirely</li>
+        </ul>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px 0;">Type the business name to confirm: <strong style="color:var(--text-main);">${name}</strong></p>
+      <input id="deleteConfirmInput" type="text" placeholder='Type "${name}" to confirm'
+        style="width:100%; padding:10px 12px; border:1px solid var(--rose); border-radius:8px; background:var(--bg); color:var(--text); font-size:14px; box-sizing:border-box;" />
+    `;
+    document.getElementById("actionModalBtn").textContent = "🗑️ Delete Permanently";
+    document.getElementById("actionModalBtn").style.background = "var(--rose)";
   }
   actionModal.classList.add("active");
 }
@@ -344,12 +360,17 @@ document.getElementById("actionModalCancel").onclick = () => actionModal.classLi
 document.getElementById("actionModalBtn").onclick    = async () => {
   if (!pendingAction) return;
   const btn = document.getElementById("actionModalBtn");
-  
+
+  // For delete: require typing the business name to confirm
   if (pendingAction.action === "delete") {
-    btn.classList.add("btn-danger");
-    btn.classList.remove("btn-primary");
+    const confirmInput = document.getElementById("deleteConfirmInput");
+    const expectedName = allMerchants.find(m => m.id === pendingAction.id)?.businessName || "";
+    if (!confirmInput || confirmInput.value.trim() !== expectedName.trim()) {
+      showToast("Business name does not match. Please type it exactly to confirm.", "error");
+      return;
+    }
   }
-  
+
   btn.disabled = true; btn.textContent = "Processing...";
   try {
     const { action, id } = pendingAction;

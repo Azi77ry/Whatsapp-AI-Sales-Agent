@@ -796,15 +796,15 @@
           </div>
 
           <!-- DANGER ZONE -->
-          <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--danger);">
-            <h3 style="margin-top: 0; margin-bottom: 8px; color: var(--danger); display: flex; align-items: center; gap: 8px;" data-i18n="setDelTitle">
-              <span>⚠️</span> Futa Akaunti / Delete Account
+          <div style="margin-top: 40px; padding: 24px; border: 1px solid var(--danger); border-radius: 10px; background: rgba(239,68,68,0.04);">
+            <h3 style="margin-top: 0; margin-bottom: 6px; color: var(--danger); display: flex; align-items: center; gap: 8px;">
+              <span>⚠️</span> Danger Zone
             </h3>
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;" data-i18n="setDelDesc">
-              Onyo: Ukifuta akaunti yako, data zako zote (bidhaa, oda, na mazungumzo) zitafutwa kabisa na hazitaweza kurudishwa tena.
+              Once you delete your account, all your data will be permanently removed and cannot be recovered.
             </p>
-            <button type="button" id="triggerDeleteAccountBtn" class="btn-ghost" style="color: var(--danger); border-color: var(--danger); font-weight: 600;" data-i18n="setDelBtn">
-              Futa Akaunti Yangu
+            <button type="button" id="triggerDeleteAccountBtn" style="background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;" data-i18n="setDelBtn">
+              🗑️ Delete My Account Permanently
             </button>
           </div>
         </div>
@@ -905,24 +905,40 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- DELETE ACCOUNT MODAL -->
   <div id="deleteAccountModal" class="modal-overlay hidden">
-    <div class="modal" style="border-top: 4px solid var(--danger);">
-      <h3 style="color: var(--danger); margin-top: 0;">Futa Akaunti</h3>
-      <p style="font-size: 14px; margin-bottom: 20px;">
-        Onyo! Kufuta akaunti kutapoteza bidhaa zako zote, oda, na historia ya mazungumzo na wateja.
-        Tafadhali ingiza <strong>neno siri</strong> lako ili kuthibitisha.
-      </p>
+    <div class="modal" style="border-top: 4px solid var(--danger); max-width: 480px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(239,68,68,0.1); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">🗑️</div>
+        <div>
+          <h3 style="color: var(--danger); margin: 0 0 2px 0; font-size: 17px;">Delete Account Permanently</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin: 0;">This action is irreversible.</p>
+        </div>
+      </div>
+
+      <!-- Warning checklist -->
+      <div style="background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+        <p style="font-size: 13px; font-weight: 600; color: var(--danger); margin: 0 0 10px 0;">The following will be permanently deleted:</p>
+        <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-muted); line-height: 2;">
+          <li>All your <strong>products</strong> and their images</li>
+          <li>All <strong>orders</strong> and payment records</li>
+          <li>All <strong>customer conversations</strong> and messages</li>
+          <li>Your <strong>WhatsApp session</strong> and settings</li>
+          <li>Your <strong>account</strong> and login access</li>
+        </ul>
+      </div>
+
       <form id="deleteAccountForm">
-        <label>Neno Siri Lako</label>
-        <input type="password" id="deleteAccountPassword" required
-          style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--danger); border-radius: 6px; background: var(--bg); color: var(--text);" />
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">Confirm with your password:</label>
+        <input type="password" id="deleteAccountPassword" required placeholder="Enter your current password"
+          style="width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid var(--danger); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; box-sizing: border-box;" />
 
         <div id="deleteAccountError"
           style="color: var(--danger); font-size: 13px; font-weight: 600; margin-bottom: 16px;"></div>
 
         <div class="modal-actions">
-          <button type="button" class="btn-ghost" id="cancelDeleteBtn">Ghairi</button>
-          <button type="submit" class="btn-primary"
-            style="background: var(--danger); border-color: var(--danger);">Ndiyo, Futa Akaunti</button>
+          <button type="button" class="btn-ghost" id="cancelDeleteBtn">Cancel</button>
+          <button type="submit" style="background: var(--danger); border: none; color: #fff; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer;">
+            🗑️ Yes, Delete Everything
+          </button>
         </div>
       </form>
     </div>
