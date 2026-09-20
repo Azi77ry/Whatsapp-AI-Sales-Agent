@@ -352,6 +352,34 @@ router.delete("/merchants/:id", wrap(async (req, res) => {
   res.json({ message: `Akaunti ya "${target.businessName}" imefutwa kwa mafanikio.` });
 }));
 
+// ── RESET MERCHANT PASSWORD (Admin Override) ─────────────────
+router.post("/merchants/:id/reset-password", wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { newPassword } = req.body;
+
+  if (!newPassword || newPassword.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters." });
+  }
+
+  const target = await prisma.merchant.findUnique({ where: { id } });
+  if (!target) {
+    return res.status(404).json({ error: "Merchant not found." });
+  }
+  if (target.role === "superadmin") {
+    return res.status(403).json({ error: "Cannot reset a Super-Admin password this way." });
+  }
+
+  const bcrypt = require("bcryptjs");
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(newPassword, salt);
+
+  await prisma.merchant.update({ where: { id }, data: { passwordHash } });
+
+  console.log(`🔐 Super-Admin: Password ya "${target.businessName}" (${target.email}) imebadilishwa.`);
+
+  res.json({ message: `Password for "${target.businessName}" has been reset successfully.` });
+}));
+
 // ── Mipangilio ya Mfumo (Platform Settings) ──────────────────
 router.get("/settings", wrap(async (req, res) => {
   res.json(getSettings());

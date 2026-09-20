@@ -242,6 +242,9 @@ function renderMerchants(merchants) {
         <button class="btn-icon" title="Login As (Impersonate)" onclick="impersonateMerchant(${m.id})">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
+        <button class="btn-icon" title="Reset Password" onclick="openResetPasswordModal(${m.id},'${escapeHtml(m.businessName)}','${escapeHtml(m.email)}')" style="color: var(--indigo);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </button>
         <button class="btn-icon" title="Manage Subscription" onclick="openSubModal(${m.id},'${escapeHtml(m.businessName)}')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
         </button>
@@ -422,6 +425,80 @@ document.getElementById("subModalBtn").onclick    = async () => {
   } catch (err) { showToast(err.message, "error"); }
   finally { btn.disabled = false; btn.textContent = "Apply Changes"; }
 };
+
+// ── Reset Password Modal ──────────────────────────────────────────────────────
+let resetPwTarget = null;
+
+function openResetPasswordModal(id, name, email) {
+  resetPwTarget = { id, name, email };
+
+  // Build and show a simple inline modal
+  let existing = document.getElementById("resetPwModal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "resetPwModal";
+  modal.className = "modal-overlay active";
+  modal.innerHTML = `
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Reset Password
+        </div>
+        <button class="modal-close" onclick="document.getElementById('resetPwModal').remove()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:14px; color: var(--text-muted); margin-bottom: 16px;">
+          Reset password for: <strong style="color:var(--text-main)">${escapeHtml(name)}</strong><br/>
+          <span style="font-size:12px;">${escapeHtml(email)}</span>
+        </p>
+        <div style="margin-bottom: 16px;">
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">New Password</label>
+          <input type="password" id="resetPwInput" placeholder="Enter new password (min 8 chars)"
+            style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-size:14px;" />
+        </div>
+        <div style="margin-bottom: 4px;">
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Confirm Password</label>
+          <input type="password" id="resetPwConfirm" placeholder="Repeat new password"
+            style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-size:14px;" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="document.getElementById('resetPwModal').remove()">Cancel</button>
+        <button id="resetPwBtn" class="btn-primary" onclick="confirmResetPassword()" style="background: var(--indigo);">🔐 Reset Password</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+async function confirmResetPassword() {
+  if (!resetPwTarget) return;
+  const newPw  = document.getElementById("resetPwInput").value;
+  const confPw = document.getElementById("resetPwConfirm").value;
+
+  if (!newPw || newPw.length < 8) return showToast("Password must be at least 8 characters.", "error");
+  if (newPw !== confPw) return showToast("Passwords do not match.", "error");
+
+  const btn = document.getElementById("resetPwBtn");
+  btn.disabled = true;
+  btn.textContent = "Resetting...";
+
+  try {
+    await saFetch(`/merchants/${resetPwTarget.id}/reset-password`, {
+      method: "POST",
+      body: JSON.stringify({ newPassword: newPw }),
+    });
+    showToast(`✅ Password for "${resetPwTarget.name}" has been reset successfully.`, "success");
+    document.getElementById("resetPwModal").remove();
+    resetPwTarget = null;
+  } catch (err) {
+    showToast(err.message, "error");
+    btn.disabled = false;
+    btn.textContent = "🔐 Reset Password";
+  }
+}
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 async function loadSettings() {
