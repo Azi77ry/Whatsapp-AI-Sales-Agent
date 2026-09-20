@@ -279,8 +279,8 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
         ? merchant.welcomeMessage
         : `Habari! 👋 Mimi ni Msaidizi wa AI wa *${shopName}*.\n\nUngependa kuhudumiwa na mimi (AI) au ungependa kuongea na mmiliki wa duka?\n\nJibu:\n1️⃣ - Kuendelea na AI\n2️⃣ - Kuongea na Mmiliki`;
       
-      if (merchant?.welcomeImageEnabled && merchant?.welcomeImageUrl) {
-        promptMsg = `[IMAGE: ${merchant.welcomeImageUrl}]\n${promptMsg}`;
+      if (merchant?.welcomeImageUrl && merchant.welcomeImageUrl.trim()) {
+        promptMsg = `[IMAGE: ${merchant.welcomeImageUrl.trim()}]\n${promptMsg}`;
       }
 
       // Kama duka limekusudia Custom Welcome Message, weka consentGiven = true mara moja

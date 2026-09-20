@@ -47,7 +47,7 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
       const fs = require("fs");
       const localPath = path.join(__dirname, "../../public", uploadRelPath);
       if (fs.existsSync(localPath)) {
-        imageUrl = { url: localPath }; // Baileys reads directly from local file!
+        imageUrl = fs.readFileSync(localPath); // Baileys requires Buffer for local files!
       } else {
         imageUrl = { url: rawImg };
       }
