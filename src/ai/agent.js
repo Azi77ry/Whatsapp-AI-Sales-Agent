@@ -273,12 +273,20 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
 
       // Ikiwa ni ujumbe wa kwanza AU wamejibu kitu kisichoeleweka, watumie Consent Prompt
       const shopName = merchant?.businessName || "Duka Letu";
-      let promptMsg = merchant?.welcomeMessage 
+      const hasCustomWelcome = Boolean(merchant?.welcomeMessage && merchant.welcomeMessage.trim());
+
+      let promptMsg = hasCustomWelcome 
         ? merchant.welcomeMessage
         : `Habari! 👋 Mimi ni Msaidizi wa AI wa *${shopName}*.\n\nUngependa kuhudumiwa na mimi (AI) au ungependa kuongea na mmiliki wa duka?\n\nJibu:\n1️⃣ - Kuendelea na AI\n2️⃣ - Kuongea na Mmiliki`;
       
       if (merchant?.welcomeImageEnabled && merchant?.welcomeImageUrl) {
         promptMsg = `[IMAGE: ${merchant.welcomeImageUrl}]\n${promptMsg}`;
+      }
+
+      // Kama duka limekusudia Custom Welcome Message, weka consentGiven = true mara moja
+      // ili mteja anapouliza swali linalofuata (kama "Utaratibu ukoje"), AI imjibu moja kwa moja badala ya kurudia welcome text!
+      if (hasCustomWelcome) {
+        await updateConsent(conversation.id, true, false);
       }
 
       await saveMessage(conversation.id, "ai", promptMsg);
