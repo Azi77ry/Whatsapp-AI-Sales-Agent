@@ -403,7 +403,7 @@ const translations = {
   }
 };
 
-let currentLang = localStorage.getItem('merchant_lang') || 'sw';
+let currentLang = localStorage.getItem('merchant_lang') || 'en';
 
 function t(key) {
   if (translations[currentLang] && translations[currentLang][key]) {
