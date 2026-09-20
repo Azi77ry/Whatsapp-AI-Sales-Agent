@@ -483,6 +483,10 @@ router.get("/settings", wrap(async (req, res) => {
       reEngagementEndHour: true,
       subscriptionPlan: true,
       subscriptionEndDate: true,
+      welcomeImageEnabled: true,
+      welcomeImageUrl: true,
+      welcomeMessage: true,
+      strictInventoryMode: true,
     }
   });
 
@@ -510,6 +514,10 @@ router.post("/settings", wrap(async (req, res) => {
     reEngagementCooldownHours,
     reEngagementStartHour,
     reEngagementEndHour,
+    welcomeImageEnabled,
+    welcomeImageUrl,
+    welcomeMessage,
+    strictInventoryMode,
     newPassword,
     oldPassword,
     verifyPhone,
@@ -547,6 +555,10 @@ router.post("/settings", wrap(async (req, res) => {
     ...(reEngagementCooldownHours !== undefined && { reEngagementCooldownHours: parseInt(reEngagementCooldownHours, 10) }),
     ...(reEngagementStartHour !== undefined && { reEngagementStartHour: parseInt(reEngagementStartHour, 10) }),
     ...(reEngagementEndHour !== undefined && { reEngagementEndHour: parseInt(reEngagementEndHour, 10) }),
+    ...(welcomeImageEnabled !== undefined && { welcomeImageEnabled: welcomeImageEnabled === true || welcomeImageEnabled === 'true' }),
+    ...(welcomeImageUrl !== undefined && { welcomeImageUrl }),
+    ...(welcomeMessage !== undefined && { welcomeMessage }),
+    ...(strictInventoryMode !== undefined && { strictInventoryMode: strictInventoryMode === true || strictInventoryMode === 'true' }),
     ...(passwordHash && { passwordHash }),
   };
 
@@ -563,6 +575,15 @@ router.post("/settings", wrap(async (req, res) => {
   });
 
   res.json({ success: true, merchant: { id: updated.id, businessName: updated.businessName } });
+}));
+
+// Upload Welcome Image
+router.post("/settings/upload-welcome", upload.single("image"), wrap(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "Tafadhali chagua picha." });
+  }
+  const imageUrl = `/uploads/products/${req.merchantId}/${req.file.filename}`;
+  res.json({ imageUrl });
 }));
 
 // Futa Akaunti (Delete Account)

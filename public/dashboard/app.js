@@ -1802,9 +1802,30 @@ async function loadSettings() {
     const bizNameEl = document.getElementById("setBusinessName");
     const bizContextEl = document.getElementById("setBusinessContext");
     const bizPaymentEl = document.getElementById("setPaymentInstructions");
+    const welcomeImgEnabledEl = document.getElementById("setWelcomeImageEnabled");
+    const welcomeImgUrlEl = document.getElementById("setWelcomeImageUrl");
+    const welcomeMsgEl = document.getElementById("setWelcomeMessage");
+    const kariakooModeEl = document.getElementById("setKariakooBrokerMode");
+
     if (bizNameEl) bizNameEl.value = settings.businessName || "";
     if (bizContextEl) bizContextEl.value = settings.businessContext || "";
     if (bizPaymentEl) bizPaymentEl.value = settings.paymentInstructions || "";
+    
+    if (welcomeImgEnabledEl) {
+      welcomeImgEnabledEl.checked = settings.welcomeImageEnabled === true;
+      const sections = [document.getElementById("welcomeImageUploadSection"), document.getElementById("welcomeMessageSection")];
+      sections.forEach(s => s && (welcomeImgEnabledEl.checked ? s.classList.remove("hidden") : s.classList.add("hidden")));
+    }
+    if (welcomeImgUrlEl) {
+      welcomeImgUrlEl.value = settings.welcomeImageUrl || "";
+      const preview = document.getElementById("welcomeImagePreview");
+      if (preview && settings.welcomeImageUrl) {
+        preview.innerHTML = `<img src="${settings.welcomeImageUrl}" style="max-height: 100px; border-radius: 4px; border: 1px solid var(--line);" />`;
+      }
+    }
+    if (welcomeMsgEl) welcomeMsgEl.value = settings.welcomeMessage || "";
+    // DB default is true (strict mode). If true, Kariakoo mode is OFF (false).
+    if (kariakooModeEl) kariakooModeEl.checked = settings.strictInventoryMode === false;
 
     // Nudge settings
     const nudgeMin = document.getElementById("setNudgeMin");
@@ -1895,6 +1916,10 @@ document.getElementById("bizSettingsForm")?.addEventListener("submit", async (e)
     businessName: document.getElementById("setBusinessName").value.trim(),
     businessContext: document.getElementById("setBusinessContext").value.trim(),
     paymentInstructions: document.getElementById("setPaymentInstructions").value.trim(),
+    welcomeImageEnabled: document.getElementById("setWelcomeImageEnabled")?.checked || false,
+    welcomeImageUrl: document.getElementById("setWelcomeImageUrl")?.value || null,
+    welcomeMessage: document.getElementById("setWelcomeMessage")?.value.trim() || null,
+    strictInventoryMode: !(document.getElementById("setKariakooBrokerMode")?.checked),
   };
 
   try {
@@ -1918,10 +1943,73 @@ document.getElementById("bizSettingsForm")?.addEventListener("submit", async (e)
   } catch (err) {
     statusEl.style.color = "var(--danger)";
     statusEl.textContent = "❌ Imetokea hitilafu.";
+    console.error(err);
   } finally {
     submitBtn.disabled = false;
   }
 });
+
+// Handle Welcome Image Checkbox Toggle
+document.getElementById("setWelcomeImageEnabled")?.addEventListener("change", (e) => {
+  const isChecked = e.target.checked;
+  const imgSection = document.getElementById("welcomeImageUploadSection");
+  const msgSection = document.getElementById("welcomeMessageSection");
+  if (isChecked) {
+    imgSection?.classList.remove("hidden");
+    msgSection?.classList.remove("hidden");
+  } else {
+    imgSection?.classList.add("hidden");
+    msgSection?.classList.add("hidden");
+  }
+});
+
+// Handle Welcome Image Upload
+document.getElementById("uploadWelcomeImgBtn")?.addEventListener("click", async () => {
+  const fileInput = document.getElementById("welcomeImageFile");
+  if (!fileInput.files || fileInput.files.length === 0) {
+    return alert("Tafadhali chagua picha kwanza.");
+  }
+  
+  const btn = document.getElementById("uploadWelcomeImgBtn");
+  const originalText = btn.textContent;
+  btn.textContent = "Inapakia...";
+  btn.disabled = true;
+
+  try {
+    const formData = new FormData();
+    formData.append("image", fileInput.files[0]);
+
+    const token = localStorage.getItem("merchant_token");
+    const response = await fetch(`${API_BASE}/settings/upload-welcome`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Imeshindwa kupakia picha");
+    }
+
+    const data = await response.json();
+    document.getElementById("setWelcomeImageUrl").value = data.imageUrl;
+    
+    const preview = document.getElementById("welcomeImagePreview");
+    if (preview) {
+      preview.innerHTML = `<img src="${data.imageUrl}" style="max-height: 100px; border-radius: 4px; border: 1px solid var(--line);" />`;
+    }
+    
+    alert("Picha imepakiwa kikamilifu! Usisahau kubonyeza 'Hifadhi Maelezo' ili kuitumia.");
+  } catch (err) {
+    alert("Kosa: " + err.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+});
+
 
 document.getElementById("securitySettingsForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();

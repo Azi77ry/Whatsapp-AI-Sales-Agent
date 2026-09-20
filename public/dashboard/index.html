@@ -583,6 +583,32 @@
               <textarea id="setPaymentInstructions" rows="4" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size: 14px;" placeholder="Mfano: Lipia kupitia M-Pesa namba 075XXXXXXX (Jina: Aziry Tech). Kisha tuma muamala hapa."></textarea>
               <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">AI itatumia maelezo haya kumwelekeza mteja jinsi ya kulipia anapotaka kufanya malipo.</p>
             </div>
+            <div style="margin-bottom: 20px; border-top: 1px solid var(--line); padding-top: 16px;">
+              <h4 style="margin-bottom: 12px; font-size: 15px; color: var(--text-main);">Picha ya Karibu (Welcome Image)</h4>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 10px;">
+                <input type="checkbox" id="setWelcomeImageEnabled" style="width: 18px; height: 18px; accent-color: var(--primary);" />
+                <span style="font-weight: 500; font-size: 14px;">Washa Picha ya Karibu kwa wateja wapya</span>
+              </label>
+              <div id="welcomeImageUploadSection" class="hidden" style="margin-bottom: 10px;">
+                <input type="file" id="welcomeImageFile" accept="image/*" style="font-size: 13px;" />
+                <button type="button" id="uploadWelcomeImgBtn" class="btn-secondary" style="padding: 6px 12px; font-size: 12px; margin-left: 8px;">Pakia Picha</button>
+                <div id="welcomeImagePreview" style="margin-top: 10px;"></div>
+                <input type="hidden" id="setWelcomeImageUrl" />
+              </div>
+              <div id="welcomeMessageSection" class="hidden">
+                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Ujumbe Maalum wa Karibu (Welcome Message)</label>
+                <textarea id="setWelcomeMessage" rows="4" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size: 14px;" placeholder="Weka ujumbe wa kumsalimia mteja mpya..."></textarea>
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Ujumbe huu utatumika badala ya ule wa kawaida.</p>
+              </div>
+            </div>
+            <div style="margin-bottom: 20px; border-top: 1px solid var(--line); padding-top: 16px;">
+              <h4 style="margin-bottom: 12px; font-size: 15px; color: var(--text-main);">Mtindo wa Mauzo wa AI (Sales Strategy)</h4>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="setKariakooBrokerMode" style="width: 18px; height: 18px; accent-color: var(--primary);" />
+                <span style="font-weight: 500; font-size: 14px;">Washa Kariakoo Broker Mode (Uza bidhaa ambazo hazipo dukani)</span>
+              </label>
+              <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px; margin-left: 26px;">Ikiwashwa, AI itaweza kutafuta na kuuza bidhaa ambazo bado hujaziweka kwenye mfumo (Kariakoo mode).</p>
+            </div>
             <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
               <span id="bizSaveStatus" style="font-size: 13px; font-weight: 600; margin-right: auto; display: none;"></span>
               <button type="submit" class="btn-primary" style="padding: 10px 20px; font-weight: 600; border-radius: 6px; cursor: pointer;">💾 Hifadhi Maelezo</button>

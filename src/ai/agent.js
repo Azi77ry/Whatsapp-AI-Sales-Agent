@@ -273,7 +273,14 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
 
       // Ikiwa ni ujumbe wa kwanza AU wamejibu kitu kisichoeleweka, watumie Consent Prompt
       const shopName = merchant?.businessName || "Duka Letu";
-      const promptMsg = `Habari! 👋 Mimi ni Msaidizi wa AI wa *${shopName}*.\n\nUngependa kuhudumiwa na mimi (AI) au ungependa kuongea na mmiliki wa duka?\n\nJibu:\n1️⃣ - Kuendelea na AI\n2️⃣ - Kuongea na Mmiliki`;
+      let promptMsg = merchant?.welcomeMessage 
+        ? merchant.welcomeMessage
+        : `Habari! 👋 Mimi ni Msaidizi wa AI wa *${shopName}*.\n\nUngependa kuhudumiwa na mimi (AI) au ungependa kuongea na mmiliki wa duka?\n\nJibu:\n1️⃣ - Kuendelea na AI\n2️⃣ - Kuongea na Mmiliki`;
+      
+      if (merchant?.welcomeImageEnabled && merchant?.welcomeImageUrl) {
+        promptMsg = `[IMAGE: ${merchant.welcomeImageUrl}]\n${promptMsg}`;
+      }
+
       await saveMessage(conversation.id, "ai", promptMsg);
       return promptMsg;
     }
