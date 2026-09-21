@@ -29,7 +29,12 @@ function extractTextFromMessage(msg) {
 
 // Jaribu kutuma ujumbe mara nyingi kama kunatokea kosa la muunganiko wa muda mfupi
 async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, originalMsg = null) {
-  const RETRY_DELAY_MS = 2000;
+  // 🛡️ ANTI-BAN: Delay ya nasibu kabla ya kutuma (1-3 sekunde) - inafanana na binadamu anayeandika
+  const preSendDelay = 1000 + Math.floor(Math.random() * 2000);
+  await new Promise(r => setTimeout(r, preSendDelay));
+
+  // Muda wa kati ya kujaribu tena (unaongezeka kwa kila jaribio)
+  const getRetryDelay = (attempt) => attempt * 3000; // 3s, 6s, 9s
 
   // Extract IMAGE tag if present
   let imageUrl = null;
@@ -93,10 +98,11 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
         err?.message?.includes("lost");
 
       if (isConnectionError && attempt < maxRetries) {
+        const delay = getRetryDelay(attempt);
         console.warn(
-          `⚠️  Kutuma kumeshindwa (jaribio ${attempt}/${maxRetries}): ${err.message} — inarudia baada ya sekunde ${RETRY_DELAY_MS / 1000}...`
+          `⚠️  Kutuma kumeshindwa (jaribio ${attempt}/${maxRetries}): ${err.message} — inarudia baada ya sekunde ${delay / 1000}...`
         );
-        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+        await new Promise((r) => setTimeout(r, delay));
       } else {
         throw err;
       }
@@ -237,8 +243,11 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
   }
 
   try {
+    // 🛡️ ANTI-BAN: Delay ya kuandika inategemea urefu wa maombi ya mteja (inafanana na binadamu)
+    // Kwa kila herufi 10 za ujumbe, ongeza sekunde 0.5 ya typing (kati ya sekunde 3 na 7)
+    const typingDelay = Math.min(7000, Math.max(3000, text.length * 50));
     await sock.sendPresenceUpdate(isAudioMessage ? "recording" : "composing", remoteJid);
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Delay for natural typing/recording
+    await new Promise(resolve => setTimeout(resolve, typingDelay));
   } catch (_) {}
 
   // 🛡️ ENFORCE AI LIMITS (SUPER ADMIN FEATURE)

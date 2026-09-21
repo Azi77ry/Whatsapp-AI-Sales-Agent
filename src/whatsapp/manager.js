@@ -154,17 +154,19 @@ async function startSession(merchantId) {
   const sock = makeWASocket({
     version,
     auth: state,
-    logger: pino({ level: "warn" }),
+    logger: pino({ level: "silent" }), // Punguza noise ya logs
     printQRInTerminal: false,
     msgRetryCounterCache,
-    generateHighQualityLinkPreview: true,
-    browser: Browsers.ubuntu("Chrome"), // Signature iliyothibitishwa kwa ajili ya WhatsApp pairing code protocol
-    connectTimeoutMs: 120000,
-    defaultQueryTimeoutMs: 120000,
-    keepAliveIntervalMs: 10000,
-    markOnlineOnConnect: false,
+    generateHighQualityLinkPreview: false, // 🛡️ ANTI-BAN: Zima link preview - inasababisha spam detection
+    // 🛡️ ANTI-BAN: Tumia macOS Safari fingerprint - inafanana zaidi na mtumiaji wa kawaida
+    browser: ["WhatsApp Sales Bot", "Safari", "17.0"],
+    connectTimeoutMs: 60000,
+    defaultQueryTimeoutMs: 60000,
+    keepAliveIntervalMs: 25000, // 🛡️ ANTI-BAN: Piga ping polepole zaidi (25s badala ya 10s)
+    markOnlineOnConnect: true, // 🛡️ ANTI-BAN: Onekana online kama mtumiaji wa kawaida
     syncFullHistory: false,
     shouldSyncHistoryMessage: () => false,
+    retryRequestDelayMs: 2000, // Subiri kati ya maombi ya retry
     getMessage: async (key) => {
       if (store) {
         const msg = await store.loadMessage(key.remoteJid, key.id);
@@ -209,7 +211,13 @@ async function startSession(merchantId) {
 
       if (isRegistered) {
         setConnectionStatus(mId, "connecting");
-        startSession(mId).catch((err) => console.error(`Error reconnecting Merchant #${mId}:`, err));
+        // 🛡️ ANTI-BAN: Ongeza delay ya nasibu kabla ya kuunganisha tena (3-8 sekunde)
+        // Hii inazuia WhatsApp kugundua pattern ya bot inayounganika haraka sana
+        const reconnectDelay = 3000 + Math.floor(Math.random() * 5000);
+        console.log(`⏳ Merchant #${mId} - Itaunganika tena baada ya sekunde ${Math.round(reconnectDelay/1000)}...`);
+        setTimeout(() => {
+          startSession(mId).catch((err) => console.error(`Error reconnecting Merchant #${mId}:`, err));
+        }, reconnectDelay);
       } else if (isPairingPending) {
         // WAKATI WA PAIRING CODE: Socket inajifunga kiotomatiki baada ya kutoa code ili kusubiri simu.
         // USIANZISHE socket mpya ya QR! Subiri tu mteja aingize code kwenye simu yake.
