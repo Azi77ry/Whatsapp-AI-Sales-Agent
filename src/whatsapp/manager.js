@@ -62,6 +62,32 @@ const botActiveStatuses = new Map();
 // Map/Set ya kufuata merchants walio kwenye mchakato wa kuingiza Pairing Code
 const pairingPendingMerchants = new Set();
 
+// 🛡️ ANTI-BAN: Kuhesabu idadi ya kujaribu kuunganika tena (Exponential Backoff)
+const reconnectAttempts = new Map();
+const MAX_RECONNECT_ATTEMPTS = 10;
+
+// 🛡️ ANTI-BAN: Daily message rate limiter kwa kila merchant
+// WhatsApp inashuku accounts zinazotuma SANA kwa siku moja
+const dailyMsgCounts = new Map();
+const DAILY_MSG_LIMIT = 800; // Kikomo salama kwa siku (usiwe juu ya 1000)
+
+function getDailyKey(merchantId) {
+  const today = new Date().toISOString().slice(0, 10); // e.g. "2026-09-28"
+  return `${merchantId}_${today}`;
+}
+
+function incrementDailyCount(merchantId) {
+  const key = getDailyKey(merchantId);
+  const current = dailyMsgCounts.get(key) || 0;
+  dailyMsgCounts.set(key, current + 1);
+  return current + 1;
+}
+
+function isDailyLimitReached(merchantId) {
+  const key = getDailyKey(merchantId);
+  return (dailyMsgCounts.get(key) || 0) >= DAILY_MSG_LIMIT;
+}
+
 /**
  * Pata hali ya sasa ya muunganiko wa WhatsApp ya merchant
  */
@@ -199,7 +225,12 @@ async function startSession(merchantId) {
       const isRegistered = !isLoggedOut && Boolean(sock?.authState?.creds?.registered || sock?.authState?.creds?.me || sock?.authState?.creds?.account);
       const isPairingPending = pairingPendingMerchants.has(mId);
 
-      console.log(`🔌 Muunganiko wa Merchant #${mId} umekatika (Status Code: ${statusCode}, Registered: ${isRegistered}, PairingPending: ${isPairingPending}).`);
+      // 🛡️ ANTI-BAN: Gundua kama namba imefungiwa/kusimamishwa na WhatsApp
+      // Status 401 = Logged Out, 403 = Forbidden/Banned, 440 = Replaced by another session
+      const isBanned = statusCode === 403;
+      const isReplaced = statusCode === 440; // Mtu mwingine ameingia kwenye namba hii
+
+      console.log(`🔌 Muunganiko wa Merchant #${mId} umekatika (Status Code: ${statusCode}, Registered: ${isRegistered}, Banned: ${isBanned}, Replaced: ${isReplaced}).`);
 
       activeSessions.delete(mId);
       
@@ -209,12 +240,42 @@ async function startSession(merchantId) {
          store.writeToFile();
       }
 
+      // 🚨 KAMA NAMBA IMEFUNGIWA (403) — USIJARIBU KUUNGANIKA TENA!
+      if (isBanned) {
+        console.error(`🚫 MERCHANT #${mId} AMEFUNGIWA NA WHATSAPP (Status 403)! Inasimamisha bot otomatiki.`);
+        setConnectionStatus(mId, "banned");
+        setBotActive(mId, false); // Zima bot otomatiki
+        reconnectAttempts.delete(mId);
+        return;
+      }
+
+      // 🚨 KAMA SESSION IMECHUKULIWA NA KIFAA KINGINE (440)
+      if (isReplaced) {
+        console.warn(`⚠️ Merchant #${mId} - Session imechukuliwa na kifaa kingine! Inasimamisha...`);
+        setConnectionStatus(mId, "disconnected");
+        reconnectAttempts.delete(mId);
+        return;
+      }
+
       if (isRegistered) {
+        // 🛡️ ANTI-BAN: Exponential Backoff — kila kujaribu tena kunaongeza muda
+        const attempts = (reconnectAttempts.get(mId) || 0) + 1;
+        reconnectAttempts.set(mId, attempts);
+
+        if (attempts > MAX_RECONNECT_ATTEMPTS) {
+          console.error(`❌ Merchant #${mId} - Imeshindwa kuunganika tena mara ${MAX_RECONNECT_ATTEMPTS}. Inaacha kujaribu.`);
+          setConnectionStatus(mId, "disconnected");
+          reconnectAttempts.delete(mId);
+          return;
+        }
+
+        // Delay ya exponential: 5s, 10s, 20s, 40s, 80s... (max 5 dakika)
+        const baseDelay = Math.min(300000, 5000 * Math.pow(2, attempts - 1));
+        const jitter = Math.floor(Math.random() * 3000); // Ongeza nasibu 0-3s
+        const reconnectDelay = baseDelay + jitter;
+        
         setConnectionStatus(mId, "connecting");
-        // 🛡️ ANTI-BAN: Ongeza delay ya nasibu kabla ya kuunganisha tena (3-8 sekunde)
-        // Hii inazuia WhatsApp kugundua pattern ya bot inayounganika haraka sana
-        const reconnectDelay = 3000 + Math.floor(Math.random() * 5000);
-        console.log(`⏳ Merchant #${mId} - Itaunganika tena baada ya sekunde ${Math.round(reconnectDelay/1000)}...`);
+        console.log(`⏳ Merchant #${mId} - Jaribio #${attempts}/${MAX_RECONNECT_ATTEMPTS}: Itaunganika tena baada ya sekunde ${Math.round(reconnectDelay/1000)}...`);
         setTimeout(() => {
           startSession(mId).catch((err) => console.error(`Error reconnecting Merchant #${mId}:`, err));
         }, reconnectDelay);
@@ -226,6 +287,7 @@ async function startSession(merchantId) {
       } else {
         console.log(`❌ Merchant #${mId} ametoka kwenye akaunti (logged out). Inasafisha folda la session.`);
         setConnectionStatus(mId, "disconnected");
+        reconnectAttempts.delete(mId);
         // Futa faili za session ili kuruhusu login upya tu kama hajasajiliwa
         try {
           fs.rmSync(sessionDir, { recursive: true, force: true });
@@ -236,6 +298,7 @@ async function startSession(merchantId) {
     } else if (connection === "open") {
       console.log(`✅ Merchant #${mId} ameunganishwa na WhatsApp kikamilifu!`);
       pairingPendingMerchants.delete(mId);
+      reconnectAttempts.delete(mId); // Reset reconnect counter baada ya kuunganika
       setConnectionStatus(mId, "connected");
     }
   });
@@ -428,6 +491,26 @@ async function requestPairingCode(merchantId, phoneNumber) {
   }
 }
 
+// 🛡️ ANTI-BAN: Graceful Shutdown — Hifadhi sessions kabla ya kuzima
+// Inazuia session corruption inayoweza kusababisha ban
+async function gracefulShutdown() {
+  console.log("🛑 Inazima mfumo kwa usalama — Inahifadhi sessions zote...");
+  const shutdownPromises = [];
+  for (const [mId, sock] of activeSessions) {
+    try {
+      const store = stores.get(mId);
+      if (store && store.writeToFile) store.writeToFile();
+      // Tuma signal ya kwaheri kwa WA servers (si logout, ni close salama)
+      shutdownPromises.push(sock.end().catch(() => {}));
+    } catch (e) {}
+  }
+  await Promise.allSettled(shutdownPromises);
+  console.log("✅ Sessions zote zimehifadhiwa. Mfumo umezimwa salama.");
+}
+
+process.on("SIGTERM", () => gracefulShutdown().then(() => process.exit(0)));
+process.on("SIGINT",  () => gracefulShutdown().then(() => process.exit(0)));
+
 module.exports = {
   startSession,
   stopSession,
@@ -439,4 +522,6 @@ module.exports = {
   initializeAllSessions,
   activeSessions,
   requestPairingCode,
+  isDailyLimitReached,
+  incrementDailyCount,
 };

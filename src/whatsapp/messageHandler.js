@@ -7,6 +7,7 @@ const { speechToText, textToSpeech } = require("../ai/voiceService");
 const { downloadMediaMessage } = require("@whiskeysockets/baileys");
 const pino = require("pino");
 const prisma = require("../db/client");
+const { isDailyLimitReached, incrementDailyCount } = require("./manager");
 
 // Anti-Bot Rate Limiting (In-Memory)
 const userMessageCounts = new Map();
@@ -160,6 +161,12 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     remoteJid.endsWith("@newsletter")
   ) return;
 
+  // 🛡️ ANTI-BAN: Weka ujumbe kama "umesomwa" (Read Receipt)
+  // Hii inafanya namba ionekane kama binadamu anayesoma ujumbe
+  try {
+    await sock.readMessages([msg.key]);
+  } catch (_) {}
+
   // 🛡️ ANTI-BOT LOOP PROTECTION (RATE LIMITING)
   const now = Date.now();
   if (!userMessageCounts.has(remoteJid)) {
@@ -242,6 +249,13 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     return;
   }
 
+  // 🛡️ ANTI-BAN: Angalia kikomo cha ujumbe cha kila siku
+  if (isDailyLimitReached(mId)) {
+    console.warn(`🚨 Merchant #${mId} - Imefikia kikomo cha ujumbe wa siku (${800} messages). Bot itaacha kwa leo kulinda usalama.`);
+    await logPersonalMessage({ customerPhone: remoteJid, customerName, userMessage: text, merchantId: mId });
+    return;
+  }
+
   try {
     // 🛡️ ANTI-BAN: Delay ya kuandika inategemea urefu wa maombi ya mteja (inafanana na binadamu)
     // Kwa kila herufi 10 za ujumbe, ongeza sekunde 0.5 ya typing (kati ya sekunde 3 na 7)
@@ -315,6 +329,10 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
           where: { id: mId },
           data: { aiUsage: { increment: 1 } }
         });
+
+        // 🛡️ ANTI-BAN: Hesabu ujumbe wa siku
+        const todayCount = incrementDailyCount(mId);
+        console.log(`📊 Merchant #${mId} - Ujumbe wa leo: ${todayCount}/800`);
       }
     } else {
       console.log(`🔇 Merchant #${mId} - Bot iko kimya kwa ${remoteJid}.`);
