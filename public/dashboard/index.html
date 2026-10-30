@@ -223,7 +223,7 @@
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
               <p class="muted" style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">AI Agent Status</p>
-              <h1 style="margin: 8px 0; font-size: 28px; font-weight: 700;">Imeunganishwa</h1>
+              <h1 style="margin: 8px 0; font-size: 28px; font-weight: 700;" id="heroWaStatus">—</h1>
               <p class="muted" style="margin: 0; font-size: 14px;" id="heroAiUsage">Matumizi: 0 / 500 meseji</p>
             </div>
             <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; backdrop-filter: blur(5px);">
@@ -305,6 +305,59 @@
           </div>
         </div>
 
+
+        <!-- 🛡️ Usalama wa Namba (Number Health) -->
+        <div class="card nh-card" id="numberHealthCard" style="margin-bottom: 24px; padding: 20px;">
+          <div class="ws-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="ws-icon">🛡️</span>
+              <span class="ws-title" data-i18n="nhTitle">Usalama wa Namba</span>
+            </div>
+            <span class="badge nh-level" id="nhLevelBadge">—</span>
+          </div>
+
+          <div id="nhBannedBox" class="nh-banned hidden">
+            <strong data-i18n="nhBannedTitle">🚫 WhatsApp imefungia namba hii</strong>
+            <p data-i18n="nhBannedDesc">AI imesimamishwa na mfumo hautaunganisha namba hii tena kiotomatiki. Fungua WhatsApp kwenye simu yako na uombe ukaguzi ("Request a review"). Ikirudishwa, bofya "Unganisha WhatsApp" hapo juu.</p>
+          </div>
+
+          <div class="nh-grid">
+            <div class="nh-stat">
+              <div class="nh-stat-head">
+                <span data-i18n="nhSentToday">Ujumbe uliotumwa leo</span>
+                <span class="nh-stat-num" id="nhSentText">0 / 0</span>
+              </div>
+              <div class="nh-bar"><div class="nh-bar-fill" id="nhSentBar"></div></div>
+              <div class="nh-hint" id="nhSentHint"></div>
+            </div>
+            <div class="nh-stat">
+              <div class="nh-stat-head">
+                <span data-i18n="nhReminders">Vikumbusho (nudges) leo</span>
+                <span class="nh-stat-num" id="nhMarketingText">0 / 0</span>
+              </div>
+              <div class="nh-bar"><div class="nh-bar-fill nh-bar-accent" id="nhMarketingBar"></div></div>
+              <div class="nh-hint" data-i18n="nhRemindersHint">Vikumbusho vinasimama vyenyewe kikomo kikikaribia.</div>
+            </div>
+          </div>
+
+          <div class="nh-chips">
+            <div class="nh-chip"><span class="nh-chip-label" data-i18n="nhWarmup">Warm-up</span><span id="nhWarmupText">—</span></div>
+            <button class="nh-chip nh-chip-link" data-conv-filter="optedOut"><span class="nh-chip-label" data-i18n="nhOptedOut">Wamejiondoa (STOP)</span><span id="nhOptedOutCount">0</span></button>
+            <button class="nh-chip nh-chip-link" data-conv-filter="needsHuman"><span class="nh-chip-label" data-i18n="nhNeedsHuman">Wanakusubiri wewe</span><span id="nhNeedsHumanCount">0</span></button>
+            <div class="nh-chip"><span class="nh-chip-label" data-i18n="nhQueue">Foleni</span><span id="nhQueueCount">0</span></div>
+          </div>
+
+          <details class="nh-tips">
+            <summary data-i18n="nhTipsTitle">💡 Jinsi ya kulinda namba yako isifungiwe</summary>
+            <ul>
+              <li data-i18n="nhTip1">Namba hufungiwa zaidi wateja wakibofya "Block" au "Report". Jibu wanaokuandikia tu - usitume ujumbe kwa watu wasiokujua.</li>
+              <li data-i18n="nhTip2">Mteja akiandika STOP au ACHA, mfumo unaacha kumtumia vikumbusho kiotomatiki.</li>
+              <li data-i18n="nhTip3">Namba mpya inaanza na kikomo kidogo cha ujumbe kwa siku na kinaongezeka polepole kwa wiki 2.</li>
+              <li data-i18n="nhTip4">Usitumie namba hii kwenye mifumo mingine ya bulk/broadcast kwa wakati mmoja.</li>
+              <li data-i18n="nhTip5">Biashara kubwa: fikiria WhatsApp Business API rasmi - haina hatari ya kufungiwa kwa sababu ya muunganiko.</li>
+            </ul>
+          </details>
+        </div>
 
         <h3 style="font-size: 16px; margin: 24px 0 16px;" data-i18n="ovQuickStats">Huduma Zako (Quick Stats)</h3>
         <div class="icon-box-grid" style="margin-bottom: 32px;">
@@ -469,6 +522,11 @@
               style="padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);" />
           </div>
         </header>
+        <div class="conv-filters" id="convFilters">
+          <button class="conv-filter active" data-filter="all" data-i18n="convFilterAll">Wote</button>
+          <button class="conv-filter" data-filter="needsHuman" data-i18n="convFilterNeedsHuman">🙋 Wanakusubiri</button>
+          <button class="conv-filter" data-filter="optedOut" data-i18n="convFilterOptedOut">🔕 Wamejiondoa</button>
+        </div>
         <div class="conv-layout">
           <div class="conv-list-wrap">
             <div id="conversationsList" class="conv-list"></div>
@@ -476,11 +534,18 @@
           <div class="conv-thread-wrap">
             <div id="conversationThreadHeader" class="conv-thread-header hidden">
               <span id="conversationThreadName"></span>
-              <button id="toggleContactTypeBtn" class="btn-ghost" style="padding:6px 12px; font-size:12px;"></button>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button id="toggleHandoffBtn" class="btn-ghost conv-handoff-btn"></button>
+                <button id="toggleContactTypeBtn" class="btn-ghost" style="padding:6px 12px; font-size:12px;"></button>
+              </div>
             </div>
             <div id="conversationThread" class="conv-thread">
               <p class="conv-empty">Chagua mteja upande wa kushoto kuona mazungumzo.</p>
             </div>
+            <form id="convReplyForm" class="conv-reply hidden">
+              <textarea id="convReplyInput" rows="1" data-i18n="convReplyPlaceholder" placeholder="Mjibu mteja mwenyewe..."></textarea>
+              <button type="submit" class="btn-primary" id="convReplyBtn" data-i18n="convReplySend">Tuma</button>
+            </form>
           </div>
         </div>
       </section>

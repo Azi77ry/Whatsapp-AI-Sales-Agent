@@ -12,6 +12,7 @@ const path = require("path");
 const fs = require("fs");
 const prisma = require("../db/client");
 const { handleIncomingMessage } = require("./messageHandler");
+const { enqueueSend, invalidateState } = require("./sendQueue");
 
 // Safely define makeInMemoryStore for Baileys v6.7+ compatibility
 let makeInMemoryStore = Baileys.makeInMemoryStore;
@@ -66,26 +67,61 @@ const pairingPendingMerchants = new Set();
 const reconnectAttempts = new Map();
 const MAX_RECONNECT_ATTEMPTS = 10;
 
-// 🛡️ ANTI-BAN: Daily message rate limiter kwa kila merchant
-// WhatsApp inashuku accounts zinazotuma SANA kwa siku moja
-const dailyMsgCounts = new Map();
-const DAILY_MSG_LIMIT = 800; // Kikomo salama kwa siku (usiwe juu ya 1000)
+// 🛡️ ANTI-BAN: Kikomo cha ujumbe wa siku na warm-up sasa vipo kwenye sendQueue.js
+// (vinahifadhiwa kwenye database ili visipotee server ikiwashwa upya)
 
-function getDailyKey(merchantId) {
-  const today = new Date().toISOString().slice(0, 10); // e.g. "2026-09-28"
-  return `${merchantId}_${today}`;
+/**
+ * Hifadhi kwenye DB kwamba namba imefungiwa (403) ili isiunganishwe tena kiotomatiki baada ya restart
+ */
+async function markBanned(mId, banned) {
+  try {
+    await prisma.merchant.update({
+      where: { id: mId },
+      data: banned ? { waBanned: true, waBannedAt: new Date() } : { waBanned: false, waBannedAt: null },
+    });
+    invalidateState(mId);
+  } catch (err) {
+    console.error(`Kosa la kuhifadhi hali ya ban (Merchant #${mId}):`, err.message);
+  }
 }
 
-function incrementDailyCount(merchantId) {
-  const key = getDailyKey(merchantId);
-  const current = dailyMsgCounts.get(key) || 0;
-  dailyMsgCounts.set(key, current + 1);
-  return current + 1;
-}
+/**
+ * Baada ya kuunganika: hifadhi namba iliyounganishwa na tarehe iliyounganishwa (kwa ajili ya warm-up).
+ * Namba mpya (au namba tofauti na ya awali) inaanza warm-up upya.
+ */
+async function recordLinkedNumber(mId, sock, sessionDir) {
+  try {
+    const waPhone = (sock?.user?.id || "").split(":")[0].split("@")[0] || null;
+    const merchant = await prisma.merchant.findUnique({
+      where: { id: mId },
+      select: { waLinkedAt: true, waPhone: true, waBanned: true },
+    });
+    if (!merchant) return;
 
-function isDailyLimitReached(merchantId) {
-  const key = getDailyKey(merchantId);
-  return (dailyMsgCounts.get(key) || 0) >= DAILY_MSG_LIMIT;
+    const data = {};
+    if (merchant.waBanned) {
+      // Imeunganika tena kwa mafanikio - kwa hiyo haijafungiwa tena (mf. rufaa imekubaliwa au namba mpya)
+      data.waBanned = false;
+      data.waBannedAt = null;
+    }
+    if (!merchant.waLinkedAt || (waPhone && merchant.waPhone !== waPhone)) {
+      // Tumia tarehe creds.json ilipoundwa - kwa sessions za zamani hii inaonyesha zilipounganishwa kweli
+      let linkedAt = new Date();
+      try {
+        const stat = fs.statSync(path.join(sessionDir, "creds.json"));
+        if (stat.birthtimeMs > 0) linkedAt = stat.birthtime;
+      } catch (_) {}
+      if (merchant.waPhone && waPhone && merchant.waPhone !== waPhone) linkedAt = new Date();
+      data.waLinkedAt = linkedAt;
+      data.waPhone = waPhone;
+    }
+    if (Object.keys(data).length > 0) {
+      await prisma.merchant.update({ where: { id: mId }, data });
+      invalidateState(mId);
+    }
+  } catch (err) {
+    console.error(`Kosa la kuhifadhi namba iliyounganishwa (Merchant #${mId}):`, err.message);
+  }
 }
 
 /**
@@ -189,7 +225,7 @@ async function startSession(merchantId) {
     connectTimeoutMs: 60000,
     defaultQueryTimeoutMs: 60000,
     keepAliveIntervalMs: 25000, // 🛡️ ANTI-BAN: Piga ping polepole zaidi (25s badala ya 10s)
-    markOnlineOnConnect: true, // 🛡️ ANTI-BAN: Onekana online kama mtumiaji wa kawaida
+    markOnlineOnConnect: false, // Usionyeshe "online" muda wote - simu ya mmiliki iendelee kupata notifications
     syncFullHistory: false,
     shouldSyncHistoryMessage: () => false,
     retryRequestDelayMs: 2000, // Subiri kati ya maombi ya retry
@@ -246,6 +282,7 @@ async function startSession(merchantId) {
         setConnectionStatus(mId, "banned");
         setBotActive(mId, false); // Zima bot otomatiki
         reconnectAttempts.delete(mId);
+        await markBanned(mId, true); // Hifadhi kwenye DB ili isiunganishwe tena baada ya restart
         return;
       }
 
@@ -300,6 +337,7 @@ async function startSession(merchantId) {
       pairingPendingMerchants.delete(mId);
       reconnectAttempts.delete(mId); // Reset reconnect counter baada ya kuunganika
       setConnectionStatus(mId, "connected");
+      recordLinkedNumber(mId, sock, sessionDir);
     }
   });
 
@@ -373,23 +411,42 @@ async function stopSession(merchantId, logout = false) {
 }
 
 /**
- * Tuma ujumbe kupitia WhatsApp ya merchant husika
+ * Tuma ujumbe kupitia WhatsApp ya merchant husika (unapita kwenye foleni ya usalama)
+ * @param {"reply"|"transactional"|"marketing"} kind - aina ya ujumbe (inaamua kikomo na nafasi kati ya ujumbe)
  */
-async function sendMessage(merchantId, customerPhone, text) {
+async function sendMessage(merchantId, customerPhone, text, kind = "transactional") {
   const mId = parseInt(merchantId, 10);
-  const sock = activeSessions.get(mId);
 
-  if (!sock) {
+  if (!activeSessions.get(mId)) {
     console.warn(`⚠️  Haiwezi kutuma ujumbe - WhatsApp ya Merchant #${mId} haijaunganishwa.`);
     return false;
   }
 
   try {
-    await sock.sendMessage(customerPhone, { text });
-    return true;
+    return await enqueueSend(mId, kind, async () => {
+      // Pata socket wakati wa kutuma (huenda imeunganika upya wakati ujumbe ukisubiri kwenye foleni)
+      const sock = activeSessions.get(mId);
+      if (!sock) throw new Error("WhatsApp haijaunganishwa");
+      await sock.sendMessage(customerPhone, { text });
+    });
   } catch (err) {
     console.error(`⚠️  Imeshindwa kutuma ujumbe kwa ${customerPhone} (Merchant #${mId}):`, err.message);
     return false;
+  }
+}
+
+/**
+ * Mmiliki wa namba iliyofungiwa anataka kuunganisha upya (mf. baada ya rufaa au kwa namba mpya).
+ * Futa creds za zamani (hazifanyi kazi tena) ili aanze na QR/Pairing mpya.
+ * waBanned inafutwa tu pale muunganiko mpya utakapofanikiwa (recordLinkedNumber).
+ */
+async function resetBannedSession(merchantId) {
+  const mId = parseInt(merchantId, 10);
+  await stopSession(mId, false);
+  try {
+    fs.rmSync(path.join(SESSION_BASE_DIR, `merchant_${mId}`), { recursive: true, force: true });
+  } catch (e) {
+    console.error("Kosa la kufuta faili za session:", e.message);
   }
 }
 
@@ -399,9 +456,16 @@ async function sendMessage(merchantId, customerPhone, text) {
 async function initializeAllSessions() {
   console.log("🚀 Inatafuta na kuanzisha zilizokuwa WhatsApp sessions hai...");
   try {
-    const merchants = await prisma.merchant.findMany({ select: { id: true } });
+    const merchants = await prisma.merchant.findMany({ select: { id: true, waBanned: true } });
 
     for (const merchant of merchants) {
+      // 🚫 Namba iliyofungiwa na WhatsApp isiunganishwe tena kiotomatiki - mmiliki aunganishe mwenyewe
+      if (merchant.waBanned) {
+        console.warn(`🚫 Merchant #${merchant.id} - Namba ilifungiwa na WhatsApp. Inarukwa (haiunganishwi kiotomatiki).`);
+        setConnectionStatus(merchant.id, "banned");
+        continue;
+      }
+
       const sessionDir = path.join(SESSION_BASE_DIR, `merchant_${merchant.id}`);
       const credsFile = path.join(sessionDir, "creds.json");
 
@@ -522,6 +586,5 @@ module.exports = {
   initializeAllSessions,
   activeSessions,
   requestPairingCode,
-  isDailyLimitReached,
-  incrementDailyCount,
+  resetBannedSession,
 };

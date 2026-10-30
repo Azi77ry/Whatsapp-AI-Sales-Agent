@@ -30,6 +30,11 @@ async function apiFetch(path, options = {}) {
   return res.json();
 }
 
+// Tafsiri yenye vigezo: tf("nhHintOk", { n: 5 }) -> "Zimebaki 5 leo..."
+function tf(key, vars = {}) {
+  return t(key).replace(/\{(\w+)\}/g, (_, k) => (vars[k] !== undefined ? vars[k] : ""));
+}
+
 async function insightsFetch(path, options = {}) {
   return apiFetch("/insights" + path, options);
 }
@@ -757,12 +762,33 @@ function fireConfetti() {
 
 
 // ---- CONVERSATIONS ----
+let currentConvFilter = "all";
+let currentThread = null; // { convId, name, phone }
+
+document.querySelectorAll("#convFilters .conv-filter").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    currentConvFilter = btn.dataset.filter;
+    loadConversations(1);
+  });
+});
+
+// Tafuta kwa jina au namba (ndani ya ukurasa uliopo)
+document.getElementById("chatSearch")?.addEventListener("input", (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll("#conversationsList .conv-item").forEach((el) => {
+    el.style.display = !q || el.dataset.search.includes(q) ? "" : "none";
+  });
+});
+
 async function loadConversations(page = 1) {
   const list = document.getElementById("conversationsList");
   list.innerHTML = `<p style="color:var(--text-muted);padding:16px;">${t('loading')}</p>`;
+  document.querySelectorAll("#convFilters .conv-filter").forEach((b) => {
+    b.classList.toggle("active", b.dataset.filter === currentConvFilter);
+  });
 
   try {
-    const data = await apiFetch(`/conversations?page=${page}`);
+    const data = await apiFetch(`/conversations?page=${page}&filter=${encodeURIComponent(currentConvFilter)}`);
     list.innerHTML = "";
 
     if (!data.conversations || data.conversations.length === 0) {
@@ -774,10 +800,14 @@ async function loadConversations(page = 1) {
       const div = document.createElement("div");
       div.className = "conv-item";
       div.dataset.convId = conv.id;
+      div.dataset.search = `${conv.customerName || ""} ${conv.customerPhone || ""}`.toLowerCase();
 
       const timeAgo = formatTimeAgo(conv.updatedAt);
       const needsBadge = conv.needsHuman
-        ? `<span style="background:#ef4444;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px;font-weight:700;">Anahitaji Mmiliki</span>`
+        ? `<span style="background:#ef4444;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px;font-weight:700;">${t('convBadgeNeedsHuman')}</span>`
+        : "";
+      const optedOutBadge = conv.optedOut
+        ? `<span style="background:var(--bg-color);color:var(--text-muted);border:1px solid var(--border);font-size:10px;padding:2px 6px;border-radius:999px;">🔕 ${t('convBadgeOptedOut')}</span>`
         : "";
       const ordersBadge = conv.orderCount > 0
         ? `<span style="background:#10b981;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px;">Oda ${conv.orderCount}</span>`
@@ -787,12 +817,12 @@ async function loadConversations(page = 1) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div>
             <div style="font-weight:600;font-size:14px;">${escapeHtml(conv.customerName)}</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${conv.customerPhone}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHtml(conv.customerPhone)}</div>
           </div>
           <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;">${timeAgo}</div>
         </div>
         <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-          ${needsBadge}${ordersBadge}
+          ${needsBadge}${optedOutBadge}${ordersBadge}
           <span style="font-size:11px;color:var(--text-muted);">💬 ${conv.messageCount} ujumbe</span>
         </div>
         ${conv.contextSummary ? `<div style="font-size:11px;color:var(--text-muted);margin-top:6px;border-top:1px solid var(--line);padding-top:6px;line-height:1.4;">${escapeHtml(conv.contextSummary.slice(0, 120))}${conv.contextSummary.length > 120 ? "..." : ""}</div>` : ""}
@@ -827,6 +857,39 @@ async function loadConversations(page = 1) {
   }
 }
 
+// Mmiliki anamjibu mteja mwenyewe kutoka dashboard
+document.getElementById("convReplyForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentThread) return;
+  const input = document.getElementById("convReplyInput");
+  const btn = document.getElementById("convReplyBtn");
+  const text = input.value.trim();
+  if (!text) return;
+
+  btn.disabled = true;
+  btn.textContent = t('convReplySending');
+  try {
+    await apiFetch(`/conversations/${currentThread.convId}/reply`, {
+      method: "POST",
+      body: JSON.stringify({ text }),
+    });
+    input.value = "";
+    await loadChatThread(currentThread.convId, currentThread.name, currentThread.phone);
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = t('convReplySend');
+  }
+});
+
+document.getElementById("convReplyInput")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById("convReplyForm").requestSubmit();
+  }
+});
+
 async function loadChatThread(convId, name, phone) {
   const thread = document.getElementById("conversationThread");
   const header = document.getElementById("conversationThreadHeader");
@@ -835,6 +898,8 @@ async function loadChatThread(convId, name, phone) {
   thread.innerHTML = `<p style="color:var(--text-muted);padding:16px;text-align:center;">${t('loadingChats')}</p>`;
   header.classList.remove("hidden");
   headerName.textContent = `${name} (${phone})`;
+  currentThread = { convId, name, phone };
+  document.getElementById("convReplyForm").classList.remove("hidden");
 
   try {
     const data = await apiFetch(`/conversations/${convId}/messages`);
@@ -877,6 +942,32 @@ async function loadChatThread(convId, name, phone) {
       };
     }
 
+    // 🙋 Mmiliki achukue mazungumzo (AI inasimama) au arudishe kwa AI
+    const handoffBtn = document.getElementById("toggleHandoffBtn");
+    const renderHandoff = () => {
+      const needsHuman = Boolean(data.conversation?.needsHuman);
+      handoffBtn.textContent = needsHuman ? t('convGiveBack') : t('convTakeOver');
+      handoffBtn.classList.toggle("active", needsHuman);
+    };
+    renderHandoff();
+    handoffBtn.onclick = async () => {
+      const next = !data.conversation.needsHuman;
+      handoffBtn.disabled = true;
+      try {
+        await apiFetch(`/conversations/${convId}/needs-human`, {
+          method: "PUT",
+          body: JSON.stringify({ needsHuman: next }),
+        });
+        data.conversation.needsHuman = next;
+        renderHandoff();
+        if (next) showToast(t('convHandoffHint'));
+      } catch (e) {
+        alert(t('alertFailEdit') + e.message);
+      } finally {
+        handoffBtn.disabled = false;
+      }
+    };
+
     if (!data.messages || data.messages.length === 0) {
       thread.innerHTML = `<p style="color:var(--text-muted);padding:16px;text-align:center;">${t('emptyMessages')}</p>`;
       return;
@@ -884,7 +975,7 @@ async function loadChatThread(convId, name, phone) {
 
     data.messages.forEach(msg => {
       const bubble = document.createElement("div");
-      bubble.className = `chat-bubble ${msg.sender === "customer" ? "customer" : "ai"}`;
+      bubble.className = `chat-bubble ${msg.sender === "customer" ? "customer" : "ai"}${msg.sender === "merchant" ? " merchant" : ""}`;
 
       // Format WhatsApp-style markdown
       const formatted = escapeHtml(msg.content)
@@ -947,6 +1038,8 @@ async function loadOverview() {
     console.error("Failed to load overview stats:", err);
   }
   
+  loadNumberHealth();
+
   // Sync the bot toggle state visually
   try {
     const settings = await apiFetch("/settings");
@@ -955,6 +1048,60 @@ async function loadOverview() {
     console.error("Failed to load bot settings for toggle state", e);
   }
 }
+
+// ---- 🛡️ USALAMA WA NAMBA (Number Health) ----
+async function loadNumberHealth() {
+  const card = document.getElementById("numberHealthCard");
+  if (!card) return;
+  try {
+    const h = await apiFetch("/number-health");
+    const pct = h.dailyLimit ? Math.min(100, Math.round((h.sentToday / h.dailyLimit) * 100)) : 0;
+    const mPct = h.marketingLimit ? Math.min(100, Math.round((h.marketingSentToday / h.marketingLimit) * 100)) : 0;
+    const remaining = Math.max(0, h.dailyLimit - h.sentToday);
+
+    document.getElementById("nhSentText").textContent = `${h.sentToday} / ${h.dailyLimit}`;
+    document.getElementById("nhMarketingText").textContent = `${h.marketingSentToday} / ${h.marketingLimit}`;
+
+    const sentBar = document.getElementById("nhSentBar");
+    sentBar.style.width = pct + "%";
+    sentBar.classList.toggle("nh-bar-warn", pct >= 70 && pct < 100);
+    sentBar.classList.toggle("nh-bar-full", pct >= 100);
+    document.getElementById("nhMarketingBar").style.width = mPct + "%";
+    document.getElementById("nhSentHint").textContent = remaining > 0 ? tf("nhHintOk", { n: remaining }) : t("nhHintFull");
+
+    let warmup;
+    if (h.customLimit) warmup = t("nhWarmupCustom");
+    else if (h.linkedDays === null) warmup = "—";
+    else if (h.nextStageInDays === null) warmup = t("nhWarmupDone");
+    else warmup = `${tf("nhWarmupStage", { s: h.warmupStage, t: h.warmupStages, d: h.linkedDays + 1 })} · ${tf("nhWarmupNext", { n: h.nextStageInDays })}`;
+    document.getElementById("nhWarmupText").textContent = warmup;
+
+    document.getElementById("nhOptedOutCount").textContent = h.optedOutCount;
+    document.getElementById("nhNeedsHumanCount").textContent = h.needsHumanCount;
+    document.getElementById("nhQueueCount").textContent = h.queueLength;
+
+    const level = document.getElementById("nhLevelBadge");
+    let levelKey = "nhLevelSafe", levelClass = "nh-level-safe";
+    if (h.banned) { levelKey = "nhLevelBanned"; levelClass = "nh-level-danger"; }
+    else if (h.connection !== "connected") { levelKey = "nhLevelOffline"; levelClass = "nh-level-muted"; }
+    else if (pct >= 100) { levelKey = "nhLevelLimit"; levelClass = "nh-level-danger"; }
+    else if (pct >= 70) { levelKey = "nhLevelWarn"; levelClass = "nh-level-warn"; }
+    level.className = "badge nh-level " + levelClass;
+    level.textContent = t(levelKey);
+
+    document.getElementById("nhBannedBox").classList.toggle("hidden", !h.banned);
+  } catch (err) {
+    console.error("Failed to load number health:", err);
+  }
+}
+
+// Bofya chip ya "Wamejiondoa" / "Wanakusubiri" -> fungua Mazungumzo yenye chujio hilo
+document.querySelectorAll("[data-conv-filter]").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    currentConvFilter = chip.dataset.convFilter;
+    document.querySelector(".nav-item[data-view='conversations']")?.click();
+  });
+});
 
 // ---- PRODUCTS ----
 async function loadProducts() {
@@ -1437,6 +1584,19 @@ let wsConnectionStartTime = null;
 
 let activeConnectMode = null; // null | "qr" | "pairing"
 
+// Kadi kuu ya juu (hero) ionyeshe hali halisi ya WhatsApp badala ya "Imeunganishwa" muda wote
+function updateHeroStatus(status) {
+  const hero = document.getElementById("heroWaStatus");
+  if (!hero) return;
+  const map = {
+    connected: "statusConnectedBadge",
+    connecting: "statusConnectingBadge",
+    qr: "statusQrBadge",
+    banned: "statusBannedBadge",
+  };
+  hero.textContent = t(map[status] || "statusDiscBadge");
+}
+
 async function checkWhatsAppStatus() {
   if (statusPollTimeout) {
     clearTimeout(statusPollTimeout);
@@ -1457,6 +1617,7 @@ async function checkWhatsAppStatus() {
   try {
     const data = await apiFetch("/whatsapp-status");
     badge.className = "badge " + data.status;
+    updateHeroStatus(data.status);
 
     // Track disconnects for push notifications
     if (typeof currentWsState !== 'undefined' && currentWsState === "connected" && data.status === "disconnected") {
@@ -1498,6 +1659,23 @@ async function checkWhatsAppStatus() {
       }
     } else {
       wsConnectionStartTime = null; // Reset if connected or disconnected
+    }
+
+    if (data.status === "banned") {
+      activeConnectMode = null;
+      badge.className = "badge disconnected";
+      badge.textContent = t('statusBannedBadge');
+      textEl.textContent = t('statusBannedDesc');
+      if (modeSelector) modeSelector.classList.add("hidden");
+      qrContainer.classList.add("hidden");
+      if (qrOption1Box) qrOption1Box.classList.add("hidden");
+      if (pairSection) pairSection.classList.add("hidden");
+      qrCodeDiv.innerHTML = "";
+      lastQrText = null;
+      restartBtn.textContent = t('btnRelinkWa');
+      restartBtn.classList.remove("hidden");
+      statusPollTimeout = setTimeout(checkWhatsAppStatus, 30000);
+      return;
     }
 
     if (data.status === "connected") {

@@ -2,18 +2,44 @@
 // (groups, status updates, ujumbe kutoka kwako mwenyewe), na kutuma jibu la AI - Phase 1
 // Imeboreshwa kwa Multi-Tenant SaaS.
 
-const { generateReply, isPersonalContact, logPersonalMessage } = require("../ai/agent");
+const { generateReply, isPersonalContact, logPersonalMessage, getOrCreateConversation, saveMessage } = require("../ai/agent");
 const { speechToText, textToSpeech } = require("../ai/voiceService");
 const { downloadMediaMessage } = require("@whiskeysockets/baileys");
 const pino = require("pino");
 const prisma = require("../db/client");
-const { isDailyLimitReached, incrementDailyCount } = require("./manager");
+const { enqueueSend, checkCanSend } = require("./sendQueue");
 
 // Anti-Bot Rate Limiting (In-Memory)
 const userMessageCounts = new Map();
 const RATE_LIMIT_WINDOW_MS = 60000; // Sekunde 60
 const MAX_MESSAGES_PER_WINDOW = 6; // Meseji 6 kwa dakika
 const BLOCK_DURATION_MS = 15 * 60 * 1000; // Dakika 15
+
+// 🛡️ OPT-OUT: Maneno ya mteja kuomba asitumiwe ukumbusho (lazima ujumbe uwe neno hili tu)
+const OPT_OUT_PHRASES = [
+  "stop", "unsubscribe", "acha", "sitaki ujumbe", "sitaki meseji", "acha kunitumia",
+  "usinitumie", "usinitumie ujumbe", "usinitumie meseji", "niondoe", "stop messages",
+];
+const OPT_IN_PHRASES = ["start", "anza", "anza tena", "subscribe"];
+
+// 🛡️ Mteja aliyekasirika: AI isiendelee kuuza - mpe mmiliki (hapa inatosha neno kuwemo ndani ya ujumbe)
+const ANNOYED_PHRASES = [
+  "acha kunisumbua", "unanisumbua", "usinisumbue", "mnanisumbua", "msinisumbue",
+  "spam", "stop bothering", "stop messaging", "stop texting", "nitakureport", "nitaripoti",
+];
+
+function normalizeText(text) {
+  return text.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, "").replace(/\s+/g, " ").trim();
+}
+
+// Rudisha "out", "in", "annoyed" au null
+function detectContactPreference(text) {
+  const clean = normalizeText(text);
+  if (OPT_OUT_PHRASES.includes(clean)) return "out";
+  if (OPT_IN_PHRASES.includes(clean)) return "in";
+  if (ANNOYED_PHRASES.some((p) => clean.includes(p))) return "annoyed";
+  return null;
+}
 
 function extractTextFromMessage(msg) {
   const m = msg.message;
@@ -28,12 +54,9 @@ function extractTextFromMessage(msg) {
   );
 }
 
-// Jaribu kutuma ujumbe mara nyingi kama kunatokea kosa la muunganiko wa muda mfupi
-async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, originalMsg = null) {
-  // 🛡️ ANTI-BAN: Delay ya nasibu kabla ya kutuma (1-3 sekunde) - inafanana na binadamu anayeandika
-  const preSendDelay = 1000 + Math.floor(Math.random() * 2000);
-  await new Promise(r => setTimeout(r, preSendDelay));
-
+// Jaribu kutuma ujumbe mara nyingi kama kunatokea kosa la muunganiko wa muda mfupi.
+// Ujumbe unapita kwenye foleni ya merchant (sendQueue) - inarudisha false kama umezuiwa na kikomo.
+async function sendWithRetry(sock, mId, remoteJid, replyText, originalMsg = null, maxRetries = 3) {
   // Muda wa kati ya kujaribu tena (unaongezeka kwa kila jaribio)
   const getRetryDelay = (attempt) => attempt * 3000; // 3s, 6s, 9s
 
@@ -68,6 +91,14 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
   }
 
 
+  return enqueueSend(mId, "reply", async () => {
+    // Socket inaweza kubadilika kama imeunganika upya wakati ujumbe ukisubiri kwenye foleni
+    sock = require("./manager").activeSessions.get(mId) || sock;
+    await sendAttempts(sock, remoteJid, cleanText, imageUrl, originalMsg, maxRetries, getRetryDelay);
+  });
+}
+
+async function sendAttempts(sock, remoteJid, cleanText, imageUrl, originalMsg, maxRetries, getRetryDelay) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const sendOptions = {};
@@ -88,8 +119,8 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
       
       // Turn off composing state after successful send
       await sock.sendPresenceUpdate("paused", remoteJid).catch(() => {});
-      
-      return true;
+
+      return;
     } catch (err) {
       console.error(`[DEBUG ERROR] sendMessage imeshindwa (jaribio ${attempt}):`, err);
       const isConnectionError =
@@ -109,7 +140,6 @@ async function sendWithRetry(sock, remoteJid, replyText, maxRetries = 3, origina
       }
     }
   }
-  return false;
 }
 
 async function handleIncomingMessage(sock, msg, merchantId = 1) {
@@ -143,17 +173,6 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
 
   let remoteJid = msg.key.remoteJid;
   
-  // LOG THE LID ISSUE TO DEBUG FULLY
-  if (remoteJid.includes("@lid")) {
-    const fs = require('fs');
-    try {
-      fs.writeFileSync('lid_debug.json', JSON.stringify(msg, null, 2));
-      console.log(`🔍 [LID DEBUG] Saved full message to lid_debug.json`);
-    } catch (e) {
-      console.error('Failed to save lid_debug.json', e);
-    }
-  }
-
   // Puuza groups, broadcast, na newsletter
   if (
     remoteJid.endsWith("@g.us") ||
@@ -189,10 +208,8 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
       if (userData.count > MAX_MESSAGES_PER_WINDOW) {
         console.log(`🚨 SPAM/BOT LOOP DETECTED! Kuzuia namba ${remoteJid} kwa dakika 15.`);
         userData.blockedUntil = now + BLOCK_DURATION_MS;
-        
-        // Tuma ujumbe mmoja wa kumpa taarifa mteja kisha nyamaza
-        await sendWithRetry(sock, remoteJid, "⚠️ *Kizuizi cha Usalama:* Mfumo umegundua meseji zinatumwa kwa kasi isiyo ya kawaida (Inawezekana ni Auto-Responder). Tumesitisha mazungumzo haya kwa dakika 15 ili kulinda usalama. Mmiliki atakujibu hivi punde.", 3, msg);
-        
+
+        // USITUME ujumbe wowote hapa - kujibu bot nyingine kunaendeleza loop. Nyamaza na mjulishe mmiliki.
         // Hifadhi kwenye database ili mmiliki aone (Kama "Personal" ili Bot isijibu tena mpaka ifunguliwe)
         await logPersonalMessage({ customerPhone: remoteJid, customerName: msg.pushName || "Unknown", userMessage: "[SYSTEM AUTO-BLOCK] Mteja huyu amefungiwa kwa muda kutokana na kutuma meseji nyingi mfululizo (Spam/Bot Loop).", merchantId: mId });
         return;
@@ -223,7 +240,7 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
       }
     } catch (err) {
       console.error(`⚠️ Imeshindwa kutafsiri Voice Note (${remoteJid}):`, err.message);
-      await sendWithRetry(sock, remoteJid, "Samahani, sikufanikiwa kusikia sauti yako vizuri 🎙️. Tafadhali rudia au uandike kwa maandishi nisaidie. 🙏", 3, msg);
+      await sendWithRetry(sock, mId, remoteJid, "Samahani, sikufanikiwa kusikia sauti yako vizuri 🎙️. Tafadhali rudia au uandike kwa maandishi nisaidie. 🙏", msg);
       return;
     }
   }
@@ -242,6 +259,42 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     return;
   }
 
+  // 🛡️ OPT-OUT / OPT-IN / MTEJA ALIYEKASIRIKA - shughulikia kabla ya AI
+  const preference = detectContactPreference(text);
+  if (preference) {
+    const conversation = await getOrCreateConversation(remoteJid, customerName, mId);
+    await saveMessage(conversation.id, "customer", text);
+
+    let confirmText;
+    if (preference === "out") {
+      await prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { optedOut: true, optedOutAt: new Date() },
+      });
+      confirmText = "Sawa 👍 Hutapokea tena ujumbe wa ukumbusho kutoka kwetu. Ukihitaji chochote, tuandikie wakati wowote. (Andika START kupokea tena.)";
+    } else if (preference === "in") {
+      await prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { optedOut: false, optedOutAt: null },
+      });
+      confirmText = "Karibu tena! 😊 Nikusaidie nini leo?";
+    } else {
+      // Mteja amekasirika: acha kuuza, usimtumie nudges, mpe mmiliki
+      await prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { optedOut: true, optedOutAt: new Date(), needsHuman: true },
+      });
+      confirmText = "Samahani sana kwa usumbufu 🙏 Sitakutumia ujumbe tena. Mmiliki wa duka ataangalia mazungumzo haya mwenyewe.";
+    }
+    console.log(`🛡️  Merchant #${mId} - ${remoteJid} preference: ${preference}`);
+
+    if (manager.isBotActive(mId) && !(await checkCanSend(mId, "reply"))) {
+      const sent = await sendWithRetry(sock, mId, remoteJid, confirmText, msg).catch(() => false);
+      if (sent) await saveMessage(conversation.id, "ai", confirmText);
+    }
+    return;
+  }
+
   // Angalia kama bot ipo active kwa duka hili
   if (!manager.isBotActive(mId)) {
     await logPersonalMessage({ customerPhone: remoteJid, customerName, userMessage: text, merchantId: mId });
@@ -249,9 +302,10 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     return;
   }
 
-  // 🛡️ ANTI-BAN: Angalia kikomo cha ujumbe cha kila siku
-  if (isDailyLimitReached(mId)) {
-    console.warn(`🚨 Merchant #${mId} - Imefikia kikomo cha ujumbe wa siku (${800} messages). Bot itaacha kwa leo kulinda usalama.`);
+  // 🛡️ ANTI-BAN: Angalia kikomo cha ujumbe cha kila siku (kabla ya kuita AI ili tusipoteze gharama)
+  const blockReason = await checkCanSend(mId, "reply");
+  if (blockReason) {
+    console.warn(`🚨 Merchant #${mId} - Haiwezi kujibu (${blockReason}). Ujumbe umehifadhiwa kwa ajili ya mmiliki.`);
     await logPersonalMessage({ customerPhone: remoteJid, customerName, userMessage: text, merchantId: mId });
     return;
   }
@@ -300,11 +354,14 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
             const sendOptions = {};
             if (!remoteJid.includes("@lid")) sendOptions.quoted = msg;
 
-            await sock.sendMessage(
-              remoteJid,
-              { audio: audioReplyBuffer, mimetype: "audio/mp4", ptt: false },
-              sendOptions
+            const voiceSent = await enqueueSend(mId, "reply", () =>
+              sock.sendMessage(
+                remoteJid,
+                { audio: audioReplyBuffer, mimetype: "audio/mp4", ptt: false },
+                sendOptions
+              )
             );
+            if (!voiceSent) return;
             console.log(`🎙️ Merchant #${mId} - Jibu la Voice Note limetumwa kikamilifu kwa ${remoteJid}!`);
 
             // Increment AI Usage
@@ -320,7 +377,7 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
       }
 
       // Kama mteja alituma maandishi ya kawaida:
-      const sent = await sendWithRetry(sock, remoteJid, replyText, 3, msg);
+      const sent = await sendWithRetry(sock, mId, remoteJid, replyText, msg);
       if (sent) {
         console.log(`📤 Merchant #${mId} - Jibu limetumwa kwa ${remoteJid}: ${replyText}`);
         
@@ -329,11 +386,7 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
           where: { id: mId },
           data: { aiUsage: { increment: 1 } }
         });
-
-        // 🛡️ ANTI-BAN: Hesabu ujumbe wa siku
-        const todayCount = incrementDailyCount(mId);
-        console.log(`📊 Merchant #${mId} - Ujumbe wa leo: ${todayCount}/800`);
-      }
+}
     } else {
       console.log(`🔇 Merchant #${mId} - Bot iko kimya kwa ${remoteJid}.`);
     }

@@ -6,9 +6,15 @@ const cron = require("node-cron");
 const prisma = require("../db/client");
 const config = require("../config");
 const { sendMessage } = require("../whatsapp/sender");
+const manager = require("../whatsapp/manager");
+const { decrypt } = require("../utils/crypto");
 const { callAISimple } = require("../ai/callAISimple");
 
 const MIN_MESSAGES = 4; // idadi ya chini ya ujumbe kuonyesha nia ya kununua
+const MIN_CUSTOMER_MESSAGES = 2; // mteja mwenyewe lazima awe ameandika angalau mara 2
+// 🛡️ Nudge itumwe ndani ya saa 23 tangu ujumbe wa mwisho wa mteja (dirisha la saa 24 la WhatsApp)
+const MAX_HOURS_SINCE_CUSTOMER = 23;
+const OPT_OUT_FOOTER = "\n\n_Jibu STOP usipotaka ukumbusho._";
 
 function currentHourEAT() {
   return (new Date().getUTCHours() + 3) % 24; // EAT = UTC+3, wrapped to stay within 0-23
@@ -41,10 +47,10 @@ Andika ujumbe MFUPI wa WhatsApp (sentensi 1-2 tu) wa Kiswahili wa kirafiki unaom
 - Utaje bidhaa halisi kama unajua ni bidhaa gani alitaka
 - Uwe mfupi na wa asili kama rafiki anayekumbusha
 - Tumia jina la mteja kama unajua
-- Unaweza kutaja stoki kupungua kama inafaa
+- USITAJE stoki kupungua, ofa za muda mfupi, wala kubuni dharura yoyote
 - Usiandike zaidi ya sentensi 2
  
-Mfano wa jibu zuri: "Habari Juma! 😊 Bado unahitaji ile Jezi ya Barcelona? Stock imebaki chache tu — niambie ukiwa tayari nikukamilishie haraka!"
+Mfano wa jibu zuri: "Habari Juma! 😊 Bado unahitaji ile Jezi ya Barcelona? Niambie ukiwa tayari nikukamilishie oda yako."
  
 Andika ujumbe tu, bila maelezo mengine:`;
 
@@ -81,8 +87,14 @@ async function runReEngagement() {
 
     console.log(`🔎 Re-engagement: Inakagua wateja wa Merchant #${merchantId} (${businessName})...`);
 
-    const minAgo = new Date(now.getTime() - reEngagementMinHours * 60 * 60 * 1000);
-    const maxAgo = new Date(now.getTime() - reEngagementMaxHours * 60 * 60 * 1000);
+    // Namba iliyofungiwa au haijaunganishwa - usijaribu
+    const status = manager.getConnectionStatus(merchantId).status;
+    if (merchant.waBanned || status !== "connected") continue;
+
+    const maxHours = Math.min(reEngagementMaxHours, MAX_HOURS_SINCE_CUSTOMER);
+    const minHours = Math.min(reEngagementMinHours, maxHours - 1);
+    const minAgo = new Date(now.getTime() - minHours * 60 * 60 * 1000);
+    const maxAgo = new Date(now.getTime() - maxHours * 60 * 60 * 1000);
     const cooldownAgo = new Date(now.getTime() - reEngagementCooldownHours * 60 * 60 * 1000);
 
     // Tafuta wateja wanaostahili nudge kwa merchant huyu
@@ -90,7 +102,9 @@ async function runReEngagement() {
       where: {
         merchantId,
         contactType: "customer",
-        updatedAt: { gte: maxAgo, lte: minAgo },
+        optedOut: false, // 🛡️ Mteja aliyesema STOP hapati nudge kamwe
+        needsHuman: false, // Mmiliki anashughulikia - AI isiingilie
+        updatedAt: { gte: maxAgo }, // chujio la haraka; ukaguzi kamili ni wa ujumbe wa mwisho wa mteja hapa chini
         OR: [
           { reEngagedAt: null },
           { reEngagedAt: { lte: cooldownAgo } },
@@ -101,10 +115,22 @@ async function runReEngagement() {
         _count: { select: { messages: true } },
         messages: { orderBy: { createdAt: "desc" }, take: 6 },
       },
-      take: 5,
+      take: 20,
     });
 
-    const eligible = candidates.filter((c) => c._count.messages >= MIN_MESSAGES);
+    const eligible = candidates
+      .filter((c) => {
+        if (c._count.messages < MIN_MESSAGES) return false;
+        const customerMsgs = c.messages.filter((m) => m.sender === "customer");
+        if (customerMsgs.length < MIN_CUSTOMER_MESSAGES) return false;
+        const lastCustomerAt = customerMsgs[0].createdAt;
+        // Mteja aliacha kujibu kati ya minHours na maxHours zilizopita
+        if (lastCustomerAt > minAgo || lastCustomerAt < maxAgo) return false;
+        // 🛡️ Usitume nudge ya pili kama mteja hajajibu tangu nudge ya kwanza
+        if (c.reEngagedAt && lastCustomerAt < c.reEngagedAt) return false;
+        return true;
+      })
+      .slice(0, 5);
 
     if (eligible.length === 0) {
       console.log(`📣 Merchant #${merchantId}: Hakuna wateja wanaostahili nudge kwa sasa.`);
@@ -115,10 +141,11 @@ async function runReEngagement() {
 
     for (const conv of eligible) {
       try {
-        const recentMessages = conv.messages.slice().reverse();
-        const nudge = await generateNudge(conv.customerName, recentMessages, conv.contextSummary, merchant);
+        const recentMessages = conv.messages.slice().reverse().map((m) => ({ ...m, content: decrypt(m.content) }));
+        const nudge = (await generateNudge(conv.customerName, recentMessages, conv.contextSummary, merchant)) + OPT_OUT_FOOTER;
 
-        const ok = await sendMessage(conv.customerPhone, nudge, merchantId);
+        // Foleni (sendQueue) inaweka nafasi kubwa kati ya nudges na inazuia kama kikomo cha marketing kimefika
+        const ok = await sendMessage(conv.customerPhone, nudge, merchantId, "marketing");
         if (ok) {
           await prisma.conversation.update({
             where: { id: conv.id },
@@ -126,10 +153,9 @@ async function runReEngagement() {
           });
           console.log(`✅ Nudge imetumwa (Merchant #${merchantId}): ${conv.customerName || conv.customerPhone} → "${nudge.slice(0, 60)}..."`);
         } else {
-          console.warn(`⚠️  Nudge imeshindwa kutumwa kwa Merchant #${merchantId}: ${conv.customerPhone}`);
+          console.warn(`⚠️  Nudge haikutumwa (Merchant #${merchantId}): ${conv.customerPhone} - inasimamisha nudges za leo kwa duka hili`);
+          break;
         }
-
-        await new Promise((r) => setTimeout(r, 2000));
       } catch (err) {
         console.error(`⚠️  Kosa la re-engagement kwa ${conv.customerPhone} (Merchant #${merchantId}):`, err.message);
       }

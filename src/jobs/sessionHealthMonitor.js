@@ -25,7 +25,7 @@ function shouldSendAlert(merchantId) {
 /**
  * Tuma taarifa ya email kwamba WhatsApp session imejitenga
  */
-async function sendDisconnectAlert(merchant) {
+async function sendDisconnectAlert(merchant, banned = false) {
   const alertEmail = merchant.notificationEmail || merchant.email;
   if (!alertEmail) return;
 
@@ -51,12 +51,14 @@ async function sendDisconnectAlert(merchant) {
 <body>
   <div class="container">
     <div class="header">
-      <h1>⚠️ WhatsApp Imejitenga!</h1>
+      <h1>${banned ? "🚫 Namba Imefungiwa na WhatsApp!" : "⚠️ WhatsApp Imejitenga!"}</h1>
       <p>Taarifa ya Dharura — Mfumo wa AI Sales Agent</p>
     </div>
     <div class="body">
       <p>Habari <strong>${merchant.businessName}</strong>,</p>
-      <p>Mfumo wetu umegundua kwamba WhatsApp ya biashara yako <strong>"${merchant.businessName}"</strong> imejitenga (disconnected) kwenye seva yetu.</p>
+      ${banned
+        ? `<p>WhatsApp imefungia (ban) namba ya biashara yako <strong>"${merchant.businessName}"</strong>. Tumesimamisha AI kiotomatiki na hatutajaribu kuunganisha tena.</p>`
+        : `<p>Mfumo wetu umegundua kwamba WhatsApp ya biashara yako <strong>"${merchant.businessName}"</strong> imejitenga (disconnected) kwenye seva yetu.</p>`}
       
       <div class="alert-box">
         <strong>📋 Taarifa za Tatizo:</strong><br><br>
@@ -65,14 +67,21 @@ async function sendDisconnectAlert(merchant) {
         ❌ Hali: <strong>Disconnected — AI haiwezi kujibu wateja wako kwa sasa</strong>
       </div>
 
-      <div class="steps">
+      ${banned ? `<div class="steps">
+        <strong>✅ Nini cha kufanya:</strong>
+        <ol style="margin: 10px 0 0; padding-left: 20px;">
+          <li>Fungua WhatsApp kwenye simu yako - kama kuna kitufe cha "Request a review", omba ukaguzi</li>
+          <li>Usijaribu kuunganisha namba hii kwenye mfumo mpaka WhatsApp iirudishe</li>
+          <li>Ikirudishwa, unganisha upya kupitia dashboard - itaanza na kikomo kidogo cha ujumbe (warm-up)</li>
+        </ol>
+      </div>` : `<div class="steps">
         <strong>✅ Hatua za Kurekebisha:</strong>
         <ol style="margin: 10px 0 0; padding-left: 20px;">
           <li>Tembelea dashboard yako: <a href="${process.env.APP_URL || 'http://localhost:3000'}/dashboard">Dashboard</a></li>
           <li>Bonyeza kitufe cha "Unganisha WhatsApp"</li>
           <li>Scan QR Code mpya au tumia Pairing Code kuunganisha tena</li>
         </ol>
-      </div>
+      </div>`}
 
       <p style="margin-top: 20px; font-size: 14px; color: #475569;">
         Kama una maswali, wasiliana nasi haraka ili tukusaidie.
@@ -100,9 +109,13 @@ async function sendDisconnectAlert(merchant) {
     await transporter.sendMail({
       from: `"Aziry Tech SaaS" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
       to: alertEmail,
-      subject: `⚠️ WhatsApp Imejitenga — ${merchant.businessName} (Hatua Inahitajika!)`,
+      subject: banned
+        ? `🚫 Namba ya WhatsApp Imefungiwa — ${merchant.businessName}`
+        : `⚠️ WhatsApp Imejitenga — ${merchant.businessName} (Hatua Inahitajika!)`,
       html: htmlBody,
-      text: `WhatsApp ya biashara yako "${merchant.businessName}" imejitenga. Tafadhali ingia kwenye dashboard yako na uunganishe tena.`,
+      text: banned
+        ? `WhatsApp imefungia namba ya biashara yako "${merchant.businessName}". AI imesimamishwa. Omba ukaguzi (review) kwenye WhatsApp ya simu yako.`
+        : `WhatsApp ya biashara yako "${merchant.businessName}" imejitenga. Tafadhali ingia kwenye dashboard yako na uunganishe tena.`,
     });
 
     console.log(`📧 [Health Monitor] Alert email imetumwa kwa ${alertEmail} kwa Merchant #${merchant.id}`);
@@ -133,6 +146,16 @@ async function runSessionHealthCheck() {
     for (const merchant of merchants) {
       try {
         const statusInfo = manager.getConnectionStatus(merchant.id);
+
+        // Namba imefungiwa - tuma taarifa mara moja tu (hali hii haibadiliki yenyewe)
+        if (statusInfo.status === "banned") {
+          if (!lastAlertSentAt.has(merchant.id)) {
+            console.log(`🚫 [Health Monitor] Merchant #${merchant.id} (${merchant.businessName}) is BANNED — sending alert`);
+            await sendDisconnectAlert(merchant, true);
+            lastAlertSentAt.set(merchant.id, Date.now());
+          }
+          continue;
+        }
 
         // Kama session iko disconnected na sio kwenye pairing mode
         if (statusInfo.status === "disconnected") {

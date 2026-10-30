@@ -7,6 +7,7 @@ const prisma = require("../db/client");
 const { getSettings } = require("../utils/platformSettings");
 const { sendMessage } = require("../whatsapp/sender");
 const manager = require("../whatsapp/manager");
+const { getSendStats } = require("../whatsapp/sendQueue");
 const authMiddleware = require("../middleware/auth");
 const { decrypt } = require("../utils/crypto");
 const multer = require("multer");
@@ -67,10 +68,15 @@ router.get("/conversations", wrap(async (req, res) => {
   const limit = 30;
   const skip = (page - 1) * limit;
 
+  // Chujio: all | needsHuman | optedOut
+  const where = { merchantId: mId };
+  if (req.query.filter === "needsHuman") where.needsHuman = true;
+  if (req.query.filter === "optedOut") where.optedOut = true;
+
   const [total, conversations] = await Promise.all([
-    prisma.conversation.count({ where: { merchantId: mId } }),
+    prisma.conversation.count({ where }),
     prisma.conversation.findMany({
-      where: { merchantId: mId },
+      where,
       orderBy: { updatedAt: "desc" },
       skip,
       take: limit,
@@ -91,6 +97,8 @@ router.get("/conversations", wrap(async (req, res) => {
       messageCount: c._count.messages,
       orderCount: c._count.orders,
       needsHuman: c.needsHuman,
+      optedOut: c.optedOut,
+      contactType: c.contactType,
       contextSummary: c.contextSummary || null,
       updatedAt: c.updatedAt,
       createdAt: c.createdAt,
@@ -141,7 +149,11 @@ router.get("/whatsapp-status", wrap((req, res) => {
 
 router.post("/whatsapp-connect", wrap(async (req, res) => {
   const statusInfo = manager.getConnectionStatus(req.merchantId);
-  if (statusInfo.status === "disconnected" || statusInfo.status === "qr") {
+  if (statusInfo.status === "banned") {
+    // Mmiliki ameamua kuunganisha upya (mf. rufaa imekubaliwa au namba mpya) - anza na creds safi
+    await manager.resetBannedSession(req.merchantId);
+  }
+  if (["disconnected", "qr", "banned"].includes(statusInfo.status)) {
     // Anzisha session ya WhatsApp ya merchant huyu ki-async
     manager.startSession(req.merchantId).catch((err) => {
       console.error(`Kosa la kuanzisha session ya Merchant #${req.merchantId}:`, err);
@@ -185,6 +197,26 @@ router.post("/bot-toggle", wrap((req, res) => {
   const label = active ? "imewashwa" : "imezimwa";
   console.log(`🤖 Merchant #${req.merchantId} - Bot ime${label} na admin.`);
   res.json({ success: true, botActive: active, message: `Bot ${label} kikamilifu.` });
+}));
+
+// 🛡️ Usalama wa Namba (Number Health) - kwa ajili ya kadi ya dashboard
+router.get("/number-health", wrap(async (req, res) => {
+  const mId = req.merchantId;
+  const [stats, merchant, optedOutCount, needsHumanCount] = await Promise.all([
+    getSendStats(mId),
+    prisma.merchant.findUnique({ where: { id: mId }, select: { waBanned: true, waBannedAt: true, waPhone: true } }),
+    prisma.conversation.count({ where: { merchantId: mId, optedOut: true } }),
+    prisma.conversation.count({ where: { merchantId: mId, needsHuman: true } }),
+  ]);
+  res.json({
+    ...stats,
+    banned: Boolean(merchant?.waBanned),
+    bannedAt: merchant?.waBannedAt || null,
+    waPhone: merchant?.waPhone || null,
+    connection: manager.getConnectionStatus(mId).status,
+    optedOutCount,
+    needsHumanCount,
+  });
 }));
 
 // ---- 2. PRODUCTS (Scoped to req.merchantId) ----
@@ -376,6 +408,61 @@ router.put("/conversations/:id/contact-type", wrap(async (req, res) => {
   const conversation = await prisma.conversation.update({
     where: { id: convId },
     data: { contactType },
+  });
+  res.json(conversation);
+}));
+
+// Mmiliki anamjibu mteja mwenyewe kutoka dashboard (mf. mteja anayehitaji binadamu)
+router.post("/conversations/:id/reply", wrap(async (req, res) => {
+  const convId = parseInt(req.params.id, 10);
+  const text = (req.body.text || "").trim();
+  if (!text) return res.status(400).json({ error: "Andika ujumbe kwanza." });
+  if (text.length > 4000) return res.status(400).json({ error: "Ujumbe ni mrefu sana." });
+
+  const conversation = await prisma.conversation.findFirst({
+    where: { id: convId, merchantId: req.merchantId },
+  });
+  if (!conversation) return res.status(404).json({ error: "Mazungumzo hayapo" });
+
+  // Dirisha la saa 24: usimtumie mteja ambaye hajaandika kwa muda mrefu (hatari ya kuripotiwa)
+  const lastCustomerMsg = await prisma.message.findFirst({
+    where: { conversationId: convId, sender: "customer" },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!lastCustomerMsg || Date.now() - lastCustomerMsg.createdAt.getTime() > 24 * 60 * 60 * 1000) {
+    return res.status(400).json({
+      error: "Mteja hajaandika ndani ya saa 24 zilizopita. Ili kulinda namba yako, mjibu tu baada ya yeye kukuandikia.",
+    });
+  }
+
+  const sent = await sendMessage(conversation.customerPhone, text, req.merchantId, "reply");
+  if (!sent) {
+    return res.status(503).json({ error: "Ujumbe haukutumwa - WhatsApp haijaunganishwa au kikomo cha leo kimefika." });
+  }
+
+  const { encrypt } = require("../utils/crypto");
+  const message = await prisma.message.create({
+    data: { conversationId: convId, sender: "merchant", content: encrypt(text) },
+  });
+  await prisma.conversation.update({ where: { id: convId }, data: { updatedAt: new Date() } });
+  res.json({ success: true, message: { ...message, content: text } });
+}));
+
+// Washa/zima "Anahitaji Mmiliki" - ikiwa true AI haijibu mazungumzo haya
+router.put("/conversations/:id/needs-human", wrap(async (req, res) => {
+  const convId = parseInt(req.params.id, 10);
+  const { needsHuman } = req.body;
+  if (typeof needsHuman !== "boolean") {
+    return res.status(400).json({ error: "'needsHuman' lazima iwe true au false" });
+  }
+  const existing = await prisma.conversation.findFirst({
+    where: { id: convId, merchantId: req.merchantId },
+  });
+  if (!existing) return res.status(404).json({ error: "Mazungumzo hayapo" });
+
+  const conversation = await prisma.conversation.update({
+    where: { id: convId },
+    data: { needsHuman },
   });
   res.json(conversation);
 }));

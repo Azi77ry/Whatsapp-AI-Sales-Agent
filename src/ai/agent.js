@@ -213,7 +213,8 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
       // Maneno ambayo mteja anaweza kutumia kurudi kwa AI
       const resumeKeywords = ["1", "1️⃣", "ai", "bot", "rudi kwa ai", "rudi kwa bot", "naomba kuongea na bot"];
       
-      if (resumeKeywords.some(k => cleanMsg === k || cleanMsg.includes(k))) {
+      // Maneno mafupi ("1", "ai", "bot") lazima yalingane kamili - vinginevyo bei kama "15000" ingerudisha AI
+      if (resumeKeywords.some(k => cleanMsg === k || (k.length > 3 && cleanMsg.includes(k)))) {
         await flagNeedsHuman(conversation.id, false); // needsHuman = false
         // Tunahakikisha consent iko true pia
         await prisma.conversation.update({
@@ -353,4 +354,4 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
   });
 }
 
-module.exports = { generateReply, isPersonalContact, logPersonalMessage };
+module.exports = { generateReply, isPersonalContact, logPersonalMessage, getOrCreateConversation, saveMessage };

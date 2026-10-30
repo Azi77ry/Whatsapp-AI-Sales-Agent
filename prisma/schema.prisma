@@ -45,6 +45,16 @@ model Merchant {
   subscriptionEndDate DateTime? // Tarehe ya mwisho ya kifurushi
   isTrialUsed         Boolean   @default(false)       // Ikiwa ametumia ofa ya siku 7
 
+  // 🛡️ Usalama wa Namba (Number Health / Anti-Ban)
+  waBanned            Boolean   @default(false)       // true ikiwa WhatsApp ilifungia namba (403) - usiunganishe tena kiotomatiki
+  waBannedAt          DateTime?
+  waLinkedAt          DateTime? // Tarehe namba ilipounganishwa kwenye mfumo (kwa warm-up ya kikomo cha siku)
+  waPhone             String?   // Namba ya WhatsApp iliyounganishwa kwa sasa
+  dailyMsgLimit       Int?      // Kikomo maalum cha ujumbe kwa siku (null = tumia warm-up ya kawaida)
+  sendCountDate       String?   // Siku ya hesabu ya sasa (YYYY-MM-DD, EAT)
+  sendCountToday      Int       @default(0) // Ujumbe uliotumwa leo (zote: majibu, oda, nudges)
+  marketingCountToday Int       @default(0) // Nudges zilizotumwa leo
+
   products            Product[]
   conversations       Conversation[]
   orders              Order[]
@@ -89,6 +99,8 @@ model Conversation {
   contactType    String    @default("customer") // "customer" (bot inajibu) au "personal" (rafiki/mtu binafsi - bot HAIJIBU)
   contextSummary String?   // Muhtasari mfupi wa mteja ulioundwa na AI (context compaction)
   reEngagedAt    DateTime? // Tarehe ya mwisho ya kutuma "abandoned cart" nudge - kuzuia spam (cooldown)
+  optedOut       Boolean   @default(false) // Mteja ameomba asitumiwe ukumbusho (STOP) - hakuna nudges tena
+  optedOutAt     DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
