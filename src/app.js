@@ -14,6 +14,13 @@ const billingRoutes = require("./routes/billing");
 
 const app = express();
 
+// Nyuma ya proxy (cPanel/Apache/Passenger) weka TRUST_PROXY=1 ili req.ip iwe IP halisi ya mteja.
+// Usiiweke kama hakuna proxy - mtu angeweza kughushi X-Forwarded-For.
+if (process.env.TRUST_PROXY) {
+  const v = process.env.TRUST_PROXY;
+  app.set("trust proxy", /^\d+$/.test(v) ? parseInt(v, 10) : v);
+}
+
 // 🛡️ Security Headers
 app.use(helmet({
   contentSecurityPolicy: false, // Tunazima CSP kwa muda ili isizuie scripts/styles za frontend yetu (inaweza kusanidiwa vizuri baadaye)
@@ -60,7 +67,9 @@ app.get("/superadmin", (req, res) => {
 app.use("/api/auth", authRoutes); // Usajili na Kuingia (already has per-route rate limiters)
 // ⚠️ Billing LAZIMA iwe kabla ya "/api" - apiRoutes ina router.use(authMiddleware) inayozuia kila
 // njia chini ya /api, hivyo webhook ya AzamPay (isiyo na JWT) ilikuwa ikipata 401 kila mara.
-app.use("/api/billing", globalApiLimiter, billingRoutes); // Njia mpya ya malipo ya AzamPay
+// Webhook ya AzamPay haipiti globalApiLimiter (inalindwa na AZAMPAY_CALLBACK_SECRET) ili trafiki ya
+// wengine isizuie callbacks za malipo; /checkout ina limiter yake ndani ya billing.js
+app.use("/api/billing", (req, res, next) => (req.path === "/webhook" ? next() : globalApiLimiter(req, res, next)), billingRoutes);
 app.use("/api", globalApiLimiter, apiRoutes);
 app.use("/api/insights", insightsRoutes);
 app.use("/api/superadmin", superadminRoutes);

@@ -236,6 +236,9 @@ router.put("/merchants/:id/status", wrap(async (req, res) => {
     select: { id: true, businessName: true, status: true },
   });
 
+  // Token zilizopo za merchant huyu zianze kukataliwa mara moja (si baada ya cache kuisha)
+  require("../middleware/auth").invalidateMerchantStatus(id);
+
   const action = status === "suspended" ? "imesimamishwa" : "imeamilishwa";
   console.log(`🔒 Super-Admin: Akaunti ya "${updated.businessName}" ${action}.`);
 

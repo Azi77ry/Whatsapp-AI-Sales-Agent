@@ -105,3 +105,9 @@ test("image upload ignores the client's file extension (no stored .html)", async
 
   require("fs").rmSync(require("path").join(__dirname, "..", "public", imageUrl), { force: true });
 });
+
+test("a suspended merchant's existing token is refused", async () => {
+  const S = await createMerchant(prisma, { status: "suspended" });
+  const res = await fetch(`${app.url}/api/products`, { headers: { Authorization: `Bearer ${tokenFor(S)}` } });
+  assert.strictEqual(res.status, 403);
+});
