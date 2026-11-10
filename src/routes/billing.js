@@ -4,6 +4,17 @@ const prisma = require("../db/client");
 const azampay = require("../services/azampay");
 const authMiddleware = require("../middleware/auth");
 const crypto = require("crypto");
+const rateLimit = require("express-rate-limit");
+
+// 🛡️ Kila checkout inatuma USSD push kwenye simu - zuia matumizi mabaya (spam ya prompts za malipo)
+const checkoutLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  keyGenerator: (req) => `merchant-${req.merchantId}`,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Majaribio mengi ya malipo. Subiri dakika 15 kisha jaribu tena." },
+});
 
 // 🛡️ AzamPay haisaini callbacks zake. Tunalinda webhook kwa:
 //   1. Siri iliyo kwenye URL ya callback (AZAMPAY_CALLBACK_SECRET) - weka URL hii kwenye AzamPay dashboard:
@@ -24,7 +35,7 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
  * 1. INITIATE CHECKOUT (Mfanyabiashara anaanza malipo)
  * Inahitaji Merchant Auth Token
  */
-router.post("/checkout", authMiddleware, wrap(async (req, res) => {
+router.post("/checkout", authMiddleware, checkoutLimiter, wrap(async (req, res) => {
   const { phoneNumber, provider } = req.body;
   const merchantId = req.merchantId;
 

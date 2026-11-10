@@ -7,6 +7,19 @@ process.env.ENCRYPTION_KEY = "test-encryption-key-0123456789ab";
 process.env.ADMIN_PASSWORD = "test-admin";
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || "postgresql://postgres@localhost:55432/aziry_v2_test";
 
+// Futa credentials zote za huduma za nje - .env haiwezi kuzijaza (dotenv haiandiki juu ya key iliyopo)
+// ili tests zisiite AzamPay, AI providers, SMTP wala Meta halisi.
+for (const key of [
+  "AZAMPAY_TOKEN", "AZAMPAY_CLIENT_ID", "AZAMPAY_CLIENT_SECRET", "AZAMPAY_APP_NAME",
+  "GEMINI_API_KEY", "GROQ_API_KEY", "QWEN_API_KEY", "DEEPSEEK_API_KEY", "TOGETHER_API_KEY", "OPENAI_API_KEY",
+  "SMTP_HOST", "SMTP_USER", "SMTP_PASS",
+  "META_APP_ID", "META_APP_SECRET", "META_WEBHOOK_VERIFY_TOKEN", "META_EMBEDDED_SIGNUP_CONFIG_ID",
+  "TOKEN_ENCRYPTION_KEY", "DATA_ENCRYPTION_KEY",
+]) {
+  process.env[key] = "";
+}
+process.env.META_GRAPH_BASE_URL = "http://127.0.0.1:9"; // haifikiki - tests lazima zi-mock Graph API
+
 const host = new URL(process.env.DATABASE_URL).hostname;
 if (!["localhost", "127.0.0.1", "::1"].includes(host)) {
   throw new Error(`Tests zimesimamishwa: DATABASE_URL lazima iwe localhost (imepata "${host}").`);
