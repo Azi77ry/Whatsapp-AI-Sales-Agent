@@ -7,6 +7,7 @@ const prisma = require("../db/client");
 const config = require("../config");
 const { sendMessage } = require("../whatsapp/sender");
 const manager = require("../whatsapp/manager");
+const connectionService = require("../integrations/whatsapp/connectionService");
 const { decrypt } = require("../utils/crypto");
 const { callAISimple } = require("../ai/callAISimple");
 
@@ -88,8 +89,10 @@ async function runReEngagement() {
     console.log(`🔎 Re-engagement: Inakagua wateja wa Merchant #${merchantId} (${businessName})...`);
 
     // Namba iliyofungiwa au haijaunganishwa - usijaribu
+    // V2: merchant wa Cloud API anahesabiwa "connected" kupitia muunganiko wake wa Meta
+    const onCloud = Boolean(await connectionService.getActiveCloudConnection(merchantId));
     const status = manager.getConnectionStatus(merchantId).status;
-    if (merchant.waBanned || status !== "connected") continue;
+    if (!onCloud && (merchant.waBanned || status !== "connected")) continue;
 
     const maxHours = Math.min(reEngagementMaxHours, MAX_HOURS_SINCE_CUSTOMER);
     const minHours = Math.min(reEngagementMinHours, maxHours - 1);

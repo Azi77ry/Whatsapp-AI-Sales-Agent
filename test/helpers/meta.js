@@ -67,10 +67,10 @@ async function startGraphMock() {
       return { status: 200, json: { messaging_product: "whatsapp", messages: [{ id: wamid("out") }] } };
     }
     if (req.method === "POST" && /\/media$/.test(req.url)) return { status: 200, json: { id: "UPLOADED_MEDIA_1" } };
+    if (req.method === "GET" && /\/download\//.test(req.url)) return { status: 200, raw: Buffer.from("fake-audio-bytes"), type: "audio/ogg" };
     if (req.method === "GET" && /MEDIA_/.test(req.url)) {
       return { status: 200, json: { url: `${server.url}/download/${req.url.split("/").pop()}`, mime_type: "audio/ogg" } };
     }
-    if (req.method === "GET" && /\/download\//.test(req.url)) return { status: 200, raw: Buffer.from("fake-audio-bytes"), type: "audio/ogg" };
     return { status: 404, json: { error: { message: "not mocked", code: 100 } } };
   }
 

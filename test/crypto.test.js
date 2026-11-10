@@ -33,6 +33,12 @@ test("tampered GCM ciphertext is rejected, not returned as garbage", () => {
   assert.strictEqual(decrypt(parts.join(":")), "[Encrypted Message Unreadable]");
 });
 
+test("truncated GCM auth tag is rejected (no tag-truncation forgery)", () => {
+  const parts = encrypt("secret order").split(":");
+  parts[2] = Buffer.from(parts[2], "base64url").subarray(0, 4).toString("base64url");
+  assert.strictEqual(decrypt(parts.join(":")), "[Encrypted Message Unreadable]");
+});
+
 test("token encryption requires TOKEN_ENCRYPTION_KEY and never falls back to plaintext", () => {
   process.env.TOKEN_ENCRYPTION_KEY = "";
   assert.throws(() => encryptSecret("EAAG-token"), /TOKEN_ENCRYPTION_KEY/);

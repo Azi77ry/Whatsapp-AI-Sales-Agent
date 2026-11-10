@@ -8,51 +8,13 @@ const { downloadMediaMessage } = require("@whiskeysockets/baileys");
 const pino = require("pino");
 const prisma = require("../db/client");
 const { enqueueSend, checkCanSend } = require("./sendQueue");
+const { detectContactPreference, applyContactPreference } = require("../services/contactPreferences");
 
 // Anti-Bot Rate Limiting (In-Memory)
 const userMessageCounts = new Map();
 const RATE_LIMIT_WINDOW_MS = 60000; // Sekunde 60
 const MAX_MESSAGES_PER_WINDOW = 6; // Meseji 6 kwa dakika
 const BLOCK_DURATION_MS = 15 * 60 * 1000; // Dakika 15
-
-// 🛡️ OPT-OUT: Maneno ya mteja kuomba asitumiwe ukumbusho (lazima ujumbe uwe neno hili tu)
-const OPT_OUT_PHRASES = [
-  "stop", "unsubscribe", "acha", "sitaki ujumbe", "sitaki meseji", "acha kunitumia",
-  "usinitumie", "usinitumie ujumbe", "usinitumie meseji", "niondoe", "stop messages",
-];
-const OPT_IN_PHRASES = ["start", "anza", "anza tena", "subscribe"];
-
-// 🛡️ Mteja aliyekasirika: AI isiendelee kuuza - mpe mmiliki (hapa inatosha neno kuwemo ndani ya ujumbe)
-const ANNOYED_PHRASES = [
-  "acha kunisumbua", "unanisumbua", "usinisumbue", "mnanisumbua", "msinisumbue",
-  "spam", "stop bothering", "stop messaging", "stop texting", "nitakureport", "nitaripoti",
-];
-
-function normalizeText(text) {
-  return text.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, "").replace(/\s+/g, " ").trim();
-}
-
-// Rudisha "out", "in", "annoyed" au null
-function detectContactPreference(text) {
-  const clean = normalizeText(text);
-  if (OPT_OUT_PHRASES.includes(clean)) return "out";
-  if (OPT_IN_PHRASES.includes(clean)) return "in";
-  if (ANNOYED_PHRASES.some((p) => clean.includes(p))) return "annoyed";
-  return null;
-}
-
-function extractTextFromMessage(msg) {
-  const m = msg.message;
-  if (!m) return null;
-
-  return (
-    m.conversation ||
-    m.extendedTextMessage?.text ||
-    m.imageMessage?.caption ||
-    m.videoMessage?.caption ||
-    null
-  );
-}
 
 // Jaribu kutuma ujumbe mara nyingi kama kunatokea kosa la muunganiko wa muda mfupi.
 // Ujumbe unapita kwenye foleni ya merchant (sendQueue) - inarudisha false kama umezuiwa na kikomo.
@@ -148,6 +110,9 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
 
   // Puuza ujumbe ambao AI mwenyewe imetuma (epuka loop)
   if (msg.key.fromMe) return;
+
+  // V2: merchant aliye kwenye Cloud API anahudumiwa na webhook pekee - adapters mbili zisijibu ujumbe mmoja
+  if (await require("../integrations/whatsapp/connectionService").merchantUsesCloudApi(mId)) return;
 
   // 🛡️ PUUZA MESEJI ZA ZAMANI SANA ZILIZO-SYNC WAKATI WA KUUNGANISHA (HISTORY SYNC)
   if (msg.messageTimestamp) {
@@ -265,27 +230,9 @@ async function handleIncomingMessage(sock, msg, merchantId = 1) {
     const conversation = await getOrCreateConversation(remoteJid, customerName, mId);
     await saveMessage(conversation.id, "customer", text);
 
-    let confirmText;
-    if (preference === "out") {
-      await prisma.conversation.update({
-        where: { id: conversation.id },
-        data: { optedOut: true, optedOutAt: new Date() },
-      });
-      confirmText = "Sawa 👍 Hutapokea tena ujumbe wa ukumbusho kutoka kwetu. Ukihitaji chochote, tuandikie wakati wowote. (Andika START kupokea tena.)";
-    } else if (preference === "in") {
-      await prisma.conversation.update({
-        where: { id: conversation.id },
-        data: { optedOut: false, optedOutAt: null },
-      });
-      confirmText = "Karibu tena! 😊 Nikusaidie nini leo?";
-    } else {
-      // Mteja amekasirika: acha kuuza, usimtumie nudges, mpe mmiliki
-      await prisma.conversation.update({
-        where: { id: conversation.id },
-        data: { optedOut: true, optedOutAt: new Date(), needsHuman: true },
-      });
-      confirmText = "Samahani sana kwa usumbufu 🙏 Sitakutumia ujumbe tena. Mmiliki wa duka ataangalia mazungumzo haya mwenyewe.";
-    }
+    const confirmText = await applyContactPreference({
+      merchantId: mId, conversationId: conversation.id, customerPhone: remoteJid, preference,
+    });
     console.log(`🛡️  Merchant #${mId} - ${remoteJid} preference: ${preference}`);
 
     if (manager.isBotActive(mId) && !(await checkCanSend(mId, "reply"))) {

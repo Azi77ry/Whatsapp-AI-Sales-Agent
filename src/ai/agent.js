@@ -35,10 +35,15 @@ async function withConversationLock(conversationId, fn) {
 }
 
 // Weka alama kwenye conversation kuwa inahitaji mfanyakazi kuiangalia (AI imeshindwa)
-async function flagNeedsHuman(conversationId, flag) {
+// handoverState inafuatana na needsHuman: AI_ACTIVE | HUMAN_REQUESTED | HUMAN_ACTIVE | AI_RESUMED
+async function flagNeedsHuman(conversationId, flag, resumed = false) {
   await prisma.conversation.update({
     where: { id: conversationId },
-    data: { needsHuman: flag },
+    data: {
+      needsHuman: flag,
+      handoverState: flag ? "HUMAN_REQUESTED" : resumed ? "AI_RESUMED" : "AI_ACTIVE",
+      handoverAt: new Date(),
+    },
   });
 }
 
@@ -77,15 +82,20 @@ async function getOrCreateConversation(customerPhone, customerName, merchantId =
 async function updateConsent(conversationId, consentGiven, needsHuman) {
   return prisma.conversation.update({
     where: { id: conversationId },
-    data: { consentGiven, needsHuman },
+    data: {
+      consentGiven,
+      needsHuman,
+      handoverState: needsHuman ? "HUMAN_REQUESTED" : "AI_ACTIVE",
+      handoverAt: needsHuman ? new Date() : undefined,
+    },
   });
 }
 
-async function saveMessage(conversationId, sender, content) {
+async function saveMessage(conversationId, sender, content, extra = {}) {
   // Ingiza usalama wa hali ya juu: fiche (encrypt) ujumbe kabla ya kuhifadhi kwenye database
   const encryptedContent = encrypt(content);
   const msg = await prisma.message.create({
-    data: { conversationId, sender, content: encryptedContent },
+    data: { conversationId, sender, content: encryptedContent, ...extra },
   });
   
   // UPDATE conversation updatedAt ili mazungumzo yapande juu kwenye dashboard
@@ -95,6 +105,23 @@ async function saveMessage(conversationId, sender, content) {
   });
   
   return msg;
+}
+
+// V2: metadata ya ujumbe wa mteja (wamid ya Meta inazuia kuushughulikia mara mbili)
+function inboundExtra(inbound) {
+  if (!inbound) return {};
+  return {
+    direction: "inbound",
+    type: inbound.type || "text",
+    providerMessageId: inbound.providerMessageId || null,
+    phoneNumberId: inbound.phoneNumberId || null,
+  };
+}
+
+// V2: jibu linaanza "queued"; linakuwa "sent" baada ya Meta kulipokea (retry haiiti AI tena)
+function replyExtra(inbound, inboundMessageId) {
+  if (!inbound) return {};
+  return { direction: "outbound", status: "queued", inReplyToId: inboundMessageId, phoneNumberId: inbound.phoneNumberId || null };
 }
 
 // Angalia kama namba hii imewekwa alama ya "Rafiki (Personal)" na admin
@@ -110,10 +137,10 @@ async function isPersonalContact(customerPhone, merchantId = 1) {
 }
 
 // Hifadhi ujumbe tu bila kuujibu (kwa marafiki au bot ikiwa imezimwa)
-async function logPersonalMessage({ customerPhone, customerName, userMessage, merchantId = 1 }) {
+async function logPersonalMessage({ customerPhone, customerName, userMessage, merchantId = 1, inbound = null }) {
   const mId = parseInt(merchantId, 10);
   const conversation = await getOrCreateConversation(customerPhone, customerName, mId);
-  await saveMessage(conversation.id, "customer", userMessage);
+  await saveMessage(conversation.id, "customer", userMessage, inboundExtra(inbound));
   
   // Fanya compaction (AI Report) ili mfanyabiashara apate muhtasari hata kama bot haijibu
   await maybeCompact(conversation.id, conversation.customerName || customerName);
@@ -199,15 +226,27 @@ async function getAiReply(rawHistory, userMessage, context) {
 }
 
 // Kazi kuu: pokea ujumbe, ishughulikie kwa duka maalum la mfanyabiashara
-async function generateReply({ customerPhone, customerName, userMessage, merchantId = 1 }) {
+// Inarudisha { text, inboundMessageId, replyMessageId } - text ni null kama AI iko kimya.
+// `inbound` (hiari, V2): { providerMessageId, type, phoneNumberId } kutoka kwa transport.
+async function generateReplyDetailed({ customerPhone, customerName, userMessage, merchantId = 1, inbound = null }) {
   const mId = parseInt(merchantId, 10);
   const conversation = await getOrCreateConversation(customerPhone, customerName, mId);
 
   // Tumia lock kuhakikisha ujumbe mmoja unashughulikiwa kwa wakati mmoja kwa mazungumzo haya
   return withConversationLock(conversation.id, async () => {
+    let inboundMessageId = null;
+    const saveInbound = async () => {
+      const m = await saveMessage(conversation.id, "customer", userMessage, inboundExtra(inbound));
+      inboundMessageId = m.id;
+    };
+    const reply = async (text) => {
+      const m = await saveMessage(conversation.id, "ai", text, replyExtra(inbound, inboundMessageId));
+      return { text, inboundMessageId, replyMessageId: m.id };
+    };
+
     // Ikiwa mteja alishachagua kuongea na binadamu, AI isijibu (isipokuwa akiomba kurudi kwa AI)
     if (conversation.needsHuman) {
-      await saveMessage(conversation.id, "customer", userMessage);
+      await saveInbound();
       
       const cleanMsg = userMessage.trim().toLowerCase();
       // Maneno ambayo mteja anaweza kutumia kurudi kwa AI
@@ -215,18 +254,17 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
       
       // Maneno mafupi ("1", "ai", "bot") lazima yalingane kamili - vinginevyo bei kama "15000" ingerudisha AI
       if (resumeKeywords.some(k => cleanMsg === k || (k.length > 3 && cleanMsg.includes(k)))) {
-        await flagNeedsHuman(conversation.id, false); // needsHuman = false
+        await flagNeedsHuman(conversation.id, false, true); // needsHuman = false -> AI_RESUMED
         // Tunahakikisha consent iko true pia
         await prisma.conversation.update({
           where: { id: conversation.id },
           data: { consentGiven: true },
         });
         const msg = "Sawa, nimerudi! 😊 Karibu tena kwenye mfumo wangu. Nikusaidie nini leo?";
-        await saveMessage(conversation.id, "ai", msg);
-        return msg;
+        return reply(msg);
       }
       
-      return null;
+      return { text: null, inboundMessageId, replyMessageId: null };
     }
 
     // Pata mipangilio ya duka hili (merchant settings)
@@ -245,31 +283,28 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
     }
 
     if (blockedReason) {
-      await saveMessage(conversation.id, "customer", userMessage);
+      await saveInbound();
       await flagNeedsHuman(conversation.id, true);
-      await saveMessage(conversation.id, "ai", blockedReason);
-      return blockedReason;
+      return reply(blockedReason);
     }
 
     // Consent Flow Interception
     if (!conversation.consentGiven) {
-      await saveMessage(conversation.id, "customer", userMessage);
+      await saveInbound();
       const cleanMsg = userMessage.trim();
       
       // Ikiwa wamejibu 1
       if (cleanMsg === "1" || cleanMsg === "1️⃣") {
         await updateConsent(conversation.id, true, false);
         const msg = "Asante kwa kuchagua kuhudumiwa na AI! 😊 Karibu sana, nikusaidie nini leo?";
-        await saveMessage(conversation.id, "ai", msg);
-        return msg;
+        return reply(msg);
       }
       
       // Ikiwa wamejibu 2
       if (cleanMsg === "2" || cleanMsg === "2️⃣") {
         await updateConsent(conversation.id, false, true);
         const msg = "Sawa, nimesitisha huduma yangu. Tafadhali subiri kidogo, mmiliki atawasiliana nawe hivi punde.\n\n*(Kama unataka kuendelea na mimi, andika neno 'rudi kwa ai')*";
-        await saveMessage(conversation.id, "ai", msg);
-        return msg;
+        return reply(msg);
       }
 
       // Ikiwa ni ujumbe wa kwanza AU wamejibu kitu kisichoeleweka, watumie Consent Prompt
@@ -291,12 +326,11 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
         await updateConsent(conversation.id, true, false);
       }
 
-      await saveMessage(conversation.id, "ai", promptMsg);
-      return promptMsg;
+      return reply(promptMsg);
     }
 
     // Kama amesha-consent, endelea kama kawaida
-    await saveMessage(conversation.id, "customer", userMessage);
+    await saveInbound();
 
     // Fanya compaction ikiwa imefikia kiwango (Tunaiacha irun background ili isicheleweshe jibu kwa mteja)
     maybeCompact(conversation.id, conversation.customerName || customerName).catch(err => {
@@ -348,10 +382,22 @@ async function generateReply({ customerPhone, customerName, userMessage, merchan
     // moja kwa moja kwa sababu tu ya mtandao kusumbua (temporary API failure).
     // Kama ilishindwa, itajaribu tena kwenye ujumbe unaofuata wa mteja.
     
-    await saveMessage(conversation.id, "ai", finalReplyText);
-
-    return finalReplyText;
+    return reply(finalReplyText);
   });
 }
 
-module.exports = { generateReply, isPersonalContact, logPersonalMessage, getOrCreateConversation, saveMessage };
+// API ya zamani (Baileys na code nyingine): inarudisha maandishi ya jibu tu (au null)
+async function generateReply(params) {
+  const result = await generateReplyDetailed(params);
+  return result.text;
+}
+
+module.exports = {
+  generateReply,
+  generateReplyDetailed,
+  isPersonalContact,
+  logPersonalMessage,
+  getOrCreateConversation,
+  saveMessage,
+  flagNeedsHuman,
+};

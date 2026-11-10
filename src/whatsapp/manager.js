@@ -147,17 +147,36 @@ function setConnectionStatus(merchantId, status, qr = null) {
  * Wezesha au zima bot kwa merchant
  */
 function setBotActive(merchantId, active) {
-  botActiveStatuses.set(merchantId, active);
+  const mId = parseInt(merchantId, 10);
+  botActiveStatuses.set(mId, active);
+  // V2: hifadhi kwenye DB ili isirudi "on" kila server ikiwashwa upya
+  prisma.merchant
+    .update({ where: { id: mId }, data: { botActive: Boolean(active) } })
+    .catch((err) => console.error(`Kosa la kuhifadhi botActive (Merchant #${mId}):`, err.message));
+}
+
+/** Pakia hali za bot on/off kutoka DB (wakati wa kuanza, au kwenye process ya cron) */
+async function loadBotStates() {
+  const rows = await prisma.merchant.findMany({ select: { id: true, botActive: true } });
+  for (const r of rows) botActiveStatuses.set(r.id, r.botActive);
 }
 
 /**
  * Angalia kama bot ipo active kwa merchant
  */
 function isBotActive(merchantId) {
-  if (!botActiveStatuses.has(merchantId)) {
-    botActiveStatuses.set(merchantId, true);
+  const mId = parseInt(merchantId, 10);
+  return botActiveStatuses.has(mId) ? botActiveStatuses.get(mId) : true;
+}
+
+/** V2: merchant aliye kwenye Cloud API hahudumiwi na Baileys (namba moja = adapter moja) */
+async function isOnCloudApi(mId) {
+  try {
+    return await require("../integrations/whatsapp/connectionService").merchantUsesCloudApi(mId);
+  } catch (err) {
+    console.error(`Kosa la kuangalia Cloud API (Merchant #${mId}):`, err.message);
+    return false;
   }
-  return botActiveStatuses.get(merchantId);
 }
 
 /**
@@ -171,6 +190,11 @@ async function startSession(merchantId) {
   if (activeSessions.has(mId)) {
     console.log(`⚠️  Session kwa Merchant #${mId} tayari ipo hai.`);
     return activeSessions.get(mId);
+  }
+
+  if (await isOnCloudApi(mId)) {
+    console.warn(`☁️  Merchant #${mId} yupo kwenye WhatsApp Cloud API - Baileys session haitaanzishwa.`);
+    return null;
   }
 
   setConnectionStatus(mId, "connecting");
@@ -456,6 +480,7 @@ async function resetBannedSession(merchantId) {
 async function initializeAllSessions() {
   console.log("🚀 Inatafuta na kuanzisha zilizokuwa WhatsApp sessions hai...");
   try {
+    await loadBotStates();
     const merchants = await prisma.merchant.findMany({ select: { id: true, waBanned: true } });
 
     for (const merchant of merchants) {
@@ -493,7 +518,10 @@ async function initializeAllSessions() {
  */
 async function requestPairingCode(merchantId, phoneNumber) {
   const mId = parseInt(merchantId, 10);
-  
+  if (await isOnCloudApi(mId)) {
+    throw new Error("Duka lako limeunganishwa kupitia WhatsApp Cloud API - QR/Pairing Code haihitajiki.");
+  }
+
   // 1. Safisha na weka namba kwenye mfumo wa kimataifa (International Format)
   let cleanNumber = (phoneNumber || "").replace(/[^0-9]/g, "");
   if (cleanNumber.startsWith("0")) {
@@ -565,15 +593,14 @@ async function gracefulShutdown() {
       const store = stores.get(mId);
       if (store && store.writeToFile) store.writeToFile();
       // Tuma signal ya kwaheri kwa WA servers (si logout, ni close salama)
-      shutdownPromises.push(sock.end().catch(() => {}));
+      shutdownPromises.push(Promise.resolve().then(() => sock.end(undefined)).catch(() => {}));
     } catch (e) {}
   }
   await Promise.allSettled(shutdownPromises);
   console.log("✅ Sessions zote zimehifadhiwa. Mfumo umezimwa salama.");
 }
 
-process.on("SIGTERM", () => gracefulShutdown().then(() => process.exit(0)));
-process.on("SIGINT",  () => gracefulShutdown().then(() => process.exit(0)));
+// Signals (SIGTERM/SIGINT) zinasajiliwa na src/index.js ili kuzima worker ya V2 pia
 
 module.exports = {
   startSession,
@@ -587,4 +614,6 @@ module.exports = {
   activeSessions,
   requestPairingCode,
   resetBannedSession,
+  loadBotStates,
+  gracefulShutdown,
 };

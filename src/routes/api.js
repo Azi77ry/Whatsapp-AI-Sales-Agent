@@ -8,6 +8,18 @@ const { getSettings } = require("../utils/platformSettings");
 const { sendMessage } = require("../whatsapp/sender");
 const manager = require("../whatsapp/manager");
 const { getSendStats } = require("../whatsapp/sendQueue");
+const { sendMessageDetailed } = require("../whatsapp/sender");
+const humanHandover = require("../services/humanHandoverService");
+const connectionService = require("../integrations/whatsapp/connectionService");
+
+// Sababu za kushindwa kutuma -> ujumbe kwa mmiliki
+const SEND_FAILURE_MESSAGES = {
+  outside_24h_window: "Mteja hajaandika ndani ya saa 24. WhatsApp inaruhusu ujumbe wa kawaida ndani ya saa 24 tu - subiri akuandikie.",
+  cloud_connection_unavailable: "Muunganiko wako wa WhatsApp Cloud API una tatizo. Angalia sehemu ya WhatsApp Connections.",
+  no_phone_number: "Mteja huyu hana namba ya simu inayojulikana (mazungumzo ya zamani) - haiwezekani kumtumia ujumbe.",
+  opted_out: "Mteja amejiondoa kupokea ujumbe wa aina hii.",
+  temporary_error: "WhatsApp haipatikani kwa muda. Jaribu tena baada ya dakika moja.",
+};
 const authMiddleware = require("../middleware/auth");
 const { decrypt } = require("../utils/crypto");
 const multer = require("multer");
@@ -146,11 +158,36 @@ router.get("/conversations/:id/messages", wrap(async (req, res) => {
 
 // ---- 1. WHATSAPP MULTI-SESSION CONTROLS ----
 
-router.get("/whatsapp-status", wrap((req, res) => {
-  res.json(manager.getConnectionStatus(req.merchantId));
+router.get("/whatsapp-status", wrap(async (req, res) => {
+  const cloud = await connectionService.getActiveCloudConnection(req.merchantId);
+  if (cloud) {
+    return res.json({ status: "connected", provider: "cloud_api", phone: cloud.displayPhoneNumber, botActive: manager.isBotActive(req.merchantId) });
+  }
+  if (await connectionService.merchantUsesCloudApi(req.merchantId)) {
+    return res.json({ status: "error", provider: "cloud_api", botActive: manager.isBotActive(req.merchantId) });
+  }
+  res.json({ ...manager.getConnectionStatus(req.merchantId), provider: "baileys" });
+}));
+
+// ── V2: WhatsApp Cloud API connections (za merchant huyu tu) ──
+router.get("/whatsapp/connections", wrap(async (req, res) => {
+  res.json({ connections: await connectionService.listForMerchant(req.merchantId) });
+}));
+
+router.delete("/whatsapp/connections/:id", wrap(async (req, res) => {
+  try {
+    await connectionService.disconnect(req.merchantId, req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
+    throw err;
+  }
 }));
 
 router.post("/whatsapp-connect", wrap(async (req, res) => {
+  if (await connectionService.merchantUsesCloudApi(req.merchantId)) {
+    return res.status(409).json({ error: "Duka lako linatumia WhatsApp Cloud API - QR haihitajiki." });
+  }
   const statusInfo = manager.getConnectionStatus(req.merchantId);
   if (statusInfo.status === "banned") {
     // Mmiliki ameamua kuunganisha upya (mf. rufaa imekubaliwa au namba mpya) - anza na creds safi
@@ -438,14 +475,25 @@ router.post("/conversations/:id/reply", wrap(async (req, res) => {
     });
   }
 
-  const sent = await sendMessage(conversation.customerPhone, text, req.merchantId, "reply");
-  if (!sent) {
-    return res.status(503).json({ error: "Ujumbe haukutumwa - WhatsApp haijaunganishwa au kikomo cha leo kimefika." });
+  const result = await sendMessageDetailed(conversation.customerPhone, text, req.merchantId, "reply");
+  if (!result.sent) {
+    const error = SEND_FAILURE_MESSAGES[result.reason] || "Ujumbe haukutumwa - WhatsApp haijaunganishwa au kikomo cha leo kimefika.";
+    return res.status(result.reason === "outside_24h_window" ? 400 : 503).json({ error, reason: result.reason });
   }
+
+  // Mmiliki amejibu mwenyewe -> AI isimame kwa mteja huyu (majibu yasigongane) mpaka airudishe
+  await humanHandover.takeOver(req.merchantId, convId);
 
   const { encrypt } = require("../utils/crypto");
   const message = await prisma.message.create({
-    data: { conversationId: convId, sender: "merchant", content: encrypt(text) },
+    data: {
+      conversationId: convId,
+      sender: "merchant",
+      content: encrypt(text),
+      direction: "outbound",
+      status: "sent",
+      providerMessageId: result.providerMessageId || null,
+    },
   });
   await prisma.conversation.update({ where: { id: convId }, data: { updatedAt: new Date() } });
   res.json({ success: true, message: { ...message, content: text } });
@@ -458,16 +506,15 @@ router.put("/conversations/:id/needs-human", wrap(async (req, res) => {
   if (typeof needsHuman !== "boolean") {
     return res.status(400).json({ error: "'needsHuman' lazima iwe true au false" });
   }
-  const existing = await prisma.conversation.findFirst({
-    where: { id: convId, merchantId: req.merchantId },
-  });
-  if (!existing) return res.status(404).json({ error: "Mazungumzo hayapo" });
-
-  const conversation = await prisma.conversation.update({
-    where: { id: convId },
-    data: { needsHuman },
-  });
-  res.json(conversation);
+  try {
+    const conversation = needsHuman
+      ? await humanHandover.takeOver(req.merchantId, convId)
+      : await humanHandover.resumeAI(req.merchantId, convId);
+    res.json(conversation);
+  } catch (err) {
+    if (err.status === 404) return res.status(404).json({ error: err.message });
+    throw err;
+  }
 }));
 
 router.get("/conversations/:id/messages", wrap(async (req, res) => {

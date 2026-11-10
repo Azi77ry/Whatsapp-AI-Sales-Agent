@@ -236,6 +236,9 @@ router.put("/merchants/:id/status", wrap(async (req, res) => {
     select: { id: true, businessName: true, status: true },
   });
 
+  // Token zilizopo za merchant huyu zianze kukataliwa mara moja (si baada ya cache kuisha)
+  require("../middleware/auth").invalidateMerchantStatus(id);
+
   const action = status === "suspended" ? "imesimamishwa" : "imeamilishwa";
   console.log(`🔒 Super-Admin: Akaunti ya "${updated.businessName}" ${action}.`);
 
@@ -514,6 +517,65 @@ router.post("/whatsapp-sessions/:id/disconnect", wrap(async (req, res) => {
   await stopSession(id, true);
   
   res.json({ message: "WhatsApp session imekatwa kikamilifu." });
+}));
+
+// ── V2: WHATSAPP CLOUD API (miunganiko yote, matukio, takwimu) ─────────────
+const connectionService = require("../integrations/whatsapp/connectionService");
+const webhookWorker = require("../services/webhookWorker");
+
+router.get("/whatsapp/connections", wrap(async (req, res) => {
+  res.json({ connections: await connectionService.listAll() });
+}));
+
+// Unganisha namba kwa mkono (mf. namba ya TEST ya Meta wakati Embedded Signup inasubiri idhini).
+// Token inatumwa mara moja tu, inahifadhiwa encrypted, na HAIRUDISHWI kamwe.
+router.post("/whatsapp/connections", wrap(async (req, res) => {
+  const { merchantId, wabaId, phoneNumberId, accessToken, businessId } = req.body || {};
+  const merchant = await prisma.merchant.findUnique({ where: { id: parseInt(merchantId, 10) || 0 }, select: { id: true } });
+  if (!merchant) return res.status(404).json({ error: "Merchant hayupo." });
+  try {
+    const connection = await connectionService.connect({ merchantId: merchant.id, wabaId, phoneNumberId, accessToken, businessId, tokenType: "system_user" });
+    res.json({ success: true, connection });
+  } catch (err) {
+    if (err.name === "ConnectionError") return res.status(err.status).json({ error: err.message });
+    throw err;
+  }
+}));
+
+router.put("/whatsapp/connections/:id/suspend", wrap(async (req, res) => {
+  const connection = await connectionService.setSuspended(req.params.id, Boolean(req.body?.suspended));
+  res.json({ success: true, connection });
+}));
+
+router.get("/whatsapp/webhook-events", wrap(async (req, res) => {
+  const status = ["dead", "ignored", "pending", "processing", "done"].includes(req.query.status) ? req.query.status : "dead";
+  const events = await prisma.whatsAppWebhookEvent.findMany({
+    where: { status },
+    orderBy: { id: "desc" },
+    take: 100,
+    select: { id: true, kind: true, phoneNumberId: true, merchantId: true, status: true, attempts: true, lastError: true, receivedAt: true, processedAt: true },
+  });
+  res.json({ events });
+}));
+
+router.post("/whatsapp/webhook-events/:id/requeue", wrap(async (req, res) => {
+  await webhookWorker.requeue(req.params.id);
+  webhookWorker.kick();
+  res.json({ success: true });
+}));
+
+router.get("/whatsapp/stats", wrap(async (req, res) => {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const [eventsByStatus, failedDeliveries, usage] = await Promise.all([
+    prisma.whatsAppWebhookEvent.groupBy({ by: ["status"], _count: { _all: true } }),
+    prisma.whatsAppMessageStatus.groupBy({ by: ["errorCode"], where: { status: "failed", occurredAt: { gte: since } }, _count: { _all: true } }),
+    prisma.whatsAppUsageRecord.groupBy({ by: ["direction", "category"], where: { date: { gte: since.toISOString().slice(0, 10) } }, _sum: { count: true } }),
+  ]);
+  res.json({
+    events: Object.fromEntries(eventsByStatus.map((e) => [e.status, e._count._all])),
+    failedDeliveriesLast7Days: failedDeliveries.map((f) => ({ errorCode: f.errorCode, count: f._count._all })),
+    usageLast7Days: usage.map((u) => ({ direction: u.direction, category: u.category, count: u._sum.count || 0 })),
+  });
 }));
 
 module.exports = router;

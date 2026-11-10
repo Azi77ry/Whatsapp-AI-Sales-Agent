@@ -35,6 +35,9 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
+// V2: Webhook ya Meta LAZIMA iwe kabla ya express.json() - uthibitisho wa sahihi unahitaji body halisi
+app.use("/webhooks/whatsapp", require("./integrations/whatsapp/webhookRoutes"));
+
 app.use(express.json());
 
 // 🛡️ Global API rate limiter (kuzuia DDoS na abuse kwenye /api/*)

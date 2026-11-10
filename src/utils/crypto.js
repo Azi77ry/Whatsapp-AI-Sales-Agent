@@ -43,7 +43,7 @@ const b64 = (buf) => buf.toString("base64url");
 
 function gcmEncrypt(prefix, key, text) {
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv, { authTagLength: 16 });
   const data = Buffer.concat([cipher.update(String(text), "utf-8"), cipher.final()]);
   return `${prefix}${b64(iv)}:${b64(cipher.getAuthTag())}:${b64(data)}`;
 }
@@ -52,7 +52,9 @@ function gcmDecrypt(prefix, key, text) {
   const parts = text.slice(prefix.length).split(":");
   if (parts.length !== 3) throw new Error("Muundo wa ciphertext si sahihi");
   const [iv, tag, data] = parts.map((p) => Buffer.from(p, "base64url"));
-  const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
+  // 🛡️ Kataa IV/tag zenye urefu usio sahihi - Node ingekubali tag fupi (4+ bytes) na kurahisisha kughushi
+  if (iv.length !== 12 || tag.length !== 16) throw new Error("IV au auth tag ina urefu usio sahihi");
+  const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv, { authTagLength: 16 });
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(data), decipher.final()]).toString("utf-8");
 }
