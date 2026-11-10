@@ -306,6 +306,36 @@
         </div>
 
 
+        <!-- ☁️ V2: WhatsApp Cloud API connections -->
+        <div class="card cloud-card hidden" id="cloudConnectionsCard" style="margin-bottom: 24px; padding: 20px;">
+          <div class="ws-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="ws-icon">☁️</span>
+              <span class="ws-title" data-i18n="cloudTitle">WhatsApp Connections</span>
+            </div>
+            <span class="badge" id="cloudStatusBadge">—</span>
+          </div>
+          <div id="cloudConnectionList" class="cloud-list"></div>
+          <div class="cloud-actions">
+            <button class="btn-primary" id="cloudConnectBtn" data-i18n="cloudConnect">Unganisha WhatsApp</button>
+            <p class="nh-hint hidden" id="cloudPendingNote" data-i18n="cloudPendingApproval">Kuunganisha kupitia Meta kunasubiri idhini. Wasiliana na msimamizi kukuunganisha.</p>
+          </div>
+          <p class="cloud-error hidden" id="cloudError"></p>
+
+          <div class="cloud-usage hidden" id="cloudUsageBox">
+            <div class="nh-chip"><span class="nh-chip-label" data-i18n="cloudUsageIn">Ujumbe ulioingia (siku 7)</span><span id="cloudUsageIn">0</span></div>
+            <div class="nh-chip"><span class="nh-chip-label" data-i18n="cloudUsageOut">Ujumbe uliotumwa (siku 7)</span><span id="cloudUsageOut">0</span></div>
+            <div class="nh-chip"><span class="nh-chip-label" data-i18n="cloudUsageTemplates">Templates (siku 7)</span><span id="cloudUsageTemplates">0</span></div>
+          </div>
+
+          <details class="nh-tips hidden" id="cloudTemplatesBox">
+            <summary data-i18n="cloudTemplatesTitle">📄 Templates (ujumbe nje ya saa 24)</summary>
+            <p class="nh-hint" data-i18n="cloudTemplatesHint">WhatsApp inaruhusu ujumbe wa kawaida ndani ya saa 24 tangu mteja aandike. Baada ya hapo, taarifa za oda zinatumwa kwa template iliyoidhinishwa na Meta (yenye kigezo kimoja {{1}}).</p>
+            <button class="btn-ghost" id="cloudSyncTemplatesBtn" data-i18n="cloudSyncTemplates">🔄 Pakua templates kutoka Meta</button>
+            <div id="cloudTemplateList" class="cloud-list"></div>
+          </details>
+        </div>
+
         <!-- 🛡️ Usalama wa Namba (Number Health) -->
         <div class="card nh-card" id="numberHealthCard" style="margin-bottom: 24px; padding: 20px;">
           <div class="ws-header">

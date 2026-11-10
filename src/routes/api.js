@@ -207,6 +207,16 @@ router.post("/whatsapp/embedded-signup/complete", signupLimiter, wrap(async (req
   }
 }));
 
+router.get("/whatsapp/usage", wrap(async (req, res) => {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const rows = await prisma.whatsAppUsageRecord.groupBy({
+    by: ["direction", "category"],
+    where: { date: { gte: since }, phoneNumber: { merchantId: req.merchantId } },
+    _sum: { count: true },
+  });
+  res.json({ since, usage: rows.map((r) => ({ direction: r.direction, category: r.category, count: r._sum.count || 0 })) });
+}));
+
 // ── V2: Templates ──
 const templateService = require("../integrations/whatsapp/templateService");
 

@@ -251,6 +251,64 @@
             </tbody>
           </table>
         </div>
+
+        <!-- ══ V2: WHATSAPP CLOUD API ══ -->
+        <div class="view-header" style="margin-top:40px;">
+          <div>
+            <h2>WhatsApp Cloud API</h2>
+            <p class="view-sub">Official Meta connections, webhook pipeline health and delivery failures</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-outline btn-sm" onclick="loadCloudApi()">Refresh</button>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card c-emerald"><div class="stat-icon-wrap">📥</div><div><div class="stat-value" id="cloudEventsDone">—</div><div class="stat-label">Events processed</div></div></div>
+          <div class="stat-card c-amber"><div class="stat-icon-wrap">⏳</div><div><div class="stat-value" id="cloudEventsPending">—</div><div class="stat-label">Pending / retrying</div></div></div>
+          <div class="stat-card c-rose"><div class="stat-icon-wrap">☠️</div><div><div class="stat-value" id="cloudEventsDead">—</div><div class="stat-label">Failed events (dead)</div></div></div>
+          <div class="stat-card c-rose"><div class="stat-icon-wrap">📵</div><div><div class="stat-value" id="cloudFailedDeliveries">—</div><div class="stat-label">Failed deliveries (7 days)</div></div></div>
+          <div class="stat-card c-sky"><div class="stat-icon-wrap">💬</div><div><div class="stat-value" id="cloudUsage">—</div><div class="stat-label">Messages in / out (7 days)</div></div></div>
+        </div>
+
+        <div class="table-container" style="margin-top:20px;">
+          <table class="data-table">
+            <thead>
+              <tr><th>Merchant</th><th>Business / Number</th><th>Phone Number ID</th><th>Status</th><th>Quality</th><th>Last error</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="cloudConnectionsBody">
+              <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:30px;">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="settings-grid" style="margin-top:24px;">
+          <div class="settings-card">
+            <div class="settings-card-title"><div class="title-icon">🔗</div>Connect a number manually</div>
+            <p style="font-size:13px; color:var(--text-muted); margin-top:-6px;">
+              For Meta's test number or a system-user token while Embedded Signup awaits approval.
+              The token is validated with Meta, stored encrypted, and never shown again.
+            </p>
+            <div class="form-group"><label>Merchant ID</label><input type="number" id="cloudMerchantId" min="1" /></div>
+            <div class="form-group"><label>WhatsApp Business Account ID (WABA)</label><input type="text" id="cloudWabaId" autocomplete="off" /></div>
+            <div class="form-group"><label>Phone Number ID</label><input type="text" id="cloudPhoneNumberId" autocomplete="off" /></div>
+            <div class="form-group"><label>Access token</label><input type="password" id="cloudAccessToken" autocomplete="new-password" /></div>
+            <button class="btn-primary" id="cloudConnectBtn">Validate &amp; Connect</button>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-title"><div class="title-icon">☠️</div>Failed webhook events</div>
+            <p style="font-size:13px; color:var(--text-muted); margin-top:-6px;">
+              Events that failed after all retries. Fix the cause (e.g. reconnect the merchant) and retry.
+            </p>
+            <div class="table-container" style="margin:0;">
+              <table class="data-table">
+                <thead><tr><th>#</th><th>Kind</th><th>Merchant</th><th>Attempts</th><th>Error</th><th></th></tr></thead>
+                <tbody id="cloudDeadEventsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ══ SYSTEM HEALTH ══════════════════════════════════ -->

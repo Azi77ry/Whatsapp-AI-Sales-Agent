@@ -140,6 +140,7 @@ function showApp() {
   loadMerchants();
   loadSettings();
   loadWhatsappSessions();
+  loadCloudApi();
   loadHealth();
   startAutoRefresh();
 }
@@ -685,3 +686,106 @@ async function loadHealth() {
     console.error("Health load failed:", err);
   }
 }
+
+// ── V2: WhatsApp Cloud API ────────────────────────────────────────────────────
+async function loadCloudApi() {
+  try {
+    const [stats, conns, dead] = await Promise.all([
+      saFetch("/whatsapp/stats"),
+      saFetch("/whatsapp/connections"),
+      saFetch("/whatsapp/webhook-events?status=dead"),
+    ]);
+    const ev = stats.events || {};
+    document.getElementById("cloudEventsDone").textContent = (ev.done || 0) + (ev.ignored || 0);
+    document.getElementById("cloudEventsPending").textContent = (ev.pending || 0) + (ev.processing || 0);
+    document.getElementById("cloudEventsDead").textContent = ev.dead || 0;
+    document.getElementById("cloudFailedDeliveries").textContent =
+      stats.failedDeliveriesLast7Days.reduce((n, f) => n + f.count, 0);
+    const sum = (dir) => stats.usageLast7Days.filter((u) => u.direction === dir).reduce((n, u) => n + u.count, 0);
+    document.getElementById("cloudUsage").textContent = `${sum("inbound")} / ${sum("outbound")}`;
+    renderCloudConnections(conns.connections);
+    renderDeadEvents(dead.events);
+  } catch (err) {
+    document.getElementById("cloudConnectionsBody").innerHTML =
+      `<tr><td colspan="7" style="color:var(--rose)">${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function cloudStatusBadge(c) {
+  if (c.suspendedByAdmin) return `<span class="badge suspended">Suspended</span>`;
+  if (c.status === "connected") return `<span class="badge active">Connected</span>`;
+  if (c.status === "error") return `<span class="badge suspended">Error</span>`;
+  if (c.status === "pending") return `<span class="badge connecting">Pending</span>`;
+  return `<span class="badge waiting">${escapeHtml(c.status)}</span>`;
+}
+
+function renderCloudConnections(list) {
+  const tbody = document.getElementById("cloudConnectionsBody");
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">No Cloud API connections yet</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map((c) => `
+    <tr>
+      <td>${escapeHtml(c.merchant?.businessName || "#" + c.merchantId)}<br><small style="color:var(--text-muted)">#${c.merchantId}</small></td>
+      <td>${escapeHtml(c.verifiedName || "—")}<br><small style="color:var(--text-muted)">${escapeHtml(c.displayPhoneNumber || c.phoneE164)}</small></td>
+      <td><code>${escapeHtml(c.phoneNumberId || "—")}</code></td>
+      <td>${cloudStatusBadge(c)}</td>
+      <td>${escapeHtml(c.qualityRating || "—")}</td>
+      <td style="max-width:220px; font-size:12px; color:var(--text-muted)">${escapeHtml(c.lastError || "—")}</td>
+      <td><button class="btn-outline btn-sm" onclick="toggleCloudSuspend(${c.id}, ${!c.suspendedByAdmin})">${c.suspendedByAdmin ? "Unsuspend" : "Suspend"}</button></td>
+    </tr>`).join("");
+}
+
+function renderDeadEvents(events) {
+  const tbody = document.getElementById("cloudDeadEventsBody");
+  if (!events.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">No failed events 🎉</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = events.map((e) => `
+    <tr>
+      <td>${e.id}</td><td>${escapeHtml(e.kind)}</td><td>${e.merchantId ? "#" + e.merchantId : "—"}</td><td>${e.attempts}</td>
+      <td style="max-width:200px; font-size:12px; color:var(--text-muted)">${escapeHtml(e.lastError || "")}</td>
+      <td><button class="btn-outline btn-sm" onclick="requeueEvent(${e.id})">Retry</button></td>
+    </tr>`).join("");
+}
+
+async function toggleCloudSuspend(id, suspended) {
+  try {
+    await saFetch(`/whatsapp/connections/${id}/suspend`, { method: "PUT", body: JSON.stringify({ suspended }) });
+    showToast(suspended ? "Connection suspended" : "Connection reactivated");
+    loadCloudApi();
+  } catch (err) { showToast(err.message, "error"); }
+}
+
+async function requeueEvent(id) {
+  try {
+    await saFetch(`/whatsapp/webhook-events/${id}/requeue`, { method: "POST" });
+    showToast("Event queued for retry");
+    setTimeout(loadCloudApi, 1500);
+  } catch (err) { showToast(err.message, "error"); }
+}
+
+document.getElementById("cloudConnectBtn")?.addEventListener("click", async () => {
+  const btn = document.getElementById("cloudConnectBtn");
+  const tokenInput = document.getElementById("cloudAccessToken");
+  const body = {
+    merchantId: parseInt(document.getElementById("cloudMerchantId").value, 10),
+    wabaId: document.getElementById("cloudWabaId").value.trim(),
+    phoneNumberId: document.getElementById("cloudPhoneNumberId").value.trim(),
+    accessToken: tokenInput.value.trim(),
+  };
+  btn.disabled = true;
+  try {
+    const res = await saFetch("/whatsapp/connections", { method: "POST", body: JSON.stringify(body) });
+    showToast(`Connected ${res.connection.displayPhoneNumber || ""}`);
+    tokenInput.value = "";
+    loadCloudApi();
+  } catch (err) {
+    showToast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+  }
+});
+

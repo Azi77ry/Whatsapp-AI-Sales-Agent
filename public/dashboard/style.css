@@ -1678,3 +1678,26 @@ tr:hover td {
   font-size: 14px;
 }
 .conv-reply .btn-primary { padding: 10px 20px; }
+
+/* ---- ☁️ V2: WHATSAPP CLOUD API CONNECTIONS ---- */
+.cloud-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.cloud-conn {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-color);
+}
+.cloud-conn-name { font-weight: 700; color: var(--text-main); }
+.cloud-conn-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.cloud-conn-meta code { font-family: 'IBM Plex Mono', monospace; }
+.cloud-conn-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.cloud-conn-actions button { padding: 6px 12px; font-size: 12px; }
+.cloud-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.cloud-error { margin-top: 12px; font-size: 13px; color: var(--danger); }
+.cloud-usage { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.cloud-tpl { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; }
+.cloud-tpl select {
+  padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-main); font-family: inherit;
+}
+.badge.cloud-ok { background: rgba(5, 205, 153, 0.15); color: var(--success); animation: none; }
+.badge.cloud-bad { background: rgba(238, 93, 80, 0.15); color: var(--danger); animation: none; }
+.badge.cloud-muted { background: var(--bg-color); color: var(--text-muted); animation: none; }

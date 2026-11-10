@@ -43,7 +43,7 @@ async function processEvent(event) {
     }
     default:
       if (event.payload?.field === "message_template_status_update") {
-        return require("../integrations/whatsapp/templateService").handleTemplateStatusUpdate(event.payload.value || {});
+        return require("../integrations/whatsapp/templateService").handleTemplateStatusUpdate(event.payload.value || {}, event.payload.wabaId);
       }
       // account_update, phone_number_quality_update n.k. - zimehifadhiwa kwa ukaguzi
       return { outcome: "recorded" };

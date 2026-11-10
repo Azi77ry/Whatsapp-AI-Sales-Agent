@@ -12,6 +12,8 @@ const logger = require("../../utils/logger");
 // Aina ya ujumbe ndani ya mfumo -> kusudi la template linalotumika nje ya saa 24
 const PURPOSE_BY_KIND = { transactional: "order_update", marketing: "reengagement", otp: "otp" };
 const PURPOSES = ["order_update", "special_request", "reengagement", "otp"];
+// 🛡️ Kusudi linaruhusu aina (category) moja tu ya template - mf. ukumbusho (marketing) hauwezi kupitia template ya UTILITY
+const CATEGORY_FOR_PURPOSE = { order_update: "UTILITY", special_request: "UTILITY", reengagement: "MARKETING", otp: "AUTHENTICATION" };
 
 async function syncTemplates(merchantId) {
   const accounts = await prisma.whatsAppAccount.findMany({ where: { merchantId: parseInt(merchantId, 10), status: "active" } });
@@ -62,6 +64,11 @@ async function setPurpose(merchantId, templateId, purpose) {
     err.status = 404;
     throw err;
   }
+  if (purpose && template.category !== CATEGORY_FOR_PURPOSE[purpose]) {
+    const err = new Error(`Kusudi hili linahitaji template ya aina ${CATEGORY_FOR_PURPOSE[purpose]} (hii ni ${template.category}).`);
+    err.status = 400;
+    throw err;
+  }
   if (purpose) {
     await prisma.whatsAppTemplate.updateMany({
       where: { account: { merchantId: parseInt(merchantId, 10) }, purpose, NOT: { id: template.id } },
@@ -71,13 +78,14 @@ async function setPurpose(merchantId, templateId, purpose) {
   return prisma.whatsAppTemplate.update({ where: { id: template.id }, data: { purpose } });
 }
 
-/** Webhook: Meta imeidhinisha / kukataa / kusimamisha template */
-async function handleTemplateStatusUpdate(value) {
-  const where = value.message_template_id
-    ? { metaTemplateId: String(value.message_template_id) }
-    : { name: value.message_template_name, language: value.message_template_language };
+/**
+ * Webhook: Meta imeidhinisha / kukataa / kusimamisha template.
+ * 🛡️ Inabadilisha templates za WABA iliyotuma tukio (entry.id, iliyosainiwa na Meta) PEKEE.
+ */
+async function handleTemplateStatusUpdate(value, wabaId) {
+  if (!wabaId || !value.message_template_id) return { outcome: "ignored", reason: "missing_waba_or_template_id" };
   const result = await prisma.whatsAppTemplate.updateMany({
-    where,
+    where: { metaTemplateId: String(value.message_template_id), account: { wabaId: String(wabaId) } },
     data: { status: value.event, rejectedReason: value.reason && value.reason !== "NONE" ? value.reason : null },
   });
   return { outcome: result.count > 0 ? "updated" : "unknown_template" };
@@ -95,8 +103,8 @@ async function findApprovedForKind(connection, kind) {
 /**
  * Tuma template. Maandishi ya mfumo yanawekwa kama kigezo {{1}} cha body (template iwe na kigezo kimoja cha body).
  */
-async function sendTemplateText({ connection, template, merchantId, waId, text }) {
-  if (template.category === "MARKETING") {
+async function sendTemplateText({ connection, template, merchantId, waId, text, kind }) {
+  if (template.category === "MARKETING" || kind === "marketing") {
     const optIn = await prisma.customerOptIn.findUnique({
       where: { merchantId_customerWaId: { merchantId: parseInt(merchantId, 10), customerWaId: waId } },
     });

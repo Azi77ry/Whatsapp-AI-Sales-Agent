@@ -9,3 +9,4 @@ prisma/*.db-journal
 .gemini/
 # WhatsApp session backups contain login credentials - never commit
 backups/
+.playwright-mcp/

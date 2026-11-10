@@ -223,6 +223,33 @@ test("outside 24h: marketing template requires explicit opt-in", async () => {
   assert.strictEqual(r.sent, true);
 });
 
+test("a template status webhook from another WABA cannot change this merchant's template", async () => {
+  const ctx = await connectedMerchantWithCustomer();
+  const tpl = await prisma.whatsAppTemplate.create({
+    data: { accountId: ctx.connection.account.id, name: "order_update", language: "sw", category: "UTILITY", status: "APPROVED", metaTemplateId: `T_${Date.now()}` },
+  });
+  const forged = meta.envelope("PN_OTHER", {}, { field: "message_template_status_update", wabaId: "WABA_ATTACKER" });
+  forged.entry[0].changes[0].value = { event: "DISABLED", message_template_id: tpl.metaTemplateId };
+  const raw = Buffer.from(JSON.stringify(forged));
+  await fetch(`${app.url}/webhooks/whatsapp`, { method: "POST", headers: { "Content-Type": "application/json", "X-Hub-Signature-256": meta.sign(raw, "test-app-secret") }, body: raw });
+  await worker.drain();
+  assert.strictEqual((await prisma.whatsAppTemplate.findUnique({ where: { id: tpl.id } })).status, "APPROVED");
+});
+
+test("marketing never goes out through a utility template, and purposes must match the category", async () => {
+  const ctx = await connectedMerchantWithCustomer({ hoursSinceCustomer: 30 });
+  const utility = await prisma.whatsAppTemplate.create({
+    data: { accountId: ctx.connection.account.id, name: "util", language: "sw", category: "UTILITY", status: "APPROVED" },
+  });
+  assert.strictEqual((await api(ctx.m, "PUT", `/whatsapp/templates/${utility.id}/purpose`, { purpose: "reengagement" })).status, 400);
+
+  // Hata kama ingewekwa moja kwa moja kwenye DB, ujumbe wa marketing bila opt-in unakataliwa
+  await prisma.whatsAppTemplate.update({ where: { id: utility.id }, data: { purpose: "reengagement" } });
+  const r = await messageSender.sendToCustomer({ merchantId: ctx.m.id, customerPhone: ctx.conversation.customerPhone, text: "Ofa!", kind: "marketing" });
+  assert.deepStrictEqual([r.sent, r.reason], [false, "no_marketing_opt_in"]);
+  assert.strictEqual(graph.sentMessages().length, 0);
+});
+
 test("unapproved template is never used", async () => {
   const ctx = await connectedMerchantWithCustomer({ hoursSinceCustomer: 30 });
   await prisma.whatsAppTemplate.create({

@@ -1039,6 +1039,7 @@ async function loadOverview() {
   }
   
   loadNumberHealth();
+  loadCloudSection();
 
   // Sync the bot toggle state visually
   try {
@@ -2392,4 +2393,218 @@ function startNotificationPolling() {
   notificationPollInterval = setInterval(pollNotifications, 15000); // Check every 15s
 }
 
+// ── ☁️ V2: WHATSAPP CLOUD API (Meta) ─────────────────────────────────────────
+let cloudFeatures = null;
+
+function cloudStatusInfo(c) {
+  if (c.suspendedByAdmin) return { key: "cloudStatusSuspended", cls: "cloud-bad" };
+  return {
+    connected: { key: "cloudStatusConnected", cls: "cloud-ok" },
+    error: { key: "cloudStatusError", cls: "cloud-bad" },
+    disconnected: { key: "cloudStatusDisconnected", cls: "cloud-muted" },
+  }[c.status] || { key: "cloudStatusPending", cls: "cloud-muted" };
+}
+
+function cloudErrorText(c) {
+  if (!c.lastError) return "";
+  if (c.lastError === "token_expired") return t("cloudErrTokenExpired");
+  if (c.lastError.startsWith("token_")) return t("cloudErrTokenInvalid");
+  return c.lastError;
+}
+
+async function loadCloudSection() {
+  const card = document.getElementById("cloudConnectionsCard");
+  if (!card) return;
+  try {
+    cloudFeatures = cloudFeatures || (await apiFetch("/whatsapp/features"));
+  } catch (_) { return; }
+  if (!cloudFeatures.cloudApi) { card.classList.add("hidden"); return; }
+  card.classList.remove("hidden");
+
+  const { connections } = await apiFetch("/whatsapp/connections");
+  const active = connections.filter((c) => c.status !== "disconnected");
+  const onCloud = active.length > 0;
+
+  // Namba moja = njia moja: aliye kwenye Cloud API hahitaji QR wala kadi ya usalama ya Baileys
+  document.getElementById("whatsappStatusCard")?.classList.toggle("hidden", onCloud || !cloudFeatures.baileys);
+  document.getElementById("numberHealthCard")?.classList.toggle("hidden", onCloud || !cloudFeatures.baileys);
+
+  const badge = document.getElementById("cloudStatusBadge");
+  const best = active.find((c) => c.status === "connected" && !c.suspendedByAdmin) || active[0];
+  const info = best ? cloudStatusInfo(best) : { key: "cloudStatusDisconnected", cls: "cloud-muted" };
+  badge.className = "badge " + info.cls;
+  badge.textContent = t(info.key);
+
+  const list = document.getElementById("cloudConnectionList");
+  if (!onCloud) {
+    list.innerHTML = `<p class="nh-hint">${t("cloudNone")}</p>`;
+  } else {
+    list.innerHTML = active.map((c) => {
+      const st = cloudStatusInfo(c);
+      const err = cloudErrorText(c);
+      const when = c.lastConnectedAt ? new Date(c.lastConnectedAt).toLocaleString() : "—";
+      return `<div class="cloud-conn">
+        <div>
+          <div class="cloud-conn-name">${escapeHtml(c.verifiedName || "WhatsApp")} · ${escapeHtml(c.displayPhoneNumber || c.phoneE164)}
+            <span class="badge ${st.cls}" style="margin-left:6px;">${t(st.key)}</span></div>
+          <div class="cloud-conn-meta">${t("cloudPhoneId")}: <code>${escapeHtml(c.phoneNumberId || "—")}</code>
+            · ${t("cloudLastConnected")}: ${escapeHtml(when)}
+            ${c.qualityRating ? ` · ${t("cloudQuality")}: ${escapeHtml(c.qualityRating)}` : ""}</div>
+          ${err ? `<div class="cloud-error">⚠️ ${escapeHtml(err)}</div>` : ""}
+        </div>
+        <div class="cloud-conn-actions">
+          ${cloudFeatures.embeddedSignup ? `<button class="btn-ghost" onclick="startEmbeddedSignup()">${t("cloudReconnect")}</button>` : ""}
+          <button class="btn-ghost" onclick="disconnectCloud(${c.id})">${t("cloudDisconnect")}</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  document.getElementById("cloudConnectBtn").classList.toggle("hidden", onCloud || !cloudFeatures.embeddedSignup);
+  document.getElementById("cloudPendingNote").classList.toggle("hidden", onCloud || cloudFeatures.embeddedSignup);
+  document.getElementById("cloudUsageBox").classList.toggle("hidden", !onCloud);
+  document.getElementById("cloudTemplatesBox").classList.toggle("hidden", !onCloud);
+
+  if (onCloud) {
+    loadCloudUsage();
+    loadCloudTemplates();
+  }
+}
+
+async function loadCloudUsage() {
+  try {
+    const { usage } = await apiFetch("/whatsapp/usage");
+    const sum = (fn) => usage.filter(fn).reduce((n, u) => n + u.count, 0);
+    document.getElementById("cloudUsageIn").textContent = sum((u) => u.direction === "inbound");
+    document.getElementById("cloudUsageOut").textContent = sum((u) => u.direction === "outbound");
+    document.getElementById("cloudUsageTemplates").textContent =
+      sum((u) => u.direction === "outbound" && u.category !== "service");
+  } catch (_) {}
+}
+
+async function loadCloudTemplates() {
+  const box = document.getElementById("cloudTemplateList");
+  try {
+    const { templates, purposes } = await apiFetch("/whatsapp/templates");
+    if (!templates.length) { box.innerHTML = `<p class="nh-hint">${t("cloudNoTemplates")}</p>`; return; }
+    box.innerHTML = templates.map((tpl) => {
+      const options = [`<option value="">${t("cloudPurposeNone")}</option>`]
+        .concat(purposes.map((p) => `<option value="${p}" ${tpl.purpose === p ? "selected" : ""}>${t("cloudPurpose_" + p)}</option>`))
+        .join("");
+      const ok = tpl.status === "APPROVED";
+      return `<div class="cloud-conn cloud-tpl">
+        <div><strong>${escapeHtml(tpl.name)}</strong> <small>(${escapeHtml(tpl.language)} · ${escapeHtml(tpl.category)})</small>
+          <span class="badge ${ok ? "cloud-ok" : "cloud-muted"}" style="margin-left:6px;">${escapeHtml(tpl.status)}</span>
+          ${tpl.rejectedReason ? `<div class="cloud-error">${escapeHtml(tpl.rejectedReason)}</div>` : ""}</div>
+        <select onchange="setTemplatePurpose(${tpl.id}, this.value)" ${ok ? "" : "disabled"}>${options}</select>
+      </div>`;
+    }).join("");
+  } catch (err) {
+    box.innerHTML = `<p class="cloud-error">${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function setTemplatePurpose(id, purpose) {
+  try {
+    await apiFetch(`/whatsapp/templates/${id}/purpose`, { method: "PUT", body: JSON.stringify({ purpose: purpose || null }) });
+    loadCloudTemplates();
+  } catch (err) { alert(err.message); }
+}
+
+document.getElementById("cloudSyncTemplatesBtn")?.addEventListener("click", async (e) => {
+  e.target.disabled = true;
+  try {
+    await apiFetch("/whatsapp/templates/sync", { method: "POST" });
+    await loadCloudTemplates();
+  } catch (err) { alert(err.message); }
+  finally { e.target.disabled = false; }
+});
+
+async function disconnectCloud(id) {
+  if (!confirm(t("cloudDisconnectConfirm"))) return;
+  try {
+    await apiFetch(`/whatsapp/connections/${id}`, { method: "DELETE" });
+    loadCloudSection();
+  } catch (err) { alert(err.message); }
+}
+
+// Meta JS SDK inapakiwa tu wakati wa kuunganisha (si kwa kila mtumiaji wa dashboard)
+function loadFacebookSdk(appId, version) {
+  if (window.FB) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    window.fbAsyncInit = () => {
+      FB.init({ appId, autoLogAppEvents: true, xfbml: false, version });
+      resolve();
+    };
+    const s = document.createElement("script");
+    s.src = "https://connect.facebook.net/en_US/sdk.js";
+    s.async = true;
+    s.defer = true;
+    s.crossOrigin = "anonymous";
+    s.onerror = () => reject(new Error("Facebook SDK haikupakia"));
+    document.body.appendChild(s);
+  });
+}
+
+async function startEmbeddedSignup() {
+  const errorEl = document.getElementById("cloudError");
+  errorEl.classList.add("hidden");
+  const showError = (msg) => { errorEl.textContent = msg; errorEl.classList.remove("hidden"); };
+
+  let cfg;
+  try {
+    cfg = await apiFetch("/whatsapp/embedded-signup/config");
+    if (!cfg.enabled) return showError(t("cloudPendingApproval"));
+    await loadFacebookSdk(cfg.appId, cfg.graphApiVersion);
+  } catch (err) {
+    return showError(t("cloudSignupFailed") + err.message);
+  }
+
+  // Popup ya Meta inatuma waba_id + phone_number_id kwa postMessage (tukio WA_EMBEDDED_SIGNUP)
+  let session = null;
+  const onMessage = (event) => {
+    let host = "";
+    try { host = new URL(event.origin).hostname; } catch (_) { return; }
+    if (host !== "facebook.com" && !host.endsWith(".facebook.com")) return;
+    let data;
+    try { data = typeof event.data === "string" ? JSON.parse(event.data) : event.data; } catch (_) { return; }
+    if (data?.type !== "WA_EMBEDDED_SIGNUP") return;
+    if (data.event === "CANCEL") showError(t("cloudSignupCancelled"));
+    else if (data.event === "ERROR") showError(t("cloudSignupFailed") + (data.data?.error_message || ""));
+    else if (data.data?.waba_id) session = data.data;
+  };
+  window.addEventListener("message", onMessage);
+
+  FB.login((response) => {
+    // Tukio la postMessage linaweza kuchelewa kidogo baada ya callback hii
+    setTimeout(async () => {
+      window.removeEventListener("message", onMessage);
+      const code = response?.authResponse?.code;
+      if (!code || !session?.phone_number_id) {
+        if (errorEl.classList.contains("hidden")) showError(t("cloudSignupCancelled"));
+        return;
+      }
+      try {
+        const result = await apiFetch("/whatsapp/embedded-signup/complete", {
+          method: "POST",
+          body: JSON.stringify({
+            code, state: cfg.state, wabaId: session.waba_id, phoneNumberId: session.phone_number_id, businessId: session.business_id,
+          }),
+        });
+        showToast(t("cloudSignupSuccess"));
+        if (result.warning) showError(result.warning);
+        loadCloudSection();
+      } catch (err) {
+        showError(t("cloudSignupFailed") + err.message);
+      }
+    }, 500);
+  }, {
+    config_id: cfg.configId,
+    response_type: "code",
+    override_default_response_type: true,
+    extras: { setup: {}, sessionInfoVersion: "3" },
+  });
+}
+
+document.getElementById("cloudConnectBtn")?.addEventListener("click", startEmbeddedSignup);
 

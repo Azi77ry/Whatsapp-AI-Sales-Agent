@@ -81,7 +81,7 @@ async function sendToCustomer({ merchantId, customerPhone, text, kind = "transac
       return { sent: false, provider: "cloud_api", reason: "outside_24h_window" };
     }
     try {
-      const result = await templateService.sendTemplateText({ connection, template, merchantId: mId, waId, text });
+      const result = await templateService.sendTemplateText({ connection, template, merchantId: mId, waId, text, kind });
       if (result.sent) await recordUsage(connection.id, "outbound", template.category.toLowerCase());
       return { provider: "cloud_api", ...result };
     } catch (err) {
