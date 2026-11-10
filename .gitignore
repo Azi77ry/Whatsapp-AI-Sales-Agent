@@ -10,3 +10,4 @@ prisma/*.db-journal
 # WhatsApp session backups contain login credentials - never commit
 backups/
 .playwright-mcp/
+.env.local

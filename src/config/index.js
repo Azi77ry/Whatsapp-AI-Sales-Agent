@@ -1,5 +1,6 @@
 // Kwenye tests (NODE_ENV=test) .env haiandiki juu ya env za test - vinginevyo tests zingegusa DB ya production
-require("dotenv").config({ override: process.env.NODE_ENV !== "test" });
+// ENV_FILE inaruhusu kutumia faili lingine (mf. .env.local kwa majaribio ya hapa kwenye kompyuta)
+require("dotenv").config({ path: process.env.ENV_FILE || ".env", override: process.env.NODE_ENV !== "test" });
 
 // Angalizo: Sasa ni lazima uweke secrets hizi kwenye .env
 if (!process.env.JWT_SECRET || !process.env.ENCRYPTION_KEY || !process.env.ADMIN_PASSWORD) {

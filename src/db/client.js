@@ -1,7 +1,8 @@
 // Prisma client moja inayoshirikiwa na sehemu zote za app
 // (huku ni tabia nzuri ili kuepuka kufungua connections nyingi za database)
 
-require("dotenv").config({ override: process.env.NODE_ENV !== "test" });
+// ENV_FILE inaruhusu kutumia faili lingine (mf. .env.local kwa majaribio ya hapa kwenye kompyuta)
+require("dotenv").config({ path: process.env.ENV_FILE || ".env", override: process.env.NODE_ENV !== "test" });
 const { PrismaClient } = require("@prisma/client");
 
 // 🛡️ Tests hazipaswi KAMWE kugusa database isiyo ya localhost (mf. Supabase ya production)
