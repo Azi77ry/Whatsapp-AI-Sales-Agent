@@ -21,45 +21,53 @@ model Merchant {
   updatedAt    DateTime @updatedAt
 
   // Nudging & AI Settings (Multi-Tenant Settings)
-  reEngagementMinHours      Int     @default(12)
-  reEngagementMaxHours      Int     @default(24)
-  reEngagementCooldownHours Int     @default(48)
-  reEngagementStartHour     Int     @default(7)
-  reEngagementEndHour       Int     @default(21)
+  reEngagementMinHours      Int       @default(12)
+  reEngagementMaxHours      Int       @default(24)
+  reEngagementCooldownHours Int       @default(48)
+  reEngagementStartHour     Int       @default(7)
+  reEngagementEndHour       Int       @default(21)
   businessContext           String? // Maelezo ya duka/miongozo maalum ya duka
   paymentInstructions       String? // Maelekezo ya malipo ya duka (itumika na AI kwa wateja)
-  welcomeImageEnabled       Boolean @default(false)
+  welcomeImageEnabled       Boolean   @default(false)
   welcomeImageUrl           String?
   welcomeMessage            String?
-  strictInventoryMode       Boolean @default(true)
+  strictInventoryMode       Boolean   @default(true)
   notificationEmail         String? // Barua pepe ya kupokea taarifa za tatizo la WhatsApp session
   resetToken                String? // Msimbo wa OTP wa kureset password
   resetTokenExpires         DateTime? // Muda wa mwisho wa OTP (expiry)
 
   // Super-Admin & Platform Management
   role                String    @default("merchant") // "merchant" au "superadmin"
-  status              String    @default("active")   // "active" au "suspended"
-  aiLimit             Int       @default(500)         // Kikomo cha meseji za AI kwa mwezi
-  aiUsage             Int       @default(0)           // Matumizi ya AI mwezi huu
+  status              String    @default("active") // "active" au "suspended"
+  aiLimit             Int       @default(500) // Kikomo cha meseji za AI kwa mwezi
+  aiUsage             Int       @default(0) // Matumizi ya AI mwezi huu
   subscriptionPlan    String    @default("free_trial") // "free_trial", "monthly", "yearly"
   subscriptionEndDate DateTime? // Tarehe ya mwisho ya kifurushi
-  isTrialUsed         Boolean   @default(false)       // Ikiwa ametumia ofa ya siku 7
+  isTrialUsed         Boolean   @default(false) // Ikiwa ametumia ofa ya siku 7
 
   // 🛡️ Usalama wa Namba (Number Health / Anti-Ban)
-  waBanned            Boolean   @default(false)       // true ikiwa WhatsApp ilifungia namba (403) - usiunganishe tena kiotomatiki
+  waBanned            Boolean   @default(false) // true ikiwa WhatsApp ilifungia namba (403) - usiunganishe tena kiotomatiki
   waBannedAt          DateTime?
   waLinkedAt          DateTime? // Tarehe namba ilipounganishwa kwenye mfumo (kwa warm-up ya kikomo cha siku)
-  waPhone             String?   // Namba ya WhatsApp iliyounganishwa kwa sasa
-  dailyMsgLimit       Int?      // Kikomo maalum cha ujumbe kwa siku (null = tumia warm-up ya kawaida)
-  sendCountDate       String?   // Siku ya hesabu ya sasa (YYYY-MM-DD, EAT)
+  waPhone             String? // Namba ya WhatsApp iliyounganishwa kwa sasa
+  dailyMsgLimit       Int? // Kikomo maalum cha ujumbe kwa siku (null = tumia warm-up ya kawaida)
+  sendCountDate       String? // Siku ya hesabu ya sasa (YYYY-MM-DD, EAT)
   sendCountToday      Int       @default(0) // Ujumbe uliotumwa leo (zote: majibu, oda, nudges)
   marketingCountToday Int       @default(0) // Nudges zilizotumwa leo
 
-  products            Product[]
-  conversations       Conversation[]
-  orders              Order[]
-  specialRequests     SpecialRequest[]
+  products             Product[]
+  conversations        Conversation[]
+  orders               Order[]
+  specialRequests      SpecialRequest[]
   subscriptionPayments SubscriptionPayment[]
+
+  // V2: Bot on/off sasa inahifadhiwa DB (zamani ilikuwa kwenye memory na ilirudi "on" kila restart)
+  botActive Boolean @default(true)
+
+  // V2: WhatsApp Cloud API
+  whatsappAccounts     WhatsAppAccount[]
+  whatsappPhoneNumbers WhatsAppPhoneNumber[]
+  customerOptIns       CustomerOptIn[]
 
   @@map("merchants")
 }
@@ -69,12 +77,12 @@ model Product {
   id          Int      @id @default(autoincrement())
   merchantId  Int      @default(1)
   merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  name        String   // mfano: "Jezi ya Barcelona"
-  category    String   // Jezi, Simu, Laptop, Smartwatch, Calculator, Accessories
+  name        String // mfano: "Jezi ya Barcelona"
+  category    String // Jezi, Simu, Laptop, Smartwatch, Calculator, Accessories
   price       Float
   stock       Int      @default(0)
-  colors      String?  // comma-separated: "Nyekundu,Bluu,Nyeusi"
-  sizes       String?  // comma-separated: "S,M,L,XL"
+  colors      String? // comma-separated: "Nyekundu,Bluu,Nyeusi"
+  sizes       String? // comma-separated: "S,M,L,XL"
   description String?
   imageUrl    String?
   isActive    Boolean  @default(true)
@@ -91,35 +99,51 @@ model Conversation {
   id             Int       @id @default(autoincrement())
   merchantId     Int       @default(1)
   merchant       Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  customerPhone  String    // mfano: 255712345678@s.whatsapp.net
+  customerPhone  String // mfano: 255712345678@s.whatsapp.net
   customerName   String?
   status         String    @default("active") // active, closed
-  needsHuman     Boolean   @default(false)    // true ikiwa AI ilishindwa kufanya kazi na mfanyakazi anahitajika kujibu
-  consentGiven   Boolean   @default(false)    // true ikiwa mteja amekubali kuhudumiwa na AI kwenye ujumbe wa kwanza
+  needsHuman     Boolean   @default(false) // true ikiwa AI ilishindwa kufanya kazi na mfanyakazi anahitajika kujibu
+  consentGiven   Boolean   @default(false) // true ikiwa mteja amekubali kuhudumiwa na AI kwenye ujumbe wa kwanza
   contactType    String    @default("customer") // "customer" (bot inajibu) au "personal" (rafiki/mtu binafsi - bot HAIJIBU)
-  contextSummary String?   // Muhtasari mfupi wa mteja ulioundwa na AI (context compaction)
+  contextSummary String? // Muhtasari mfupi wa mteja ulioundwa na AI (context compaction)
   reEngagedAt    DateTime? // Tarehe ya mwisho ya kutuma "abandoned cart" nudge - kuzuia spam (cooldown)
   optedOut       Boolean   @default(false) // Mteja ameomba asitumiwe ukumbusho (STOP) - hakuna nudges tena
   optedOutAt     DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+
+  // V2: Cloud API + human takeover
+  customerWaId  String? // Namba ya mteja (tarakimu tu, mf. 255712345678) - kitambulisho cha Cloud API
+  handoverState String    @default("AI_ACTIVE") // AI_ACTIVE | HUMAN_REQUESTED | HUMAN_ACTIVE | AI_RESUMED
+  handoverAt    DateTime?
+  lastInboundAt DateTime? // Ujumbe wa mwisho wa mteja - dirisha la saa 24 la WhatsApp linaanzia hapa
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   messages        Message[]
   orders          Order[]
   specialRequests SpecialRequest[]
 
   @@unique([merchantId, customerPhone]) // Kila duka lina mazungumzo yake na namba husika
+  @@index([merchantId, customerWaId])
   @@map("conversations")
 }
 
 // Kila ujumbe binafsi ndani ya mazungumzo - kumbukumbu ya AI
 model Message {
-  id             Int          @id @default(autoincrement())
-  conversationId Int
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         String       // "customer" au "ai"
-  content        String
-  createdAt      DateTime     @default(now())
+  id                Int          @id @default(autoincrement())
+  conversationId    Int
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender            String // "customer", "ai" au "merchant"
+  // V2: metadata ya usafirishaji (null kwa ujumbe wa V1)
+  direction         String? // "inbound" | "outbound"
+  type              String       @default("text") // text, image, audio, video, document, template, ...
+  providerMessageId String?      @unique // wamid ya Meta - inazuia kushughulikia ujumbe mmoja mara mbili
+  status            String? // queued, sent, delivered, read, failed, cancelled
+  statusUpdatedAt   DateTime?
+  errorCode         String?
+  inReplyToId       Int? // Ujumbe wa mteja ambao jibu hili linaujibu (kwa retry bila kuita AI tena)
+  phoneNumberId     Int? // WhatsAppPhoneNumber iliyotumika
+  content           String
+  createdAt         DateTime     @default(now())
 
   @@map("messages")
 }
@@ -135,13 +159,13 @@ model Order {
   customerPhone  String
   productId      Int?
   product        Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
-  productName    String       // hifadhi jina hata kama product ikifutwa baadaye
+  productName    String // hifadhi jina hata kama product ikifutwa baadaye
   quantity       Int          @default(1)
   color          String?
   size           String?
-  deliveryType   String       // "delivery" au "pickup"
+  deliveryType   String // "delivery" au "pickup"
   address        String?
-  unitPrice      Float?       // bei ya bidhaa wakati wa kuagiza
+  unitPrice      Float? // bei ya bidhaa wakati wa kuagiza
   status         String       @default("pending") // pending, confirmed, delivered, cancelled
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -158,17 +182,17 @@ model SpecialRequest {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   customerName   String
   customerPhone  String
-  productName    String       // bidhaa waliyoiomba
+  productName    String // bidhaa waliyoiomba
   quantity       Int          @default(1)
   color          String?
   size           String?
-  deliveryType   String       // "delivery" au "pickup"
+  deliveryType   String // "delivery" au "pickup"
   address        String?
-  notes          String?      // maelezo ya ziada kutoka mteja
-  estimatedPrice Float?       // bei ya soko iliyokadiriwa na AI
+  notes          String? // maelezo ya ziada kutoka mteja
+  estimatedPrice Float? // bei ya soko iliyokadiriwa na AI
   status         String       @default("new") // new, sourcing, found, fulfilled, cancelled
-  adminNotes     String?      // maelezo ya muuzaji
-  quotedPrice    Float?       // bei halisi aliyoipata muuzaji
+  adminNotes     String? // maelezo ya muuzaji
+  quotedPrice    Float? // bei halisi aliyoipata muuzaji
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -177,18 +201,176 @@ model SpecialRequest {
 
 // AzamPay Payments - Kutunza kumbukumbu za malipo ya wafanyabiashara
 model SubscriptionPayment {
-  id            Int      @id @default(autoincrement())
-  merchantId    Int
-  merchant      Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  amount        Float
-  phoneNumber   String
-  provider      String   // Mpesa, Tigo, Airtel, Halopesa
-  referenceId   String   @unique // Hii ndio tunaituma AzamPay (External ID)
-  azampayRef    String?  // Reference inayorudi kutoka AzamPay ikishalipwa
-  status        String   @default("pending") // pending, success, failed
-  message       String?  // Ujumbe wa makosa kama yapo
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  id          Int      @id @default(autoincrement())
+  merchantId  Int
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  amount      Float
+  phoneNumber String
+  provider    String // Mpesa, Tigo, Airtel, Halopesa
+  referenceId String   @unique // Hii ndio tunaituma AzamPay (External ID)
+  azampayRef  String? // Reference inayorudi kutoka AzamPay ikishalipwa
+  status      String   @default("pending") // pending, success, failed
+  message     String? // Ujumbe wa makosa kama yapo
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   @@map("subscription_payments")
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// V2: META WHATSAPP CLOUD API (multi-tenant)
+// ════════════════════════════════════════════════════════════════════════════
+
+// WhatsApp Business Account (WABA) ya merchant
+model WhatsAppAccount {
+  id         Int      @id @default(autoincrement())
+  merchantId Int
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  wabaId     String   @unique
+  businessId String? // Meta Business Portfolio ID (kama inajulikana)
+  name       String?
+  status     String   @default("active") // active | suspended | revoked
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  phoneNumbers WhatsAppPhoneNumber[]
+  credential   WhatsAppCredential?
+  templates    WhatsAppTemplate[]
+
+  @@index([merchantId])
+  @@map("whatsapp_accounts")
+}
+
+// Muunganiko wa namba moja ya WhatsApp. Namba moja = adapter moja tu (phoneE164 ni unique kwa providers zote).
+model WhatsAppPhoneNumber {
+  id                 Int              @id @default(autoincrement())
+  merchantId         Int
+  merchant           Merchant         @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  accountId          Int?
+  account            WhatsAppAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  provider           String           @default("cloud_api") // cloud_api | baileys
+  phoneNumberId      String?          @unique // Phone Number ID ya Meta (null kwa baileys)
+  phoneE164          String           @unique // tarakimu tu, mf. 255712345678
+  displayPhoneNumber String?
+  verifiedName       String?
+  status             String           @default("pending") // pending | connected | disconnected | error | suspended
+  suspendedByAdmin   Boolean          @default(false)
+  qualityRating      String?
+  messagingLimitTier String?
+  lastConnectedAt    DateTime?
+  lastError          String?
+  lastErrorAt        DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  usageRecords WhatsAppUsageRecord[]
+
+  @@index([merchantId])
+  @@map("whatsapp_phone_numbers")
+}
+
+// Token ya kufikia Graph API - imefichwa (AES-256-GCM). Jedwali lake pekee ili isisomwe kwa bahati mbaya.
+model WhatsAppCredential {
+  id              Int             @id @default(autoincrement())
+  accountId       Int             @unique
+  account         WhatsAppAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  encryptedToken  String
+  tokenType       String          @default("business_integration") // business_integration | system_user
+  scopes          String?
+  status          String          @default("valid") // valid | invalid | revoked
+  expiresAt       DateTime?
+  lastValidatedAt DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("whatsapp_credentials")
+}
+
+// Matukio ya webhook - kumbukumbu ya kudumu NA foleni ya kazi (retry + dead-letter)
+model WhatsAppWebhookEvent {
+  id            Int       @id @default(autoincrement())
+  dedupeKey     String    @unique // msg:<wamid> | status:<wamid>:<status> | other:<hash>
+  kind          String // message | status | other
+  phoneNumberId String? // metadata.phone_number_id kutoka Meta
+  merchantId    Int? // inajazwa baada ya kutambua tenant
+  payload       Json
+  status        String    @default("pending") // pending | processing | done | ignored | dead
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @default(now())
+  lockedAt      DateTime?
+  lastError     String?
+  receivedAt    DateTime  @default(now())
+  processedAt   DateTime?
+
+  @@index([status, nextAttemptAt])
+  @@index([merchantId])
+  @@map("whatsapp_webhook_events")
+}
+
+// Historia ya hali za ujumbe uliotumwa (sent -> delivered -> read / failed)
+model WhatsAppMessageStatus {
+  id                Int      @id @default(autoincrement())
+  providerMessageId String
+  status            String
+  errorCode         String?
+  errorTitle        String?
+  recipientWaId     String?
+  pricingCategory   String?
+  occurredAt        DateTime
+  createdAt         DateTime @default(now())
+
+  @@unique([providerMessageId, status])
+  @@map("whatsapp_message_statuses")
+}
+
+// Templates zilizoidhinishwa na Meta (zinahitajika nje ya dirisha la saa 24)
+model WhatsAppTemplate {
+  id             Int             @id @default(autoincrement())
+  accountId      Int
+  account        WhatsAppAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name           String
+  language       String
+  category       String // MARKETING | UTILITY | AUTHENTICATION
+  status         String          @default("PENDING") // APPROVED | PENDING | REJECTED | PAUSED | DISABLED
+  metaTemplateId String?
+  components     Json?
+  purpose        String? // order_update | special_request | reengagement | otp (matumizi ndani ya mfumo)
+  rejectedReason String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@unique([accountId, name, language])
+  @@map("whatsapp_templates")
+}
+
+// Ridhaa ya mteja kupokea ujumbe wa biashara (marketing) - na kujiondoa
+model CustomerOptIn {
+  id             Int       @id @default(autoincrement())
+  merchantId     Int
+  merchant       Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  customerWaId   String
+  marketingOptIn Boolean   @default(false)
+  optInSource    String? // mf. "whatsapp_keyword", "checkout_form"
+  optInAt        DateTime?
+  optedOutAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([merchantId, customerWaId])
+  @@map("customer_opt_ins")
+}
+
+// Hesabu za matumizi kwa siku (kwa takwimu na makadirio ya gharama)
+model WhatsAppUsageRecord {
+  id            Int                 @id @default(autoincrement())
+  phoneNumberId Int
+  phoneNumber   WhatsAppPhoneNumber @relation(fields: [phoneNumberId], references: [id], onDelete: Cascade)
+  date          String // YYYY-MM-DD (EAT)
+  direction     String // inbound | outbound
+  category      String // service | utility | marketing | authentication | unknown
+  count         Int                 @default(0)
+
+  @@unique([phoneNumberId, date, direction, category])
+  @@map("whatsapp_usage_records")
 }

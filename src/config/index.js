@@ -55,6 +55,26 @@ module.exports = {
   reEngagementStartHour: parseInt(process.env.RE_ENGAGEMENT_START_HOUR || "7", 10),
   reEngagementEndHour: parseInt(process.env.RE_ENGAGEMENT_END_HOUR || "21", 10),
 
+  appUrl: process.env.APP_URL || "",
+
+  // ── V2: Feature flags ──────────────────────────────────────────────────────
+  features: {
+    cloudApi: process.env.FEATURE_CLOUD_API === "true", // Webhook ya Meta + worker
+    embeddedSignup: process.env.FEATURE_EMBEDDED_SIGNUP === "true", // Inasubiri idhini ya Meta
+    baileys: process.env.FEATURE_BAILEYS !== "false", // Njia ya zamani (QR) - itaondolewa Phase 5 ya migration
+    inProcessWorker: process.env.WEBHOOK_WORKER_IN_PROCESS !== "false", // Zima kama cPanel cron pekee inafanya kazi
+  },
+
+  // ── V2: Meta WhatsApp Cloud API ────────────────────────────────────────────
+  meta: {
+    appId: process.env.META_APP_ID || "",
+    appSecret: process.env.META_APP_SECRET || "",
+    webhookVerifyToken: process.env.META_WEBHOOK_VERIFY_TOKEN || "",
+    graphApiVersion: process.env.META_GRAPH_API_VERSION || "v23.0",
+    graphBaseUrl: process.env.META_GRAPH_BASE_URL || "https://graph.facebook.com",
+    embeddedSignupConfigId: process.env.META_EMBEDDED_SIGNUP_CONFIG_ID || "",
+  },
+
   // SMTP settings kwa ajili ya kureset password ya wafanyabiashara
   smtpHost: process.env.SMTP_HOST || "",
   smtpPort: parseInt(process.env.SMTP_PORT || "587", 10),
