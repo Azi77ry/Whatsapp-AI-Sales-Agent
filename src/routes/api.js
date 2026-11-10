@@ -174,6 +174,63 @@ router.get("/whatsapp/connections", wrap(async (req, res) => {
   res.json({ connections: await connectionService.listForMerchant(req.merchantId) });
 }));
 
+router.get("/whatsapp/features", wrap(async (req, res) => {
+  const config = require("../config");
+  res.json({
+    cloudApi: config.features.cloudApi,
+    embeddedSignup: require("../integrations/whatsapp/embeddedSignup").isEnabled(),
+    baileys: config.features.baileys,
+  });
+}));
+
+// ── V2: Meta Embedded Signup (imefungwa nyuma ya FEATURE_EMBEDDED_SIGNUP) ──
+const embeddedSignup = require("../integrations/whatsapp/embeddedSignup");
+const signupLimiter = require("express-rate-limit")({
+  windowMs: 15 * 60 * 1000, max: 10, keyGenerator: (req) => `es-${req.merchantId}`,
+  standardHeaders: true, legacyHeaders: false, message: { error: "Majaribio mengi. Subiri dakika 15." },
+});
+
+router.get("/whatsapp/embedded-signup/config", wrap(async (req, res) => {
+  res.json(embeddedSignup.getClientConfig(req.merchantId));
+}));
+
+router.post("/whatsapp/embedded-signup/complete", signupLimiter, wrap(async (req, res) => {
+  const { code, wabaId, phoneNumberId, businessId, state } = req.body || {};
+  try {
+    const result = await embeddedSignup.complete({ merchantId: req.merchantId, code, wabaId, phoneNumberId, businessId, state });
+    res.json({ success: true, ...result });
+  } catch (err) {
+    if (err.name === "SignupError" || err.name === "ConnectionError") {
+      return res.status(err.status).json({ error: err.message, step: err.step || null });
+    }
+    throw err;
+  }
+}));
+
+// ── V2: Templates ──
+const templateService = require("../integrations/whatsapp/templateService");
+
+router.get("/whatsapp/templates", wrap(async (req, res) => {
+  res.json({ templates: await templateService.listForMerchant(req.merchantId), purposes: templateService.PURPOSES });
+}));
+
+router.post("/whatsapp/templates/sync", wrap(async (req, res) => {
+  try {
+    res.json(await templateService.syncTemplates(req.merchantId));
+  } catch (err) {
+    res.status(502).json({ error: `Imeshindwa kupata templates kutoka Meta: ${err.message}` });
+  }
+}));
+
+router.put("/whatsapp/templates/:id/purpose", wrap(async (req, res) => {
+  try {
+    res.json(await templateService.setPurpose(req.merchantId, req.params.id, req.body?.purpose || null));
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
+    throw err;
+  }
+}));
+
 router.delete("/whatsapp/connections/:id", wrap(async (req, res) => {
   try {
     await connectionService.disconnect(req.merchantId, req.params.id);

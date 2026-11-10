@@ -42,7 +42,10 @@ async function processEvent(event) {
       return { ...(await handleStatus(event.payload, tenant)), merchantId: tenant.merchantId };
     }
     default:
-      // account_update, template status n.k. - zimehifadhiwa kwa ukaguzi; zitashughulikiwa Phase 5
+      if (event.payload?.field === "message_template_status_update") {
+        return require("../integrations/whatsapp/templateService").handleTemplateStatusUpdate(event.payload.value || {});
+      }
+      // account_update, phone_number_quality_update n.k. - zimehifadhiwa kwa ukaguzi
       return { outcome: "recorded" };
   }
 }

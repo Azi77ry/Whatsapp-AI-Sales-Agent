@@ -74,8 +74,20 @@ async function sendToCustomer({ merchantId, customerPhone, text, kind = "transac
   if (kind === "marketing" && conversation?.optedOut) return { sent: false, provider: "cloud_api", reason: "opted_out" };
   // 🛡️ Nje ya saa 24 tangu mteja aandike: free-form hairuhusiwi - template iliyoidhinishwa inahitajika
   if (!isWithinServiceWindow(conversation)) {
-    logger.info("whatsapp.send.outside_window", { merchantId: mId, kind });
-    return { sent: false, provider: "cloud_api", reason: "outside_24h_window" };
+    const templateService = require("./templateService");
+    const template = kind === "reply" ? null : await templateService.findApprovedForKind(connection, kind);
+    if (!template) {
+      logger.info("whatsapp.send.outside_window", { merchantId: mId, kind });
+      return { sent: false, provider: "cloud_api", reason: "outside_24h_window" };
+    }
+    try {
+      const result = await templateService.sendTemplateText({ connection, template, merchantId: mId, waId, text });
+      if (result.sent) await recordUsage(connection.id, "outbound", template.category.toLowerCase());
+      return { provider: "cloud_api", ...result };
+    } catch (err) {
+      logger.warn("whatsapp.template.failed", { merchantId: mId, code: err.code, error: err.message });
+      return { sent: false, provider: "cloud_api", reason: err.retryable ? "temporary_error" : "template_failed" };
+    }
   }
 
   try {
