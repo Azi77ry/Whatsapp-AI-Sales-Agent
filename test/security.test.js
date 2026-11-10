@@ -70,6 +70,22 @@ test("AzamPay webhook rejects an amount that does not match the payment", async 
   assert.strictEqual(unchanged.subscriptionEndDate, null);
 });
 
+test("checkout is rate limited per merchant (USSD push spam)", async () => {
+  const merchant = await createMerchant(prisma);
+  const statuses = [];
+  for (let i = 0; i < 6; i++) {
+    const res = await fetch(`${app.url}/api/billing/checkout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${tokenFor(merchant)}` },
+      body: JSON.stringify({ phoneNumber: "0712345678", provider: "Mpesa" }),
+    });
+    statuses.push(res.status);
+  }
+  // AzamPay haijawekwa kwenye test, hivyo 5 za kwanza zinashindwa (500) - ya 6 lazima izuiwe (429)
+  assert.deepStrictEqual(statuses.slice(0, 5).includes(429), false);
+  assert.strictEqual(statuses[5], 429);
+});
+
 test("image upload ignores the client's file extension (no stored .html)", async () => {
   const merchant = await createMerchant(prisma);
   const form = new FormData();

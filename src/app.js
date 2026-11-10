@@ -60,7 +60,7 @@ app.get("/superadmin", (req, res) => {
 app.use("/api/auth", authRoutes); // Usajili na Kuingia (already has per-route rate limiters)
 // ⚠️ Billing LAZIMA iwe kabla ya "/api" - apiRoutes ina router.use(authMiddleware) inayozuia kila
 // njia chini ya /api, hivyo webhook ya AzamPay (isiyo na JWT) ilikuwa ikipata 401 kila mara.
-app.use("/api/billing", billingRoutes); // Njia mpya ya malipo ya AzamPay
+app.use("/api/billing", globalApiLimiter, billingRoutes); // Njia mpya ya malipo ya AzamPay
 app.use("/api", globalApiLimiter, apiRoutes);
 app.use("/api/insights", insightsRoutes);
 app.use("/api/superadmin", superadminRoutes);
