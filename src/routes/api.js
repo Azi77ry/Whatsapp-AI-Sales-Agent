@@ -13,6 +13,7 @@ const { decrypt } = require("../utils/crypto");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -23,13 +24,15 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
+    // 🛡️ Extension inatokana na mimetype iliyothibitishwa - SIYO jina la faili la mteja
+    // (vinginevyo "picha.html" yenye mimetype ya image/png ingehifadhiwa na kuhudumiwa kama HTML = XSS)
+    cb(null, `${Date.now()}-${crypto.randomBytes(4).toString("hex")}${IMAGE_EXTENSIONS[file.mimetype]}`);
   }
 });
 // 🛡️ File Upload Validation
+const IMAGE_EXTENSIONS = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/gif": ".gif" };
 const fileFilter = (req, file, cb) => {
-  const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-  if (allowedMimeTypes.includes(file.mimetype)) {
+  if (IMAGE_EXTENSIONS[file.mimetype]) {
     cb(null, true);
   } else {
     cb(new Error("Aina ya faili hairuhusiwi. Tafadhali pakia picha tu (JPG, PNG, WEBP, GIF)."), false);

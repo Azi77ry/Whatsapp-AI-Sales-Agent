@@ -5,10 +5,13 @@
 const cron = require("node-cron");
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 const AdmZip = require("adm-zip");
 
 const SESSIONS_DIR = path.join(__dirname, "../../sessions");
-const BACKUPS_DIR = path.join(__dirname, "../../backups");
+// 🛡️ Backups zina creds za WhatsApp (sawa na password) - zihifadhiwe NJE ya folda ya project
+// ili zisiingie kwenye git wala zisihudumiwe na web server.
+const BACKUPS_DIR = process.env.BACKUP_DIR || path.join(os.homedir(), "aziry-backups");
 
 /**
  * Zips the sessions directory.

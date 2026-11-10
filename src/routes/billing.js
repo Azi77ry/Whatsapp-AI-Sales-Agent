@@ -3,6 +3,19 @@ const router = express.Router();
 const prisma = require("../db/client");
 const azampay = require("../services/azampay");
 const authMiddleware = require("../middleware/auth");
+const crypto = require("crypto");
+
+// 🛡️ AzamPay haisaini callbacks zake. Tunalinda webhook kwa:
+//   1. Siri iliyo kwenye URL ya callback (AZAMPAY_CALLBACK_SECRET) - weka URL hii kwenye AzamPay dashboard:
+//      https://<domain>/api/billing/webhook?key=<AZAMPAY_CALLBACK_SECRET>
+//   2. Reference (externalId) isiyotabirika - mshambulizi hawezi kubuni reference ya malipo halisi
+function isValidCallbackKey(key) {
+  const secret = process.env.AZAMPAY_CALLBACK_SECRET;
+  if (!secret || typeof key !== "string") return false;
+  const a = Buffer.from(key);
+  const b = Buffer.from(secret);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
 
 // Msaidizi mdogo wa try/catch
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -23,7 +36,8 @@ router.post("/checkout", authMiddleware, wrap(async (req, res) => {
   const SUBSCRIPTION_AMOUNT = 30000;
   
   // Tengeneza Reference ID ya kipekee (External ID)
-  const externalId = `SUB-${merchantId}-${Date.now()}`;
+  // 🛡️ Isiyotabirika (zamani ilikuwa SUB-<id>-<timestamp> ambayo mtu angeweza kuikisia)
+  const externalId = `SUB-${merchantId}-${crypto.randomUUID()}`;
 
   // 1. Andika kwenye Database kama "pending"
   const paymentRecord = await prisma.subscriptionPayment.create({
@@ -69,8 +83,13 @@ router.post("/checkout", authMiddleware, wrap(async (req, res) => {
  * Hii HAIHITAJI merchantAuth kwa sababu inaitwa na server ya AzamPay
  */
 router.post("/webhook", wrap(async (req, res) => {
+  if (!isValidCallbackKey(req.query.key)) {
+    console.warn("🚫 AzamPay webhook: key si sahihi au AZAMPAY_CALLBACK_SECRET haijawekwa - imekataliwa.");
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   // Payload mfano: { transactionId: '...', externalId: '...', amount: '...', status: 'SUCCESS' }
-  const { transactionId, externalId, status, message } = req.body;
+  const { transactionId, externalId, status, message, amount } = req.body;
 
   if (!externalId) {
     return res.status(400).json({ error: "Invalid payload" });
@@ -87,6 +106,12 @@ router.post("/webhook", wrap(async (req, res) => {
   // Kama ishakuwa success, usifanye tena (Idempotency)
   if (payment.status === "success") {
     return res.json({ success: true, message: "Already processed" });
+  }
+
+  // Kiasi kilicholipwa lazima kilingane na kilichoombwa (kama AzamPay imetuma kiasi)
+  if (amount !== undefined && Number(amount) !== Number(payment.amount)) {
+    console.warn(`🚫 AzamPay webhook: kiasi hakilingani kwa ${externalId} (${amount} vs ${payment.amount}).`);
+    return res.status(400).json({ error: "Amount mismatch" });
   }
 
   const isSuccess = status && status.toUpperCase() === "SUCCESS";
